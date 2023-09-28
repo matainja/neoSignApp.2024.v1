@@ -1,6 +1,7 @@
 package com.matainja.bootapplication.activity;
 
 import static com.matainja.bootapplication.session.SessionManagement.IS_AUTOSTART;
+import static com.matainja.bootapplication.session.SessionManagement.IS_KEEPONTOP;
 import static com.matainja.bootapplication.session.SessionManagement.IS_WAKEUP;
 
 import androidx.annotation.NonNull;
@@ -70,12 +71,14 @@ public class MainActivity extends AppCompatActivity {
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch keepAwakeSwitch;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    Switch keepOnTopSwitch;
     TextView auto_start,auto_start_title;
     ImageView menuBook;
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
-    boolean isWakeUP,isAutoStart;
+    boolean isWakeUP,isAutoStart,isKeepOnTop;
     private WebView myWebView;
     ProgressBar progressBar;
     String mUrl;
@@ -114,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
         autoStartSwitch=(Switch) header.findViewById(R.id.autoStartSwitch);
         keepAwakeSwitch=(Switch) header.findViewById(R.id.keepAwakeSwitch);
+        keepOnTopSwitch=(Switch) header.findViewById(R.id.keepOnTopSwitch);
         TextView keep_awake = (TextView) header.findViewById(R.id.keep_awake);
         TextView exit = (TextView) header.findViewById(R.id.keep_exit);
         auto_start=(TextView)header.findViewById(R.id.auto_start);
@@ -207,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(MainActivity.this)) {
                 autoStartSwitch.setChecked(true);
@@ -226,12 +229,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-        HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
-        getAutoStartDetails = sessionManagement.getAutoStartDetails();
-        isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
-        Log.e("Tag","isAutoStart>>>"+isAutoStart);
-
-
         autoStartSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -256,8 +253,8 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-        });
-*/
+        });*/
+
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock powerLatch = powerManager.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
@@ -296,6 +293,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        if (isKeepOnTop){
+            keepOnTopSwitch.setChecked(true);
+            sessionManagement.createKeepOnTopSession(true);
+        }
+        else{
+            keepOnTopSwitch.setChecked(false);
+            sessionManagement.createKeepOnTopSession(false);
+        }
+        keepOnTopSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (keepOnTopSwitch.isChecked()){
+                    sessionManagement.createKeepOnTopSession(true);
+                }else{
+                    sessionManagement.createKeepOnTopSession(false);
+
+                }
+            }
+        });
+
     }
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
@@ -304,11 +321,15 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, String> getUserDetails = new HashMap<String, String>();
         getUserDetails = sessionManagement.getWakeupDetails();
         isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
+
         HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
         getAutoStartDetails = sessionManagement.getAutoStartDetails();
         isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
         Log.e("TAG", "isWakeUP>>> " + isWakeUP);
 
+        HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
+        getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
+        isKeepOnTop = Boolean.parseBoolean(getKeepOnTopDetails.get(IS_KEEPONTOP));
 
     }
     private void accessAllPermission() {

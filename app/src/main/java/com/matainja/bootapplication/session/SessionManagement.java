@@ -26,6 +26,7 @@ public class SessionManagement {
 
     public static final String IS_WAKEUP = "IsWakeUp";
     public static final String IS_AUTOSTART = "IsAutoStart";
+    public static final String IS_KEEPONTOP = "IsKeepOnTop";
 
     // Constructor
 
@@ -54,6 +55,12 @@ public class SessionManagement {
         // commit changes
         editor.commit();
     }
+    public void createKeepOnTopSession(boolean keepOnStatus ){
+        // Storing login value as TRUE
+        editor.putBoolean(IS_KEEPONTOP, keepOnStatus);
+        // commit changes
+        editor.commit();
+    }
     /**
      * Get stored session data
      **/
@@ -69,5 +76,10 @@ public class SessionManagement {
         // return user
         return user;
     }
-
+    public HashMap<String, String> getKeepOnTopDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(IS_KEEPONTOP, String.valueOf(pref.getBoolean(IS_KEEPONTOP, false)));
+        // return user
+        return user;
+    }
 }
