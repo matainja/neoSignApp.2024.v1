@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
-    boolean isWakeUP,isAutoStart,isKeepOnTop;
+    boolean isWakeUP,isAutoStart,isKeepOnTop,isOptimizationPopUP=true;
     private WebView myWebView;
     ProgressBar progressBar;
     String mUrl;
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        /*exit.setOnClickListener(new View.OnClickListener() {
+        exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-        });*/
+        });
 
 
         //String url = "https://matainja.com/";
@@ -210,8 +210,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(MainActivity.this)) {
                 autoStartSwitch.setChecked(true);
                 sessionManagement.createAutoStartSession(true);
@@ -222,13 +221,24 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.v("App", "OS Version Less than M");
             //No need for Permission as less then M OS.
-            if (autoStartSwitch.isChecked()){
+            if (isAutoStart){
+                autoStartSwitch.setChecked(true);
                 sessionManagement.createAutoStartSession(true);
             }else{
+                autoStartSwitch.setChecked(false);
                 sessionManagement.createAutoStartSession(false);
 
             }
         }
+
+        sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        sessionManagement = new SessionManagement(MainActivity.this);
+        HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
+        getAutoStartDetails = sessionManagement.getAutoStartDetails();
+        isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
+        Log.e("TAG", "isAutoStart>>> " + isAutoStart);
+
+        accessAllPermission();
         autoStartSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -253,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-        });*/
+        });
 
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock powerLatch = powerManager.newWakeLock(
@@ -325,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
         getAutoStartDetails = sessionManagement.getAutoStartDetails();
         isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
-        Log.e("TAG", "isWakeUP>>> " + isWakeUP);
+
 
         HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
         getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
@@ -333,12 +343,55 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void accessAllPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isAutoStart) {
+            requestAutoStart();
+        }
+        else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M && isAutoStart){
+            sessionManagement.createAutoStartSession(true);
+        }
         if(ActivityCompat.checkSelfPermission(MainActivity.this,AndroidBatteryPermission[0])==
-                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(MainActivity.this) && isOptimizationPopUP){
             requestBatteryOptimization();
         }
-    }
 
+
+    }
+    public void requestAutoStart()
+    {
+        if (!Settings.canDrawOverlays(MainActivity.this)) {
+
+            ViewGroup viewGroup=findViewById(android.R.id.content);
+            TextView btn;
+            TextView tittle,statement;
+            ImageView icon;
+            AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+            View view= LayoutInflater.from(MainActivity.this).inflate(R.layout.all_alert_dialog,viewGroup,false);
+            builder.setCancelable(false);
+            builder.setView(view);
+            icon=(ImageView)view.findViewById(R.id.aleart_img);
+            icon.setImageResource(R.drawable.ic_baseline_autorenew_24);
+            btn=view.findViewById(R.id.ok_btn);
+            //btn.setText("Turn Off Now");
+            btn.setText(getResources().getString(R.string.turn_on));
+            tittle=view.findViewById(R.id.tittle);
+            statement=view.findViewById(R.id.statements);
+            tittle.setText(R.string.auto_start_tittle);
+            statement.setText(R.string.auto_start_statement);
+            AlertDialog alertDialog=builder.create();
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alertDialog.dismiss();
+                    alertDialog.cancel();
+                    alertDialog.hide();
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                    startActivityForResult(intent, 0);
+                }
+            });
+            alertDialog.show();
+        }
+    }
     public void requestBatteryOptimization()
     {
         String packageName = MainActivity.this.getPackageName();
@@ -370,6 +423,7 @@ public class MainActivity extends AppCompatActivity {
                         alertDialog.dismiss();
                         alertDialog.cancel();
                         alertDialog.hide();
+                        isOptimizationPopUP=false;
                         Log.e("TAG","battryOptimisationCalled");
                        /* intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                         intent.setData(Uri.parse("package:" + packageName));

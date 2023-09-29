@@ -3,6 +3,8 @@
     <string name="Ok_button">OK</string>
     <string name="turn_on">Turn On</string>
     <string name="turn_off_battry">Turn Off Now</string>
+    <string name="auto_start_tittle">NeoSign only works properly if you turn on Display over other app for the app</string>
+    <string name="auto_start_statement">Please turn on Display over other app in your phone settings for the NeoSign app.This will not affect your other apps.</string>
     <string name="battery_optimization_tittle">NeoSign only works properly if you turn off battery optimization for the app</string>
     <string name="battery_optimization_statement">Please turn off Battery Optimization in your phone settings for the NeoSign app.This will not affect your other apps.</string>
     <string name="enable_this_option_to_keep_screen_of_tv_on_during_all_time_when_neosign_app_is_running">Enable this option to keep screen of TV ON during all time when NEOSign app is running.</string>

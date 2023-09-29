@@ -66,19 +66,19 @@ public class SessionManagement {
      **/
     public HashMap<String, String> getWakeupDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
-        user.put(IS_WAKEUP, String.valueOf(pref.getBoolean(IS_WAKEUP, false)));
+        user.put(IS_WAKEUP, String.valueOf(pref.getBoolean(IS_WAKEUP, true)));
         // return user
         return user;
     }
     public HashMap<String, String> getAutoStartDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
-        user.put(IS_AUTOSTART, String.valueOf(pref.getBoolean(IS_AUTOSTART, false)));
+        user.put(IS_AUTOSTART, String.valueOf(pref.getBoolean(IS_AUTOSTART, true)));
         // return user
         return user;
     }
     public HashMap<String, String> getKeepOnTopDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
-        user.put(IS_KEEPONTOP, String.valueOf(pref.getBoolean(IS_KEEPONTOP, false)));
+        user.put(IS_KEEPONTOP, String.valueOf(pref.getBoolean(IS_KEEPONTOP, true)));
         // return user
         return user;
     }
