@@ -17,9 +17,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -31,6 +33,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
@@ -55,8 +58,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.session.SessionManagement;
+import com.matainja.bootapplication.util.NetworkUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +72,8 @@ import java.util.HashMap;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity {
+    Handler handler;
+    LinearLayout webviewLay;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -95,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int PERMISSION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS =  10;
     DrawerLayout drawer;
     NavigationView navigationView;
+    private MainActivity.MyReceiver MyReceiver=null;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initSession();
         accessAllPermission();
-
+        
+        webviewLay=(LinearLayout)findViewById(R.id.webviewLay); 
         myWebView=(WebView)findViewById(R.id.webview);
         menuBook=(ImageView)findViewById(R.id.menuBook);
         action_image=(ImageView)findViewById(R.id.action_image);
@@ -120,9 +130,12 @@ public class MainActivity extends AppCompatActivity {
         keepOnTopSwitch=(Switch) header.findViewById(R.id.keepOnTopSwitch);
         TextView keep_awake = (TextView) header.findViewById(R.id.keep_awake);
         TextView exit = (TextView) header.findViewById(R.id.keep_exit);
+        TextView keep_reload = (TextView) header.findViewById(R.id.keep_reload);
         auto_start=(TextView)header.findViewById(R.id.auto_start);
         auto_start_title=(TextView)header.findViewById(R.id.auto_start_title);
         ImageView keepExit = (ImageView) header.findViewById(R.id.keepExit);
+        ImageView keepReload = (ImageView) header.findViewById(R.id.keepReload);
+
 
 
         menuBook.setOnClickListener(new View.OnClickListener() {
@@ -200,12 +213,36 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        keep_reload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START);
+                }
+                //String url = "https://matainja.com/";
+                //String url = "https://webplayer.neosign.tv/test.php";
+                String url = "https://webplayer.neosign.tv/";
+                webviewCall(url);
+            }
+        });
+        keepReload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START);
+                }
+                //String url = "https://matainja.com/";
+                //String url = "https://webplayer.neosign.tv/test.php";
+                String url = "https://webplayer.neosign.tv/";
+                webviewCall(url);
+            }
+        });
 
 
-        //String url = "https://matainja.com/";
-        //String url = "https://webplayer.neosign.tv/test.php";
-        String url = "https://webplayer.neosign.tv/";
-        webviewCall(url);
+
+        MyReceiver = new MyReceiver();
+        broadcastIntent();
+
     }
     @Override
     protected void onResume() {
@@ -324,6 +361,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+    public void broadcastIntent() {
+        registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -548,8 +589,17 @@ public class MainActivity extends AppCompatActivity {
     private class BrowserPage extends WebViewClient {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            progressBar.setVisibility(View.VISIBLE);
+            if(isNetworkAvailable()){
+                progressBar.setVisibility(View.VISIBLE);
+                super.onPageStarted(view, url, favicon);
+            }
+            else{
+                action_image.setVisibility(View.VISIBLE);
+                txtNoInternet.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                action_image.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_network_check_24));
+            }
+
         }
         @Override
         public void onPageFinished(WebView view, String url) {
@@ -676,5 +726,48 @@ public class MainActivity extends AppCompatActivity {
                 storageDir      /* directory */
         );
         return imageFile;
+    }
+
+
+
+    public class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String status = NetworkUtil.getConnectivityStatusString(context);
+            if(status.isEmpty()) {
+                status="Poor Internet Connection";
+                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
+            }else if(status.equals("null")) {
+                status="Poor Internet Connection";
+                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
+            }else if(status.equals("No internet is available")){
+                status="No internet is available";
+                showSnack();
+            }else{
+                //String url = "https://matainja.com/";
+                //String url = "https://webplayer.neosign.tv/test.php";
+                String url = "https://webplayer.neosign.tv/";
+                webviewCall(url);
+            }
+
+        }
+    }
+    private void showSnack() {
+        String message;
+        int color;
+        message = "Sorry! Not connected to internet";
+        color = Color.RED;
+        Snackbar snackbar = Snackbar
+                .make(webviewLay, message, Snackbar.LENGTH_LONG);
+        View sbView = snackbar.getView();
+        //TextView textView = (TextView) sbView.findViewById(R.id.snackbar_text);
+        //textView.setTextColor(color);
+        snackbar.show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(MyReceiver);
     }
 }

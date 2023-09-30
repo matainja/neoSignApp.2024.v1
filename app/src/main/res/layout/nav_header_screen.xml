@@ -187,10 +187,61 @@
 
     </RelativeLayout>
     <RelativeLayout
-        android:id="@+id/parent_exit"
+        android:id="@+id/parent_reload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/parent_keep_on_top"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="30dp">
+        <RelativeLayout
+            android:id="@+id/parentReload"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/keepReload"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginTop="2dp"
+                android:src="@drawable/ic_baseline_autorenew_24"
+                android:tint="@color/white"
+                />
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reload"
+            android:layout_gravity="center"
+            android:layout_toEndOf="@+id/parentReload"
+            android:textSize="24sp"
+            android:letterSpacing="0.06"
+            android:id="@+id/keep_reload"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:lineSpacingExtra="0.6dp"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/keep_reload"
+            android:text="Relaod this page."
+            android:layout_toEndOf="@+id/parentReload"
+            android:textSize="16sp"
+            android:letterSpacing="0.03"
+            android:textColor="@color/white"
+            android:textStyle="normal"
+            android:layout_marginTop="5dp"
+            android:lineSpacingExtra="0.6dp"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/parent_exit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/parent_reload"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp">

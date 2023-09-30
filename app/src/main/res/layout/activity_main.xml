@@ -57,7 +57,8 @@
                 android:layout_height="50dp"
                 android:id="@+id/progress_Bar"
                 android:max="100"
-                android:progress="0"/>
+                android:progress="0"
+                />
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
