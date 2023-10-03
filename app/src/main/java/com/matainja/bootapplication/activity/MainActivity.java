@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
-    boolean isWakeUP,isAutoStart,isKeepOnTop,isOptimizationPopUP=true;
+    boolean isWakeUP,isAutoStart,isKeepOnTop,isOptimizationPopUP=true,isAutoPopUP=true;
     private WebView myWebView;
     ProgressBar progressBar;
     String mUrl;
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        exit.setOnClickListener(new View.OnClickListener() {
+        /*exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -212,17 +212,23 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-        });
+        });*/
         keep_reload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);
                 }
-                //String url = "https://matainja.com/";
-                //String url = "https://webplayer.neosign.tv/test.php";
-                String url = "https://webplayer.neosign.tv/";
-                webviewCall(url);
+                if(isNetworkAvailable()){
+                    //String url = "https://matainja.com/";
+                    //String url = "https://webplayer.neosign.tv/test.php";
+                    String url = "https://webplayer.neosign.tv/";
+                    webviewCall(url);
+                }
+                else{
+                    showSnack();
+                }
+
             }
         });
         keepReload.setOnClickListener(new View.OnClickListener() {
@@ -231,10 +237,15 @@ public class MainActivity extends AppCompatActivity {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);
                 }
-                //String url = "https://matainja.com/";
-                //String url = "https://webplayer.neosign.tv/test.php";
-                String url = "https://webplayer.neosign.tv/";
-                webviewCall(url);
+                if(isNetworkAvailable()){
+                    //String url = "https://matainja.com/";
+                    //String url = "https://webplayer.neosign.tv/test.php";
+                    String url = "https://webplayer.neosign.tv/";
+                    webviewCall(url);
+                }
+                else{
+                    showSnack();
+                }
             }
         });
 
@@ -255,7 +266,8 @@ public class MainActivity extends AppCompatActivity {
                 autoStartSwitch.setChecked(false);
                 sessionManagement.createAutoStartSession(false);
             }
-        } else {
+        }
+        else {
             Log.v("App", "OS Version Less than M");
             //No need for Permission as less then M OS.
             if (isAutoStart){
@@ -276,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e("TAG", "isAutoStart>>> " + isAutoStart);
 
         accessAllPermission();
-        autoStartSwitch.setOnClickListener(new View.OnClickListener() {
+        /*autoStartSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (autoStartSwitch.isChecked()){
@@ -300,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-        });
+        });*/
 
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock powerLatch = powerManager.newWakeLock(
@@ -384,14 +396,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void accessAllPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isAutoStart) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isAutoStart && isAutoPopUP) {
             requestAutoStart();
         }
         else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M && isAutoStart){
             sessionManagement.createAutoStartSession(true);
         }
         if(ActivityCompat.checkSelfPermission(MainActivity.this,AndroidBatteryPermission[0])==
-                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(MainActivity.this) && isOptimizationPopUP){
+                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isAutoPopUP && isOptimizationPopUP){
             requestBatteryOptimization();
         }
 
@@ -423,6 +435,7 @@ public class MainActivity extends AppCompatActivity {
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    isAutoPopUP = false;
                     alertDialog.dismiss();
                     alertDialog.cancel();
                     alertDialog.hide();
@@ -755,19 +768,20 @@ public class MainActivity extends AppCompatActivity {
     private void showSnack() {
         String message;
         int color;
-        message = "Sorry! Not connected to internet";
+        message = "Sorry! No internet is available";
         color = Color.RED;
         Snackbar snackbar = Snackbar
                 .make(webviewLay, message, Snackbar.LENGTH_LONG);
         View sbView = snackbar.getView();
+        sbView.setBackgroundColor(color);
         //TextView textView = (TextView) sbView.findViewById(R.id.snackbar_text);
         //textView.setTextColor(color);
         snackbar.show();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         unregisterReceiver(MyReceiver);
     }
 }
