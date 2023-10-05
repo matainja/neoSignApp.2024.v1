@@ -30,52 +30,58 @@
         android:layout_below="@+id/parent_profile"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:checked="true"
         android:layout_marginTop="30dp">
         <RelativeLayout
-            android:id="@+id/parentAutoStartSwitch"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content">
-            <Switch
-                android:id="@+id/autoStartSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="false"
-                android:layout_marginTop="5dp"
-                android:textSize="18sp"
-                android:textColor="#2d990f"
-                android:layout_marginRight="10dp"
-                android:thumb="@drawable/custom_thumb"
-                android:track="@drawable/custom_track"
-                tools:ignore="UseSwitchCompatOrMaterialXml" />
-        </RelativeLayout>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp">
+            <RelativeLayout
+                android:id="@+id/parentAutoStartSwitch"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content">
+                <Switch
+                    android:id="@+id/autoStartSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:layout_marginTop="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#2d990f"
+                    android:layout_marginRight="10dp"
+                    android:thumb="@drawable/custom_thumb"
+                    android:track="@drawable/custom_track"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+            </RelativeLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Auto Start"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@+id/parentAutoStartSwitch"
-            android:textSize="24sp"
-            android:letterSpacing="0.06"
-            android:id="@+id/auto_start"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:lineSpacingExtra="0.6dp"
-            />
-        <TextView
-            android:id="@+id/auto_start_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/auto_start"
-            android:text="@string/enable_this_option_to_start_neosign_app_automatically_when_screen_is_powered_on"
-            android:layout_toEndOf="@+id/parentAutoStartSwitch"
-            android:textSize="16sp"
-            android:letterSpacing="0.03"
-            android:textColor="@color/white"
-            android:textStyle="normal"
-            android:layout_marginTop="5dp"
-            android:lineSpacingExtra="0.6dp"
-            />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Auto Start"
+                android:layout_gravity="center"
+                android:layout_toEndOf="@+id/parentAutoStartSwitch"
+                android:textSize="24sp"
+                android:letterSpacing="0.06"
+                android:id="@+id/auto_start"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:lineSpacingExtra="0.6dp"
+                />
+            <TextView
+                android:id="@+id/auto_start_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/auto_start"
+                android:text="@string/enable_this_option_to_start_neosign_app_automatically_when_screen_is_powered_on"
+                android:layout_toEndOf="@+id/parentAutoStartSwitch"
+                android:textSize="16sp"
+                android:letterSpacing="0.03"
+                android:textColor="@color/white"
+                android:textStyle="normal"
+                android:layout_marginTop="5dp"
+                android:lineSpacingExtra="0.6dp"
+                />
+        </RelativeLayout>
 
     </RelativeLayout>
     <RelativeLayout
@@ -87,49 +93,54 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp">
         <RelativeLayout
-            android:id="@+id/parentKeepAwakeSwitch"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content">
-            <Switch
-                android:id="@+id/keepAwakeSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="false"
-                android:layout_marginTop="5dp"
-                android:textSize="18sp"
-                android:textColor="#2d990f"
-                android:layout_marginRight="10dp"
-                android:thumb="@drawable/custom_thumb"
-                android:track="@drawable/custom_track"
-                tools:ignore="UseSwitchCompatOrMaterialXml" />
-        </RelativeLayout>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp">
+            <RelativeLayout
+                android:id="@+id/parentKeepAwakeSwitch"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content">
+                <Switch
+                    android:id="@+id/keepAwakeSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:layout_marginTop="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#2d990f"
+                    android:layout_marginRight="10dp"
+                    android:thumb="@drawable/custom_thumb"
+                    android:track="@drawable/custom_track"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+            </RelativeLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Keep Awake"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@+id/parentKeepAwakeSwitch"
-            android:textSize="24sp"
-            android:letterSpacing="0.06"
-            android:id="@+id/keep_awake"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:lineSpacingExtra="0.6dp"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/keep_awake"
-            android:text="@string/enable_this_option_to_keep_screen_of_tv_on_during_all_time_when_neosign_app_is_running"
-            android:layout_toEndOf="@+id/parentKeepAwakeSwitch"
-            android:textSize="16sp"
-            android:letterSpacing="0.03"
-            android:textColor="@color/white"
-            android:textStyle="normal"
-            android:layout_marginTop="5dp"
-            android:lineSpacingExtra="0.6dp"
-            />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Keep Awake"
+                android:layout_gravity="center"
+                android:layout_toEndOf="@+id/parentKeepAwakeSwitch"
+                android:textSize="24sp"
+                android:letterSpacing="0.06"
+                android:id="@+id/keep_awake"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:lineSpacingExtra="0.6dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/keep_awake"
+                android:text="@string/enable_this_option_to_keep_screen_of_tv_on_during_all_time_when_neosign_app_is_running"
+                android:layout_toEndOf="@+id/parentKeepAwakeSwitch"
+                android:textSize="16sp"
+                android:letterSpacing="0.03"
+                android:textColor="@color/white"
+                android:textStyle="normal"
+                android:layout_marginTop="5dp"
+                android:lineSpacingExtra="0.6dp"
+                />
+        </RelativeLayout>
 
     </RelativeLayout>
     <RelativeLayout
@@ -141,49 +152,55 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp">
         <RelativeLayout
-            android:id="@+id/parentkeepOnTopSwitch"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content">
-            <Switch
-                android:id="@+id/keepOnTopSwitch"
-                android:layout_width="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp">
+            <RelativeLayout
+                android:id="@+id/parentkeepOnTopSwitch"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content">
+                <Switch
+                    android:id="@+id/keepOnTopSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:layout_marginTop="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#2d990f"
+                    android:layout_marginRight="10dp"
+                    android:thumb="@drawable/custom_thumb"
+                    android:track="@drawable/custom_track"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:checked="false"
+                android:text="Keep On Top"
+                android:layout_gravity="center"
+                android:layout_toEndOf="@+id/parentkeepOnTopSwitch"
+                android:textSize="24sp"
+                android:letterSpacing="0.06"
+                android:id="@+id/keep_on_top"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:lineSpacingExtra="0.6dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/keep_on_top"
+                android:text="@string/application_will_automatically_re_launch_again_in_case_of_any_crash"
+                android:layout_toEndOf="@+id/parentkeepOnTopSwitch"
+                android:textSize="16sp"
+                android:letterSpacing="0.03"
+                android:textColor="@color/white"
+                android:textStyle="normal"
                 android:layout_marginTop="5dp"
-                android:textSize="18sp"
-                android:textColor="#2d990f"
-                android:layout_marginRight="10dp"
-                android:thumb="@drawable/custom_thumb"
-                android:track="@drawable/custom_track"
-                tools:ignore="UseSwitchCompatOrMaterialXml" />
+                android:lineSpacingExtra="0.6dp"
+                />
         </RelativeLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Keep On Top"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@+id/parentkeepOnTopSwitch"
-            android:textSize="24sp"
-            android:letterSpacing="0.06"
-            android:id="@+id/keep_on_top"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:lineSpacingExtra="0.6dp"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/keep_on_top"
-            android:text="@string/application_will_automatically_re_launch_again_in_case_of_any_crash"
-            android:layout_toEndOf="@+id/parentkeepOnTopSwitch"
-            android:textSize="16sp"
-            android:letterSpacing="0.03"
-            android:textColor="@color/white"
-            android:textStyle="normal"
-            android:layout_marginTop="5dp"
-            android:lineSpacingExtra="0.6dp"
-            />
 
     </RelativeLayout>
     <RelativeLayout
@@ -195,45 +212,51 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp">
         <RelativeLayout
-            android:id="@+id/parentReload"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/keepReload"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_marginTop="2dp"
-                android:src="@drawable/ic_baseline_autorenew_24"
-                android:tint="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp">
+            <RelativeLayout
+                android:id="@+id/parentReload"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/keepReload"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="2dp"
+                    android:src="@drawable/ic_baseline_autorenew_24"
+                    android:tint="@color/white"
+                    />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reload"
+                android:layout_gravity="center"
+                android:layout_toEndOf="@+id/parentReload"
+                android:textSize="24sp"
+                android:letterSpacing="0.06"
+                android:id="@+id/keep_reload"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:lineSpacingExtra="0.6dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/keep_reload"
+                android:text="Relaod this page."
+                android:layout_toEndOf="@+id/parentReload"
+                android:textSize="16sp"
+                android:letterSpacing="0.03"
+                android:textColor="@color/white"
+                android:textStyle="normal"
+                android:layout_marginTop="5dp"
+                android:lineSpacingExtra="0.6dp"
                 />
         </RelativeLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reload"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@+id/parentReload"
-            android:textSize="24sp"
-            android:letterSpacing="0.06"
-            android:id="@+id/keep_reload"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:lineSpacingExtra="0.6dp"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/keep_reload"
-            android:text="Relaod this page."
-            android:layout_toEndOf="@+id/parentReload"
-            android:textSize="16sp"
-            android:letterSpacing="0.03"
-            android:textColor="@color/white"
-            android:textStyle="normal"
-            android:layout_marginTop="5dp"
-            android:lineSpacingExtra="0.6dp"
-            />
 
     </RelativeLayout>
 
@@ -246,45 +269,49 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp">
         <RelativeLayout
-            android:id="@+id/parentkeepExit"
-            android:layout_width="70dp"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/keepExit"
-                android:layout_width="35dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="2dp"
-                android:src="@drawable/ic_baseline_exit_to_app_24"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp">
+            <RelativeLayout
+                android:id="@+id/parentkeepExit"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/keepExit"
+                    android:layout_width="35dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="2dp"
+                    android:src="@drawable/ic_baseline_exit_to_app_24"
+                    />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Exit"
+                android:layout_gravity="center"
+                android:layout_toEndOf="@+id/parentkeepExit"
+                android:textSize="24sp"
+                android:letterSpacing="0.06"
+                android:id="@+id/keep_exit"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:lineSpacingExtra="0.6dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/keep_exit"
+                android:text="Exit from this application."
+                android:layout_toEndOf="@+id/parentkeepExit"
+                android:textSize="16sp"
+                android:letterSpacing="0.03"
+                android:textColor="@color/white"
+                android:textStyle="normal"
+                android:layout_marginTop="5dp"
+                android:lineSpacingExtra="0.6dp"
                 />
         </RelativeLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Exit"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@+id/parentkeepExit"
-            android:textSize="24sp"
-            android:letterSpacing="0.06"
-            android:id="@+id/keep_exit"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:lineSpacingExtra="0.6dp"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/keep_exit"
-            android:text="Exit from this application."
-            android:layout_toEndOf="@+id/parentkeepExit"
-            android:textSize="16sp"
-            android:letterSpacing="0.03"
-            android:textColor="@color/white"
-            android:textStyle="normal"
-            android:layout_marginTop="5dp"
-            android:lineSpacingExtra="0.6dp"
-            />
-
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/parent_profile2"
@@ -296,12 +323,18 @@
         android:layout_marginBottom="10dp"
         android:layout_below="@+id/parent_exit"
         android:layout_centerHorizontal="true">
-        <ImageView
-            android:id="@+id/tv_profile"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/neo_retain"
-            />
+            android:layout_margin="4dp">
+            <ImageView
+                android:id="@+id/tv_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/neo_retain"
+                />
+        </RelativeLayout>
+
     </RelativeLayout>
 
 </RelativeLayout>

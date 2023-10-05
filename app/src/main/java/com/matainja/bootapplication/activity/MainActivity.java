@@ -40,6 +40,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,12 +104,13 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
-
-    @SuppressLint("MissingInflatedId")
+    private ViewGroup rootView;
+    @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rootView = findViewById(R.id.header_profile);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initSession();
@@ -491,6 +493,60 @@ public class MainActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // Handle remote control key events here
+        int keyCode = event.getKeyCode();
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+                // Handle up key press
+                View previousView = rootView.focusSearch(View.FOCUS_UP);
+                if (previousView != null) {
+                    previousView.setBackgroundColor(R.drawable.menu_selection);
+                    previousView.requestFocus();
+                    return true;
+                }
+                Toast.makeText(getApplicationContext(), "Test up :",
+                        Toast.LENGTH_LONG).show();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                // Handle down key press
+                // Request focus on the view or layout you want to navigate to
+                View nextView = rootView.focusSearch(View.FOCUS_DOWN);
+                if (nextView != null) {
+                    nextView.setBackgroundColor(R.drawable.menu_selection);
+                    nextView.requestFocus();
+                    return true;
+                }
+                Toast.makeText(getApplicationContext(), "Test down :",
+                        Toast.LENGTH_LONG).show();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                // Handle left key press
+                drawer.openDrawer(GravityCompat.START);
+                Toast.makeText(getApplicationContext(), "Test left :",
+                        Toast.LENGTH_LONG).show();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                // Handle right key press
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START);
+                }
+                Toast.makeText(getApplicationContext(), "Test right :",
+                        Toast.LENGTH_LONG).show();
+                return true;
+            case KeyEvent.KEYCODE_ENTER:
+                // Handle enter key press
+                return true;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+                Toast.makeText(getApplicationContext(), "Test center :",
+                        Toast.LENGTH_LONG).show();
+                return true;
+            // Add more cases for other key events as needed
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @SuppressLint("LongLogTag")
