@@ -113,8 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initSession();
         accessAllPermission();
-        
-        webviewLay=(LinearLayout)findViewById(R.id.webviewLay); 
+        webviewLay=(LinearLayout)findViewById(R.id.webviewLay);
         myWebView=(WebView)findViewById(R.id.webview);
         menuBook=(ImageView)findViewById(R.id.menuBook);
         action_image=(ImageView)findViewById(R.id.action_image);
@@ -149,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        /*exit.setOnClickListener(new View.OnClickListener() {
+        exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -212,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-        });*/
+        });
         keep_reload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -258,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (Settings.canDrawOverlays(MainActivity.this)) {
                 autoStartSwitch.setChecked(true);
                 sessionManagement.createAutoStartSession(true);
@@ -268,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            Log.v("App", "OS Version Less than M");
+            Log.v("App", "OS Version Less than S");
             //No need for Permission as less then M OS.
             if (isAutoStart){
                 autoStartSwitch.setChecked(true);
@@ -288,11 +287,11 @@ public class MainActivity extends AppCompatActivity {
         Log.e("TAG", "isAutoStart>>> " + isAutoStart);
 
         accessAllPermission();
-        /*autoStartSwitch.setOnClickListener(new View.OnClickListener() {
+        autoStartSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (autoStartSwitch.isChecked()){
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         if (!Settings.canDrawOverlays(MainActivity.this)) {
                             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
                             startActivityForResult(intent, 0);
@@ -301,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
                         sessionManagement.createAutoStartSession(true);
                     }
                 }else{
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         if (Settings.canDrawOverlays(MainActivity.this)) {
                             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
                             startActivityForResult(intent, 0);
@@ -312,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
-        });*/
+        });
 
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock powerLatch = powerManager.newWakeLock(
@@ -396,14 +395,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void accessAllPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isAutoStart && isAutoPopUP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isAutoStart && isAutoPopUP) {
             requestAutoStart();
         }
-        else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M && isAutoStart){
+        else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.S && isAutoStart){
             sessionManagement.createAutoStartSession(true);
         }
         if(ActivityCompat.checkSelfPermission(MainActivity.this,AndroidBatteryPermission[0])==
-                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isAutoPopUP && isOptimizationPopUP){
+                PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isAutoPopUP && isOptimizationPopUP){
             requestBatteryOptimization();
         }
 
