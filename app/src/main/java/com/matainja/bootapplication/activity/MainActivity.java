@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch keepOnTopSwitch;
     TextView auto_start,auto_start_title;
-    ImageView menuBook;
+    //ImageView menuBook;
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
@@ -104,20 +104,20 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
-    private ViewGroup rootView;
+    //private ViewGroup rootView;
     @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        rootView = findViewById(R.id.header_profile);
+       // rootView = findViewById(R.id.header_profile);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initSession();
-        accessAllPermission();
+        //accessAllPermission();
         webviewLay=(LinearLayout)findViewById(R.id.webviewLay);
         myWebView=(WebView)findViewById(R.id.webview);
-        menuBook=(ImageView)findViewById(R.id.menuBook);
+        //menuBook=(ImageView)findViewById(R.id.menuBook);
         action_image=(ImageView)findViewById(R.id.action_image);
         txtNoInternet=(TextView)findViewById(R.id.txtNoInternet);
         progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        menuBook.setOnClickListener(new View.OnClickListener() {
+        /*menuBook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-        });
+        });*/
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
         Log.e("TAG", "isAutoStart>>> " + isAutoStart);
 
-        accessAllPermission();
+        //accessAllPermission();
         autoStartSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -502,24 +502,18 @@ public class MainActivity extends AppCompatActivity {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
                 // Handle up key press
-                View previousView = rootView.focusSearch(View.FOCUS_UP);
-                if (previousView != null) {
-                    previousView.setBackgroundColor(R.drawable.menu_selection);
-                    previousView.requestFocus();
-                    return true;
-                }
                 Toast.makeText(getApplicationContext(), "Test up :",
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 // Handle down key press
                 // Request focus on the view or layout you want to navigate to
-                View nextView = rootView.focusSearch(View.FOCUS_DOWN);
+               /* View nextView = rootView.focusSearch(View.FOCUS_DOWN);
                 if (nextView != null) {
                     nextView.setBackgroundColor(R.drawable.menu_selection);
                     nextView.requestFocus();
                     return true;
-                }
+                }*/
                 Toast.makeText(getApplicationContext(), "Test down :",
                         Toast.LENGTH_LONG).show();
                 return true;
