@@ -104,13 +104,16 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
-    //private ViewGroup rootView;
+    private ViewGroup rootView;
+    TextView keep_awake,exit,keep_reload;
+    ImageView keepExit,keepReload;
+    RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
     @SuppressLint({"MissingInflatedId", "CutPasteId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-       // rootView = findViewById(R.id.header_profile);
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initSession();
@@ -125,20 +128,22 @@ public class MainActivity extends AppCompatActivity {
         navigationView =(NavigationView)findViewById(R.id.nav_view);
         View header = navigationView.getHeaderView(0);
 
-
+        rootView =  header.findViewById(R.id.parent_auto_start);
         autoStartSwitch=(Switch) header.findViewById(R.id.autoStartSwitch);
         keepAwakeSwitch=(Switch) header.findViewById(R.id.keepAwakeSwitch);
         keepOnTopSwitch=(Switch) header.findViewById(R.id.keepOnTopSwitch);
-        TextView keep_awake = (TextView) header.findViewById(R.id.keep_awake);
-        TextView exit = (TextView) header.findViewById(R.id.keep_exit);
-        TextView keep_reload = (TextView) header.findViewById(R.id.keep_reload);
+        keep_awake = (TextView) header.findViewById(R.id.keep_awake);
+        exit = (TextView) header.findViewById(R.id.keep_exit);
+        keep_reload = (TextView) header.findViewById(R.id.keep_reload);
         auto_start=(TextView)header.findViewById(R.id.auto_start);
         auto_start_title=(TextView)header.findViewById(R.id.auto_start_title);
-        ImageView keepExit = (ImageView) header.findViewById(R.id.keepExit);
-        ImageView keepReload = (ImageView) header.findViewById(R.id.keepReload);
-
-
-
+        keepExit = (ImageView) header.findViewById(R.id.keepExit);
+        keepReload = (ImageView) header.findViewById(R.id.keepReload);
+        parent_auto_start=(RelativeLayout)header.findViewById(R.id.parent_auto_start);
+        parent_keep_awake=(RelativeLayout)header.findViewById(R.id.parent_keep_awake);
+        parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
+        parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
+        parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
         /*menuBook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -506,20 +511,71 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
+
                 // Handle down key press
                 // Request focus on the view or layout you want to navigate to
-               /* View nextView = rootView.focusSearch(View.FOCUS_DOWN);
+                View nextView = rootView.focusSearch(View.FOCUS_DOWN);
                 if (nextView != null) {
-                    nextView.setBackgroundColor(R.drawable.menu_selection);
-                    nextView.requestFocus();
-                    return true;
-                }*/
+                    //nextView.requestFocus();
+                    if (parent_auto_start.isFocused()){
+                        Log.e("Test","parent_auto_start>>");
+                        parent_keep_awake.clearFocus();
+                        parent_keep_on_top.clearFocus();
+                        parent_reload.clearFocus();
+                        parent_exit.clearFocus();
+                        parent_auto_start.requestFocus();
+                        parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                    }
+                    else if (parent_keep_awake.isFocusable()){
+                        Log.e("Test","parent_keep_awake>>");
+                        parent_auto_start.clearFocus();
+                        parent_keep_on_top.clearFocus();
+                        parent_reload.clearFocus();
+                        parent_exit.clearFocus();
+                        parent_keep_awake.requestFocus();
+                        parent_keep_awake.setBackgroundColor(R.drawable.menu_selection);
+                    }
+                    else if (parent_keep_on_top.isFocusable()){
+                        Log.e("Test","parent_keep_on_top>>");
+                        parent_auto_start.clearFocus();
+                        parent_keep_awake.clearFocus();
+                        parent_reload.clearFocus();
+                        parent_exit.clearFocus();
+                    }
+                    else if (parent_reload.isFocusable()){
+                        Log.e("Test","parent_reload>>");
+                        parent_auto_start.clearFocus();
+                        parent_keep_awake.clearFocus();
+                        parent_keep_on_top.clearFocus();
+                        parent_exit.clearFocus();
+                    }
+                    else if (parent_exit.isFocusable()){
+                        Log.e("Test","parent_exit>>");
+                        parent_auto_start.clearFocus();
+                        parent_keep_awake.clearFocus();
+                        parent_keep_on_top.clearFocus();
+                        parent_reload.clearFocus();
+                    }
+
+
+                }
+
+
                 Toast.makeText(getApplicationContext(), "Test down :",
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 // Handle left key press
                 drawer.openDrawer(GravityCompat.START);
+                if (parent_auto_start.isFocusable()){
+                    Log.e("Test","parent_auto_start>>");
+                    parent_keep_awake.clearFocus();
+                    parent_keep_on_top.clearFocus();
+                    parent_reload.clearFocus();
+                    parent_exit.clearFocus();
+                    parent_auto_start.requestFocus();
+                    parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                }
                 Toast.makeText(getApplicationContext(), "Test left :",
                         Toast.LENGTH_LONG).show();
                 return true;
@@ -532,9 +588,202 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_ENTER:
+                Toast.makeText(getApplicationContext(), "Test ok :",
+                        Toast.LENGTH_LONG).show();
                 // Handle enter key press
+
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
+                if (parent_auto_start.isFocused()){
+                    sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                    sessionManagement = new SessionManagement(MainActivity.this);
+                    HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
+                    getAutoStartDetails = sessionManagement.getAutoStartDetails();
+                    isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
+                    Log.e("TAG", "isAutoStarttest>>>" + isAutoStart);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.app_name);
+                    builder.setIcon(R.mipmap.neo_app_icon);
+                    builder.setMessage("Do you want to change Auto Start status?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    if (isAutoStart){
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                            if (Settings.canDrawOverlays(MainActivity.this)) {
+                                                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                                                startActivityForResult(intent, 0);
+                                            }
+                                        }else{
+                                            autoStartSwitch.setChecked(false);
+                                            sessionManagement.createAutoStartSession(false);
+                                        }
+                                    }
+                                    else{
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                            if (!Settings.canDrawOverlays(MainActivity.this)) {
+                                                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                                                startActivityForResult(intent, 0);
+                                            }
+                                        }else{
+                                            autoStartSwitch.setChecked(true);
+                                            sessionManagement.createAutoStartSession(true);
+                                        }
+
+                                    }
+
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+                else if (parent_keep_awake.isFocusable()){
+                    sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                    sessionManagement = new SessionManagement(MainActivity.this);
+
+                    HashMap<String, String> getUserDetails = new HashMap<String, String>();
+                    getUserDetails = sessionManagement.getWakeupDetails();
+                    isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.app_name);
+                    builder.setIcon(R.mipmap.neo_app_icon);
+                    builder.setMessage("Do you want to change Keep Awake status?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
+                                    @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock powerLatch = powerManager.newWakeLock(
+                                            PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
+                                                    PowerManager.ACQUIRE_CAUSES_WAKEUP, "Lock");
+                                    if (isWakeUP){
+                                        keepAwakeSwitch.setChecked(false);
+                                        //This code holds the CPU
+                                        if (powerLatch.isHeld()){
+                                            powerLatch.release();
+                                            sessionManagement.createWakeupSession(false);
+                                        }
+
+                                    }
+                                    else{
+                                        keepAwakeSwitch.setChecked(true);
+                                        //This code holds the CPU
+                                        //powerLatch.acquire(24*60*60*1000L);
+                                        powerLatch.acquire();
+                                        sessionManagement.createWakeupSession(true);
+                                    }
+
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+                else if (parent_keep_on_top.isFocusable()){
+                    sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                    sessionManagement = new SessionManagement(MainActivity.this);
+                    HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
+                    getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
+                    isKeepOnTop = Boolean.parseBoolean(getKeepOnTopDetails.get(IS_KEEPONTOP));
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.app_name);
+                    builder.setIcon(R.mipmap.neo_app_icon);
+                    builder.setMessage("Do you want to change Keep On Top status?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    if (isKeepOnTop){
+                                        keepOnTopSwitch.setChecked(false);
+                                        sessionManagement.createKeepOnTopSession(false);
+                                    }
+                                    else{
+                                        keepOnTopSwitch.setChecked(true);
+                                        sessionManagement.createKeepOnTopSession(true);
+                                    }
+
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+                else if (parent_reload.isFocusable()){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.app_name);
+                    builder.setIcon(R.mipmap.neo_app_icon);
+                    builder.setMessage("Do you want to reload this page?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    if (drawer.isDrawerOpen(GravityCompat.START)) {
+                                        drawer.closeDrawer(GravityCompat.START);
+                                    }
+                                    if(isNetworkAvailable()){
+                                        //String url = "https://matainja.com/";
+                                        //String url = "https://webplayer.neosign.tv/test.php";
+                                        String url = "https://webplayer.neosign.tv/";
+                                        webviewCall(url);
+                                    }
+                                    else{
+                                        showSnack();
+                                    }
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+                else if (parent_exit.isFocusable()){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.app_name);
+                    builder.setIcon(R.mipmap.neo_app_icon);
+                    builder.setMessage("Do you want to exit?")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // on below line we are finishing activity.
+                                    MainActivity.this.finish();
+
+                                    // on below line we are exiting our activity
+                                    System.exit(0);
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+
                 Toast.makeText(getApplicationContext(), "Test center :",
                         Toast.LENGTH_LONG).show();
                 return true;
@@ -796,6 +1045,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String status = NetworkUtil.getConnectivityStatusString(context);
+            Log.e("status","status>>>"+status);
             if(status.isEmpty()) {
                 status="Poor Internet Connection";
                 Toast.makeText(context, status, Toast.LENGTH_LONG).show();
@@ -806,6 +1056,7 @@ public class MainActivity extends AppCompatActivity {
                 status="No internet is available";
                 showSnack();
             }else{
+                Log.e("status","connected>>>"+status);
                 //String url = "https://matainja.com/";
                 //String url = "https://webplayer.neosign.tv/test.php";
                 String url = "https://webplayer.neosign.tv/";
