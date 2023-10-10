@@ -31,10 +31,10 @@
         android:layout_below="@+id/parent_profile"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:checked="true"
-        android:focusable="true"
         android:layout_marginTop="30dp"
-        android:nextFocusForward="@+id/parent_keep_awake">
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusDown="@+id/parent_keep_awake">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +95,9 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp"
-        android:nextFocusForward="@+id/parent_keep_on_top">
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusDown="@+id/parent_keep_on_top">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -155,7 +157,9 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp"
-        android:nextFocusForward="@+id/parent_reload">
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusDown="@+id/parent_reload">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -216,7 +220,9 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp"
-        android:nextFocusForward="@+id/parent_exit">
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusDown="@+id/parent_exit">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -225,14 +231,15 @@
                 android:id="@+id/parentReload"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content">
-                <ImageView
+                <ImageButton
                     android:id="@+id/keepReload"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
                     android:layout_marginTop="2dp"
                     android:src="@drawable/ic_baseline_autorenew_24"
                     android:tint="@color/white"
-                    />
+                    android:background="@android:color/transparent"/>
+
             </RelativeLayout>
 
             <TextView
@@ -273,7 +280,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="30dp"
-        android:nextFocusDown="@+id/parent_auto_start"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         >
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -283,13 +291,15 @@
                 android:id="@+id/parentkeepExit"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content">
-                <ImageView
+
+                <ImageButton
                     android:id="@+id/keepExit"
                     android:layout_width="35dp"
-                    android:layout_height="30dp"
+                    android:layout_height="35dp"
                     android:layout_marginTop="2dp"
                     android:src="@drawable/ic_baseline_exit_to_app_24"
-                    />
+                    android:tint="@color/white"
+                    android:background="@android:color/transparent"/>
             </RelativeLayout>
 
             <TextView

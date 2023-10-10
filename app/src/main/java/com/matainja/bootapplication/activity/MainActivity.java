@@ -7,8 +7,6 @@ import static com.matainja.bootapplication.session.SessionManagement.IS_WAKEUP;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -38,7 +36,6 @@ import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -50,6 +47,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -66,7 +64,6 @@ import com.matainja.bootapplication.util.NetworkUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,11 +101,16 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
-    private ViewGroup rootView;
+    private Switch rootView1;
+    private Switch rootView2;
+    private Switch rootView3;
+    private ViewGroup rootView4;
+    View nextView1,nextView2,nextView3,nextView4;
     TextView keep_awake,exit,keep_reload;
-    ImageView keepExit,keepReload;
+    ImageButton keepExit,keepReload;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
-    @SuppressLint({"MissingInflatedId", "CutPasteId"})
+
+    @SuppressLint("CutPasteId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,7 +130,11 @@ public class MainActivity extends AppCompatActivity {
         navigationView =(NavigationView)findViewById(R.id.nav_view);
         View header = navigationView.getHeaderView(0);
 
-        rootView =  header.findViewById(R.id.parent_auto_start);
+        rootView1 = (Switch)header.findViewById(R.id.autoStartSwitch);
+        rootView2 =  (Switch)header.findViewById(R.id.keepAwakeSwitch);
+        rootView3 =  (Switch)header.findViewById(R.id.keepOnTopSwitch);
+        rootView4 =  header.findViewById(R.id.parent_reload);
+
         autoStartSwitch=(Switch) header.findViewById(R.id.autoStartSwitch);
         keepAwakeSwitch=(Switch) header.findViewById(R.id.keepAwakeSwitch);
         keepOnTopSwitch=(Switch) header.findViewById(R.id.keepOnTopSwitch);
@@ -137,8 +143,8 @@ public class MainActivity extends AppCompatActivity {
         keep_reload = (TextView) header.findViewById(R.id.keep_reload);
         auto_start=(TextView)header.findViewById(R.id.auto_start);
         auto_start_title=(TextView)header.findViewById(R.id.auto_start_title);
-        keepExit = (ImageView) header.findViewById(R.id.keepExit);
-        keepReload = (ImageView) header.findViewById(R.id.keepReload);
+        keepExit = (ImageButton) header.findViewById(R.id.keepExit);
+        keepReload = (ImageButton) header.findViewById(R.id.keepReload);
         parent_auto_start=(RelativeLayout)header.findViewById(R.id.parent_auto_start);
         parent_keep_awake=(RelativeLayout)header.findViewById(R.id.parent_keep_awake);
         parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
@@ -223,6 +229,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 if(isNetworkAvailable()){
@@ -241,6 +257,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                    parent_auto_start.setFocusable(false);
+                    parent_keep_awake.setFocusable(false);
+                    parent_keep_on_top.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_auto_start.setFocusable(false);
+                    parent_keep_awake.setFocusable(false);
+                    parent_keep_on_top.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_auto_start.setFocusable(false);
+                    parent_keep_awake.setFocusable(false);
+                    parent_keep_on_top.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 if(isNetworkAvailable()){
@@ -511,54 +547,88 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
+                if (autoStartSwitch.isFocusable()){
+                    nextView1 = rootView1.focusSearch(View.FOCUS_DOWN);
+                }
+                else if (keepAwakeSwitch.isFocusable()){
+                    nextView2 = rootView2.focusSearch(View.FOCUS_DOWN);
+                }
+                else if (keepOnTopSwitch.isFocusable()){
+                    nextView3 = rootView3.focusSearch(View.FOCUS_DOWN);
 
-                // Handle down key press
-                // Request focus on the view or layout you want to navigate to
-                View nextView = rootView.focusSearch(View.FOCUS_DOWN);
-                if (nextView != null) {
-                    //nextView.requestFocus();
-                    if (parent_auto_start.isFocused()){
-                        Log.e("Test","parent_auto_start>>");
-                        parent_keep_awake.clearFocus();
-                        parent_keep_on_top.clearFocus();
-                        parent_reload.clearFocus();
-                        parent_exit.clearFocus();
-                        parent_auto_start.requestFocus();
-                        parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
-                    }
-                    else if (parent_keep_awake.isFocusable()){
+                }
+                else if (parent_reload.isFocusable()){
+                    nextView4 = rootView4.focusSearch(View.FOCUS_DOWN);
+
+                }
+
+                if (nextView1 !=null && autoStartSwitch.isFocusable()){
+                    autoStartSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    Log.e("Test","nextView>>"+nextView1);
+                    keepAwakeSwitch.setFocusable(true);
+                    keepAwakeSwitch.requestFocus();
+                    if (keepAwakeSwitch.isFocusable()){
                         Log.e("Test","parent_keep_awake>>");
-                        parent_auto_start.clearFocus();
-                        parent_keep_on_top.clearFocus();
-                        parent_reload.clearFocus();
-                        parent_exit.clearFocus();
-                        parent_keep_awake.requestFocus();
+                        parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
                         parent_keep_awake.setBackgroundColor(R.drawable.menu_selection);
+
                     }
-                    else if (parent_keep_on_top.isFocusable()){
+
+                }
+                if (nextView2 !=null && keepAwakeSwitch.isFocusable()){
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    Log.e("Test","nextView>>2"+nextView2);
+                    keepOnTopSwitch.setFocusable(true);
+                    keepOnTopSwitch.requestFocus();
+                    if (keepOnTopSwitch.isFocusable()){
                         Log.e("Test","parent_keep_on_top>>");
-                        parent_auto_start.clearFocus();
-                        parent_keep_awake.clearFocus();
-                        parent_reload.clearFocus();
-                        parent_exit.clearFocus();
-                    }
-                    else if (parent_reload.isFocusable()){
-                        Log.e("Test","parent_reload>>");
-                        parent_auto_start.clearFocus();
-                        parent_keep_awake.clearFocus();
-                        parent_keep_on_top.clearFocus();
-                        parent_exit.clearFocus();
-                    }
-                    else if (parent_exit.isFocusable()){
-                        Log.e("Test","parent_exit>>");
-                        parent_auto_start.clearFocus();
-                        parent_keep_awake.clearFocus();
-                        parent_keep_on_top.clearFocus();
-                        parent_reload.clearFocus();
+                        parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                        parent_keep_on_top.setBackgroundColor(R.drawable.menu_selection);
                     }
 
 
                 }
+                if (nextView3 !=null && keepOnTopSwitch.isFocusable()){
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(true);
+                    parent_reload.requestFocus();
+                    Log.e("Test","nextView>>3"+nextView3);
+                    if (parent_reload.isFocusable()){
+                        Log.e("Test","parent_reload>>");
+                        parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                        parent_reload.setBackgroundColor(R.drawable.menu_selection);
+                    }
+                }
+                if (nextView4 !=null && parent_reload.isFocusable()){
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    parent_exit.setFocusable(true);
+                    parent_exit.requestFocus();
+                    Log.e("Test","nextView>>4"+nextView4);
+                    if (parent_exit.isFocusable()){
+                        Log.e("Test","parent_exit>>");
+                        parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                        parent_exit.setBackgroundColor(R.drawable.menu_selection);
+                    }
+                }
+
+
+
+
+
+
+
 
 
                 Toast.makeText(getApplicationContext(), "Test down :",
@@ -566,22 +636,38 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 // Handle left key press
-                drawer.openDrawer(GravityCompat.START);
-                if (parent_auto_start.isFocusable()){
-                    Log.e("Test","parent_auto_start>>");
-                    parent_keep_awake.clearFocus();
-                    parent_keep_on_top.clearFocus();
-                    parent_reload.clearFocus();
-                    parent_exit.clearFocus();
-                    parent_auto_start.requestFocus();
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                }else{
+                    drawer.openDrawer(GravityCompat.START);
+                    autoStartSwitch.setFocusable(true);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    autoStartSwitch.requestFocus();
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
                 }
+
                 Toast.makeText(getApplicationContext(), "Test left :",
                         Toast.LENGTH_LONG).show();
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 // Handle right key press
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 Toast.makeText(getApplicationContext(), "Test right :",
@@ -594,7 +680,7 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
-                if (parent_auto_start.isFocused()){
+                if (autoStartSwitch.isFocusable()){
                     sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
                     sessionManagement = new SessionManagement(MainActivity.this);
                     HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
@@ -644,7 +730,7 @@ public class MainActivity extends AppCompatActivity {
                     AlertDialog alert = builder.create();
                     alert.show();
                 }
-                else if (parent_keep_awake.isFocusable()){
+                else if (keepAwakeSwitch.isFocusable()){
                     sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
                     sessionManagement = new SessionManagement(MainActivity.this);
 
@@ -693,7 +779,7 @@ public class MainActivity extends AppCompatActivity {
                     alert.show();
 
                 }
-                else if (parent_keep_on_top.isFocusable()){
+                else if (keepOnTopSwitch.isFocusable()){
                     sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
                     sessionManagement = new SessionManagement(MainActivity.this);
                     HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
@@ -737,6 +823,16 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialog, int id) {
                                     dialog.cancel();
                                     if (drawer.isDrawerOpen(GravityCompat.START)) {
+                                        parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                                        parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                                        parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                                        parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                                        parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                                        autoStartSwitch.setFocusable(false);
+                                        keepAwakeSwitch.setFocusable(false);
+                                        keepOnTopSwitch.setFocusable(false);
+                                        parent_exit.setFocusable(false);
+                                        parent_reload.setFocusable(false);
                                         drawer.closeDrawer(GravityCompat.START);
                                     }
                                     if(isNetworkAvailable()){
