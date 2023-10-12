@@ -97,7 +97,8 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:nextFocusDown="@+id/parent_keep_on_top">
+        android:nextFocusDown="@+id/parent_keep_on_top"
+        android:nextFocusUp="@+id/parent_auto_start">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -159,7 +160,8 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:nextFocusDown="@+id/parent_reload">
+        android:nextFocusDown="@+id/parent_reload"
+        android:nextFocusUp="@+id/parent_keep_awake">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -222,7 +224,8 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:nextFocusDown="@+id/parent_exit">
+        android:nextFocusDown="@+id/parent_exit"
+        android:nextFocusUp="@+id/parent_keep_on_top">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -282,6 +285,7 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:nextFocusUp="@+id/parent_reload"
         >
         <RelativeLayout
             android:layout_width="wrap_content"
