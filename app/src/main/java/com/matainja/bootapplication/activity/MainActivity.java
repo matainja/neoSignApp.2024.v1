@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private Switch rootView2;
     private Switch rootView3;
     private ViewGroup rootView4,rootView5;
-    View nextView1,nextView2,nextView3,nextView4, nextView5, nextView6, nextView7, nextView8;
+    View nextView1,nextView2,nextView3,nextView4, nextView5, nextView6, nextView7, nextView8, nextView9, nextView10;
     TextView keep_awake,exit,keep_reload;
     ImageButton keepExit,keepReload;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });*/
-        exit.setOnClickListener(new View.OnClickListener() {
+        parent_exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -195,21 +195,39 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        keepExit.setOnClickListener(new View.OnClickListener() {
+        parent_reload.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.app_name);
                 builder.setIcon(R.mipmap.neo_app_icon);
-                builder.setMessage("Do you want to exit?")
+                builder.setMessage("Do you want to reload this page?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // on below line we are finishing activity.
-                                MainActivity.this.finish();
-
-                                // on below line we are exiting our activity
-                                System.exit(0);
+                                dialog.cancel();
+                                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                                    autoStartSwitch.setFocusable(false);
+                                    keepAwakeSwitch.setFocusable(false);
+                                    keepOnTopSwitch.setFocusable(false);
+                                    parent_exit.setFocusable(false);
+                                    parent_reload.setFocusable(false);
+                                    drawer.closeDrawer(GravityCompat.START);
+                                }
+                                if(isNetworkAvailable()){
+                                    //String url = "https://matainja.com/";
+                                    //String url = "https://webplayer.neosign.tv/test.php";
+                                    String url = "https://webplayer.neosign.tv/";
+                                    webviewCall(url);
+                                }
+                                else{
+                                    showSnack();
+                                }
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -220,78 +238,9 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog alert = builder.create();
                 alert.show();
 
-
-
-
-
-
             }
         });
-        keep_reload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (drawer.isDrawerOpen(GravityCompat.START)) {
-                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
-                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
-                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
-                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
-                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
-                    autoStartSwitch.setFocusable(false);
-                    keepAwakeSwitch.setFocusable(false);
-                    keepOnTopSwitch.setFocusable(false);
-                    parent_exit.setFocusable(false);
-                    parent_reload.setFocusable(false);
-                    drawer.closeDrawer(GravityCompat.START);
-                }
-                if(isNetworkAvailable()){
-                    //String url = "https://matainja.com/";
-                    //String url = "https://webplayer.neosign.tv/test.php";
-                    String url = "https://webplayer.neosign.tv/";
-                    webviewCall(url);
-                }
-                else{
-                    showSnack();
-                }
 
-            }
-        });
-        keepReload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (drawer.isDrawerOpen(GravityCompat.START)) {
-                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
-                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
-                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
-                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
-                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
-                    parent_auto_start.setFocusable(false);
-                    parent_keep_awake.setFocusable(false);
-                    parent_keep_on_top.setFocusable(false);
-                    parent_reload.setFocusable(false);
-                    parent_exit.setFocusable(false);
-                    parent_auto_start.setFocusable(false);
-                    parent_keep_awake.setFocusable(false);
-                    parent_keep_on_top.setFocusable(false);
-                    parent_reload.setFocusable(false);
-                    parent_exit.setFocusable(false);
-                    parent_auto_start.setFocusable(false);
-                    parent_keep_awake.setFocusable(false);
-                    parent_keep_on_top.setFocusable(false);
-                    parent_reload.setFocusable(false);
-                    parent_exit.setFocusable(false);
-                    drawer.closeDrawer(GravityCompat.START);
-                }
-                if(isNetworkAvailable()){
-                    //String url = "https://matainja.com/";
-                    //String url = "https://webplayer.neosign.tv/test.php";
-                    String url = "https://webplayer.neosign.tv/";
-                    webviewCall(url);
-                }
-                else{
-                    showSnack();
-                }
-            }
-        });
 
 
 
@@ -324,6 +273,59 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+        parent_auto_start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                sessionManagement = new SessionManagement(MainActivity.this);
+                HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
+                getAutoStartDetails = sessionManagement.getAutoStartDetails();
+                isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
+                Log.e("TAG", "isAutoStarttest>>>" + isAutoStart);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.app_name);
+                builder.setIcon(R.mipmap.neo_app_icon);
+                builder.setMessage("Do you want to change Auto Start status?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                                if (isAutoStart){
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        if (Settings.canDrawOverlays(MainActivity.this)) {
+                                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                                            startActivityForResult(intent, 0);
+                                        }
+                                    }else{
+                                        autoStartSwitch.setChecked(false);
+                                        sessionManagement.createAutoStartSession(false);
+                                    }
+                                }
+                                else{
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        if (!Settings.canDrawOverlays(MainActivity.this)) {
+                                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                                            startActivityForResult(intent, 0);
+                                        }
+                                    }else{
+                                        autoStartSwitch.setChecked(true);
+                                        sessionManagement.createAutoStartSession(true);
+                                    }
+
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
 
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -358,6 +360,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+
+
+
+
 
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         powerLatch = powerManager.newWakeLock(
@@ -396,6 +404,61 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        parent_keep_awake.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                sessionManagement = new SessionManagement(MainActivity.this);
+
+                HashMap<String, String> getUserDetails = new HashMap<String, String>();
+                getUserDetails = sessionManagement.getWakeupDetails();
+                isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.app_name);
+                builder.setIcon(R.mipmap.neo_app_icon);
+                builder.setMessage("Do you want to change Keep Awake status?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+
+                                if (isWakeUP){
+                                    keepAwakeSwitch.setChecked(false);
+                                    //This code holds the CPU
+                                    if (powerLatch.isHeld()){
+                                        powerLatch.release();
+                                        sessionManagement.createWakeupSession(false);
+                                    }
+
+                                }
+                                else{
+                                    keepAwakeSwitch.setChecked(true);
+                                    //This code holds the CPU
+                                    //powerLatch.acquire(24*60*60*1000L);
+                                    powerLatch.acquire();
+                                    sessionManagement.createWakeupSession(true);
+                                }
+
+
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
+
+
+
+
+
 
         if (isKeepOnTop){
             keepOnTopSwitch.setChecked(true);
@@ -416,7 +479,43 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        parent_keep_on_top.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                sessionManagement = new SessionManagement(MainActivity.this);
+                HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
+                getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
+                isKeepOnTop = Boolean.parseBoolean(getKeepOnTopDetails.get(IS_KEEPONTOP));
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.app_name);
+                builder.setIcon(R.mipmap.neo_app_icon);
+                builder.setMessage("Do you want to change Keep On Top status?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                                if (isKeepOnTop){
+                                    keepOnTopSwitch.setChecked(false);
+                                    sessionManagement.createKeepOnTopSession(false);
+                                }
+                                else{
+                                    keepOnTopSwitch.setChecked(true);
+                                    sessionManagement.createKeepOnTopSession(true);
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
     }
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -545,7 +644,7 @@ public class MainActivity extends AppCompatActivity {
         int keyCode = event.getKeyCode();
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
-                /*if (event.getAction() == KeyEvent.ACTION_UP) {
+                if (event.getAction() == KeyEvent.ACTION_UP) {
                     if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
                         if (parent_exit.isFocusable()){
                             nextView5 = rootView5.focusSearch(View.FOCUS_UP);
@@ -582,7 +681,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         else if (keepOnTopSwitch.isFocusable()){
-                            nextView7 = rootView1.focusSearch(View.FOCUS_UP);
+                            nextView7 = rootView5.focusSearch(View.FOCUS_UP);
                             if (nextView7 !=null && keepOnTopSwitch.isFocusable()){
                                 autoStartSwitch.setFocusable(false);
                                 keepOnTopSwitch.setFocusable(false);
@@ -619,13 +718,30 @@ public class MainActivity extends AppCompatActivity {
 
                             }
                         }
+                        else if (autoStartSwitch.isFocusable()){
+                            nextView9 = rootView5.focusSearch(View.FOCUS_UP);
+                            if (nextView9 !=null && autoStartSwitch.isFocusable()){
+                                autoStartSwitch.setFocusable(false);
+                                keepAwakeSwitch.setFocusable(false);
+                                keepOnTopSwitch.setFocusable(false);
+                                parent_reload.setFocusable(false);
 
+                                Log.e("Test","nextView>>9"+nextView9);
+                                parent_exit.setFocusable(true);
+                                parent_exit.requestFocus();
+                                if (parent_exit.isFocusable()){
+                                    Log.e("Test","parent_Exit>>");
+                                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_exit.setBackgroundColor(R.drawable.menu_selection);
+
+                                }
+
+                            }
+                        }
 
                     }
-                }*/
-                // Handle up key press
-                Toast.makeText(getApplicationContext(), "Test up :",
-                        Toast.LENGTH_LONG).show();
+                }
+
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -702,17 +818,47 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         }
+                        else if (parent_exit.isFocusable()){
+                            nextView10 = rootView1.focusSearch(View.FOCUS_DOWN);
+                            if (nextView10 !=null && parent_exit.isFocusable()){
 
-                        Log.e("Tag","Test>>>1"+autoStartSwitch.isFocusable());
-                        Log.e("Tag","Test>>>2"+keepAwakeSwitch.isFocusable());
-                        Log.e("Tag","Test>>>3"+keepOnTopSwitch.isFocusable());
-                        Log.e("Tag","Test>>>4"+parent_reload.isFocusable());
-
+                                keepAwakeSwitch.setFocusable(false);
+                                keepOnTopSwitch.setFocusable(false);
+                                parent_reload.setFocusable(false);
+                                parent_exit.setFocusable(false);
+                                autoStartSwitch.setFocusable(true);
+                                autoStartSwitch.requestFocus();
+                                Log.e("Test","nextView>>4"+nextView4);
+                                if (autoStartSwitch.isFocusable()){
+                                    Log.e("Test","parent_exit>>");
+                                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                                    parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                                }
+                            }
+                        }
                     }
                 }
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 // Handle left key press
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                }
+                else{
+                    drawer.openDrawer(GravityCompat.START);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    autoStartSwitch.setFocusable(true);
+                    autoStartSwitch.requestFocus();
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                    parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                }
+                return true;
+            case KeyEvent.KEYCODE_MENU:
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                 }
                 else{

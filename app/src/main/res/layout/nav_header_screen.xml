@@ -34,7 +34,8 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:nextFocusDown="@+id/parent_keep_awake">
+        android:nextFocusDown="@+id/parent_keep_awake"
+        android:nextFocusUp="@+id/parent_exit">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -285,6 +286,7 @@
         android:layout_marginTop="30dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:nextFocusDown="@+id/parent_auto_start"
         android:nextFocusUp="@+id/parent_reload"
         >
         <RelativeLayout
