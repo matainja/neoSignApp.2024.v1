@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     TextView keep_awake,exit,keep_reload;
     ImageButton keepExit,keepReload;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
-
+    String webUrl= "https://webplayer.neosign.tv/";
     @SuppressLint("CutPasteId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,10 +220,8 @@ public class MainActivity extends AppCompatActivity {
                                     drawer.closeDrawer(GravityCompat.START);
                                 }
                                 if(isNetworkAvailable()){
-                                    //String url = "https://matainja.com/";
-                                    //String url = "https://webplayer.neosign.tv/test.php";
-                                    String url = "https://webplayer.neosign.tv/";
-                                    webviewCall(url);
+
+                                    webviewCall(webUrl);
                                 }
                                 else{
                                     showSnack();
@@ -1059,10 +1057,8 @@ public class MainActivity extends AppCompatActivity {
                                                     drawer.closeDrawer(GravityCompat.START);
                                                 }
                                                 if(isNetworkAvailable()){
-                                                    //String url = "https://matainja.com/";
-                                                    //String url = "https://webplayer.neosign.tv/test.php";
-                                                    String url = "https://webplayer.neosign.tv/";
-                                                    webviewCall(url);
+
+                                                    webviewCall(webUrl);
                                                 }
                                                 else{
                                                     showSnack();
@@ -1376,11 +1372,8 @@ public class MainActivity extends AppCompatActivity {
                 status="No internet is available";
                 showSnack();
             }else{
-                Log.e("status","connected>>>"+status);
-                //String url = "https://matainja.com/";
-                //String url = "https://webplayer.neosign.tv/test.php";
-                String url = "https://webplayer.neosign.tv/";
-                webviewCall(url);
+
+                webviewCall(webUrl);
             }
 
         }
