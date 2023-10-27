@@ -10,4 +10,10 @@
     <string name="enable_this_option_to_keep_screen_of_tv_on_during_all_time_when_neosign_app_is_running">Enable this option to keep screen of TV ON during all time when NEOSign app is running.</string>
     <string name="enable_this_option_to_start_neosign_app_automatically_when_screen_is_powered_on">Enable this option to start NeoSign app automatically when screen is powered ON.</string>
     <string name="application_will_automatically_re_launch_again_in_case_of_any_crash">Application will automatically re-launch again in case of any crash.</string>
+    <string name="please_open_app_neosign_tv_to_pair_this_device_and_start_using_it"><font size="12">Please open</font> <font size="14">app.neosign.tv</font> <font size="12">to pair this device and start using it.</font> </string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="pairing_code">Pairing Code</string>
 </resources>

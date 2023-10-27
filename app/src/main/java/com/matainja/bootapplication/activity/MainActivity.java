@@ -3,6 +3,7 @@ package com.matainja.bootapplication.activity;
 import static com.matainja.bootapplication.session.SessionManagement.IS_AUTOSTART;
 import static com.matainja.bootapplication.session.SessionManagement.IS_KEEPONTOP;
 import static com.matainja.bootapplication.session.SessionManagement.IS_WAKEUP;
+import static com.matainja.bootapplication.session.SessionManagement.PAIRING_CODE;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -15,6 +16,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,11 +27,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -47,26 +51,44 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity {
@@ -102,6 +124,15 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
+    RelativeLayout parentPairing,parentVideoView,parentContentImage;
+    private static final String Videos_URL = "https://app.neosign.tv/storage/app/public/content/147/videos/BXS0VN61JxLgDjtWbhqMgEb9nCEobaKDRdL1J1YI.mp4";
+    private VideoView myVideoView;
+    private ImageView content_image;
+    private ProgressDialog progressDialog;
+    private MediaController mediaControls;
+    private int position = 0;
+    TextView pairingCode;
+    String pairCode;
     private Switch rootView1;
     private Switch rootView2;
     private Switch rootView3;
@@ -111,26 +142,42 @@ public class MainActivity extends AppCompatActivity {
     ImageButton keepExit,keepReload;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
     String webUrl= "https://webplayer.neosign.tv/";
-    @SuppressLint("CutPasteId")
+    int currentIndex;
+    @SuppressLint({"CutPasteId", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+       /* getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);*/
         initSession();
+
+
+
+
+
         //accessAllPermission();
-        webviewLay=(LinearLayout)findViewById(R.id.webviewLay);
-        myWebView=(WebView)findViewById(R.id.webview);
+        //webviewLay=(LinearLayout)findViewById(R.id.webviewLay);
+        //myWebView=(WebView)findViewById(R.id.webview);
         //menuBook=(ImageView)findViewById(R.id.menuBook);
-        action_image=(ImageView)findViewById(R.id.action_image);
-        txtNoInternet=(TextView)findViewById(R.id.txtNoInternet);
-        progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
+        //action_image=(ImageView)findViewById(R.id.action_image);
+        //txtNoInternet=(TextView)findViewById(R.id.txtNoInternet);
+        //progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
-        View header = navigationView.getHeaderView(0);
 
+
+        parentPairing= findViewById(R.id.parentPairing);
+        pairingCode = findViewById(R.id.pairingCode);
+
+        parentVideoView= findViewById(R.id.parentVideoView);
+        myVideoView = (VideoView) findViewById(R.id.videoView);
+
+        parentContentImage= findViewById(R.id.parentContentImage);
+        content_image= findViewById(R.id.content_image);
+
+        View header = navigationView.getHeaderView(0);
         rootView1 = (Switch)header.findViewById(R.id.autoStartSwitch);
         rootView2 =  (Switch)header.findViewById(R.id.keepAwakeSwitch);
         rootView3 =  (Switch)header.findViewById(R.id.keepOnTopSwitch);
@@ -152,6 +199,39 @@ public class MainActivity extends AppCompatActivity {
         parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
         parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
+
+
+        sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        sessionManagement = new SessionManagement(MainActivity.this);
+        HashMap<String, String> getPairDetails = new HashMap<String, String>();
+        getPairDetails = sessionManagement.getParingDetails();
+        pairCode = getPairDetails.get(PAIRING_CODE);
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.e("Tag","deviceId>>>"+deviceId);
+        if (pairCode.equals("")){
+            // Generate a random number
+            Random random = new Random();
+            pairCode = UUID.randomUUID().toString().substring(0,5);
+            // Update the TextView with the random number and text
+            pairingCode.setText(pairCode);
+            sessionManagement.createPairingSession(pairCode);
+        }else{
+            // Update the TextView with the random number and text
+            pairingCode.setText(pairCode);
+
+        }
+        initPairing(pairCode);
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                // Call the API here
+                //initPairing(pairCode);
+
+            }
+        };
+        timer.scheduleAtFixedRate(task, 0, 10000);
+
         /*menuBook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -217,11 +297,11 @@ public class MainActivity extends AppCompatActivity {
                                     keepOnTopSwitch.setFocusable(false);
                                     parent_exit.setFocusable(false);
                                     parent_reload.setFocusable(false);
+                                    myVideoView.setZOrderOnTop(false);
                                     drawer.closeDrawer(GravityCompat.START);
                                 }
                                 if(isNetworkAvailable()){
-
-                                    webviewCall(webUrl);
+                                    //webviewCall(webUrl);
                                 }
                                 else{
                                     showSnack();
@@ -250,6 +330,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        View decorView = getWindow().getDecorView();
+        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        decorView.setSystemUiVisibility(flags);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (Settings.canDrawOverlays(MainActivity.this)) {
                 autoStartSwitch.setChecked(true);
@@ -517,6 +603,148 @@ public class MainActivity extends AppCompatActivity {
     }
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+    private void initPairing(String pairCode){
+        StringRequest getRequest = new StringRequest(Request.Method.GET,
+                "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("TAG","----API-response--------"+response);
+                        try{
+                            JSONObject jsonObject = new JSONObject(response);
+                            Boolean status = jsonObject.getBoolean("success");
+                            if(status){
+                                parentPairing.setVisibility(View.VISIBLE);
+                                pairingCode.setText("Paired");
+                                JSONObject data = jsonObject.getJSONObject("data") ;
+                                Boolean dataStatus = data.getBoolean("status");
+                                if(dataStatus){
+
+                                    JSONArray dataArray = data.getJSONArray("data");
+                                    if(dataArray.length()>0){
+                                        parentPairing.setVisibility(View.GONE);
+
+                                        for(currentIndex =0; currentIndex<dataArray.length();){
+                                            JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+
+                                            String type = dataObject.getString("type");
+                                            String url = dataObject.getString("url");
+                                            String duration = dataObject.getString("duration");
+                                            String extention = dataObject.getString("extention");
+                                            contentLay(type,url,extention);
+
+
+                                            CountDownTimer timer = new CountDownTimer(0, 600000) {
+
+                                                @Override
+                                                public void onTick(long millisUntilFinished) {
+
+                                                }
+
+                                                @Override
+                                                public void onFinish() {
+                                                    try{
+                                                        currentIndex++;
+                                                    }catch(Exception e){
+                                                        Log.e("Error", "Error: " + e.toString());
+                                                    }
+                                                }
+                                            }.start();
+
+
+                                        }
+
+
+                                    }
+
+                                }
+
+
+
+                            }else {
+
+                            }
+                        }catch (JSONException ex){
+                            ex.printStackTrace();
+                            Log.e("Error", "-----Json Array----: "+ex.getMessage());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                Log.e("Error", "-----VollyError----: "+error.getMessage());
+            }
+        });
+        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+        requestQueue.add(getRequest);
+
+
+        getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+    }
+
+    private void contentLay(String type, String url, String extention) {
+        if (type.equals("video")){
+            if (mediaControls == null) {
+                mediaControls = new MediaController(this);
+                myVideoView.setMediaController(mediaControls);
+                mediaControls.setAnchorView(myVideoView);
+
+
+            }
+            parentContentImage.setVisibility(View.GONE);
+            parentVideoView.setVisibility(View.VISIBLE);
+
+            videoView(url);
+        }else if(type.equals("image")){
+            parentVideoView.setVisibility(View.GONE);
+            parentContentImage.setVisibility(View.VISIBLE);
+
+            content_image.setImageResource(R.drawable.neo_logo);
+        }
+
+
+
+    }
+
+
+
+    private void videoView(String url){
+        // Create a progressbar
+        progressDialog = new ProgressDialog(MainActivity.this);
+        // Set progressbar message
+        progressDialog.setMessage("Loading...");
+
+        progressDialog.setCancelable(false);
+        // Show progressbar
+        progressDialog.show();
+
+        try {
+            Uri video = Uri.parse(url);
+            myVideoView.setVideoURI(video);
+            myVideoView.setMediaController(mediaControls);
+        } catch (Exception e) {
+            Log.e("Error", e.getMessage());
+            e.printStackTrace();
+        }
+
+        //myVideoView.requestFocus();
+        myVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            // Close the progress bar and play the video
+            public void onPrepared(MediaPlayer mp) {
+                progressDialog.dismiss();
+                myVideoView.seekTo(position);
+                if (position == 0) {
+                    mp.setLooping(true);
+                    myVideoView.start();
+                } else {
+                    myVideoView.pause();
+                }
+            }
+        });
     }
 
     private void initSession() {
@@ -854,10 +1082,23 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                    myVideoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_MENU:
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    parent_auto_start.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_awake.setBackgroundColor(Color.TRANSPARENT);
+                    parent_keep_on_top.setBackgroundColor(Color.TRANSPARENT);
+                    parent_reload.setBackgroundColor(Color.TRANSPARENT);
+                    parent_exit.setBackgroundColor(Color.TRANSPARENT);
+                    autoStartSwitch.setFocusable(false);
+                    keepAwakeSwitch.setFocusable(false);
+                    keepOnTopSwitch.setFocusable(false);
+                    parent_exit.setFocusable(false);
+                    parent_reload.setFocusable(false);
+                    myVideoView.setZOrderOnTop(false);
+                    drawer.closeDrawer(GravityCompat.START);
                 }
                 else{
                     drawer.openDrawer(GravityCompat.START);
@@ -872,6 +1113,7 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
+                    myVideoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
@@ -887,6 +1129,7 @@ public class MainActivity extends AppCompatActivity {
                     keepOnTopSwitch.setFocusable(false);
                     parent_exit.setFocusable(false);
                     parent_reload.setFocusable(false);
+                    myVideoView.setZOrderOnTop(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 return true;
@@ -1054,11 +1297,12 @@ public class MainActivity extends AppCompatActivity {
                                                     keepOnTopSwitch.setFocusable(false);
                                                     parent_exit.setFocusable(false);
                                                     parent_reload.setFocusable(false);
+                                                    myVideoView.setZOrderOnTop(false);
                                                     drawer.closeDrawer(GravityCompat.START);
                                                 }
                                                 if(isNetworkAvailable()){
 
-                                                    webviewCall(webUrl);
+                                                    //webviewCall(webUrl);
                                                 }
                                                 else{
                                                     showSnack();
@@ -1373,7 +1617,7 @@ public class MainActivity extends AppCompatActivity {
                 showSnack();
             }else{
 
-                webviewCall(webUrl);
+                //webviewCall(webUrl);
             }
 
         }
@@ -1391,6 +1635,8 @@ public class MainActivity extends AppCompatActivity {
         //textView.setTextColor(color);
         snackbar.show();
     }
+
+
 
     @Override
     protected void onDestroy() {

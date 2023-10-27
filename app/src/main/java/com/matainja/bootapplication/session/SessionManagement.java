@@ -27,6 +27,7 @@ public class SessionManagement {
     public static final String IS_WAKEUP = "IsWakeUp";
     public static final String IS_AUTOSTART = "IsAutoStart";
     public static final String IS_KEEPONTOP = "IsKeepOnTop";
+    public static final String PAIRING_CODE = "ParingCode";
 
     // Constructor
 
@@ -36,27 +37,23 @@ public class SessionManagement {
         editor = pref.edit();
     }
 
-    /**
-     * Create login session
-     * */
+    public void createPairingSession(String paringCode ){
+        editor.putString(PAIRING_CODE, paringCode);
+        // commit changes
+        editor.commit();
+    }
     public void createWakeupSession(boolean wakeStatus ){
-        // Storing login value as TRUE
         editor.putBoolean(IS_WAKEUP, wakeStatus);
-
-
         // commit changes
         editor.commit();
     }
     public void createAutoStartSession(boolean autoStatus ){
         // Storing login value as TRUE
         editor.putBoolean(IS_AUTOSTART, autoStatus);
-
-
         // commit changes
         editor.commit();
     }
     public void createKeepOnTopSession(boolean keepOnStatus ){
-        // Storing login value as TRUE
         editor.putBoolean(IS_KEEPONTOP, keepOnStatus);
         // commit changes
         editor.commit();
@@ -79,6 +76,12 @@ public class SessionManagement {
     public HashMap<String, String> getKeepOnTopDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
         user.put(IS_KEEPONTOP, String.valueOf(pref.getBoolean(IS_KEEPONTOP, true)));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getParingDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(PAIRING_CODE, pref.getString(PAIRING_CODE,""));
         // return user
         return user;
     }
