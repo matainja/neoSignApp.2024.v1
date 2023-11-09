@@ -1,13 +1,17 @@
 package com.matainja.bootapplication.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static com.matainja.bootapplication.session.SessionManagement.IS_AUTOSTART;
 import static com.matainja.bootapplication.session.SessionManagement.IS_KEEPONTOP;
 import static com.matainja.bootapplication.session.SessionManagement.IS_WAKEUP;
 import static com.matainja.bootapplication.session.SessionManagement.PAIRING_CODE;
+import static com.matainja.bootapplication.session.SessionManagement.PAIRING_STATUS;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -33,9 +37,9 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
@@ -45,13 +49,11 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -70,8 +72,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.matainja.bootapplication.Model.ClockParams;
+import com.matainja.bootapplication.Model.ContentModel;
+import com.matainja.bootapplication.Model.RSSModel;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
@@ -82,9 +90,15 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -92,8 +106,7 @@ import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity {
-    Handler handler;
-    LinearLayout webviewLay;
+    CoordinatorLayout contentLay;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -102,13 +115,49 @@ public class MainActivity extends AppCompatActivity {
     Switch keepOnTopSwitch;
     TextView auto_start,auto_start_title;
     PowerManager.WakeLock powerLatch;
-    //ImageView menuBook;
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
     boolean isWakeUP,isAutoStart,isKeepOnTop,isOptimizationPopUP=true,isAutoPopUP=true;
-    private WebView myWebView;
-    ProgressBar progressBar;
+    boolean pairingStatus;
+    private  String[] AndroidBatteryPermission=new String[] {Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS};
+    public static final int PERMISSION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS =  10;
+    DrawerLayout drawer;
+    NavigationView navigationView;
+    private MainActivity.MyReceiver MyReceiver=null;
+    RelativeLayout parentPairing,parentVideoView,parentContentImage;
+    private static final String Videos_URL = "https://app.neosign.tv/storage/app/public/content/147/videos/BXS0VN61JxLgDjtWbhqMgEb9nCEobaKDRdL1J1YI.mp4";
+    ProgressBar progress_bar;
+    private ProgressDialog progressDialog;
+    private MediaController mediaControls;
+    private int position = 0;
+    TextView pairingCode;
+    String pairCode;
+    String countdownText;
+    String orientation="Landscape";
+    String translationString;
+    private Switch rootView1;
+    private Switch rootView2;
+    private Switch rootView3;
+    private ViewGroup rootView4,rootView5;
+    View nextView1,nextView2,nextView3,nextView4, nextView5, nextView6, nextView7, nextView8, nextView9, nextView10;
+    TextView keep_awake,exit,keep_reload;
+    ImageButton keepExit,keepReload;
+    LinearLayout parentInternetLay;
+    RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
+    RelativeLayout webView_lay,parentContentRssFeed;
+    TextView rssTitle,rssDescription,rssDate;
+    ImageView rssImageView,rssQR;
+    WebView myWebView;
+    long newDuration=0;
+    Handler handler;
+    Runnable myRunnable;
+    int currentIndex;
+    int contentCurrentIndex=0;
+    int slideShowCallCount=0;
+    private int currentPage = 0;
+    int firstdataCount=0;
+    int count=0;
     String mUrl;
     private static final int FILECHOOSER_RESULTCODE   = 1;
     private static final int INPUT_FILE_REQUEST_CODE = 1;
@@ -117,32 +166,11 @@ public class MainActivity extends AppCompatActivity {
     private String folderName="com.matainja";
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
-    ImageView action_image;
-    TextView txtNoInternet;
-    private  String[] AndroidBatteryPermission=new String[] {Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS};
-    public static final int PERMISSION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS =  10;
-    DrawerLayout drawer;
-    NavigationView navigationView;
-    private MainActivity.MyReceiver MyReceiver=null;
-    RelativeLayout parentPairing,parentVideoView,parentContentImage;
-    private static final String Videos_URL = "https://app.neosign.tv/storage/app/public/content/147/videos/BXS0VN61JxLgDjtWbhqMgEb9nCEobaKDRdL1J1YI.mp4";
-    private VideoView myVideoView;
-    private ImageView content_image;
-    private ProgressDialog progressDialog;
-    private MediaController mediaControls;
-    private int position = 0;
-    TextView pairingCode;
-    String pairCode;
-    private Switch rootView1;
-    private Switch rootView2;
-    private Switch rootView3;
-    private ViewGroup rootView4,rootView5;
-    View nextView1,nextView2,nextView3,nextView4, nextView5, nextView6, nextView7, nextView8, nextView9, nextView10;
-    TextView keep_awake,exit,keep_reload;
-    ImageButton keepExit,keepReload;
-    RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
-    String webUrl= "https://webplayer.neosign.tv/";
-    int currentIndex;
+    ImageView content_image;
+    VideoView videoView;
+    ProgressBar progressBar,video_progress;
+    List<ContentModel> slideItems = new ArrayList<>();
+    List<ContentModel> newSlideItems = new ArrayList<>();
     @SuppressLint({"CutPasteId", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,25 +186,32 @@ public class MainActivity extends AppCompatActivity {
 
 
         //accessAllPermission();
-        //webviewLay=(LinearLayout)findViewById(R.id.webviewLay);
-        //myWebView=(WebView)findViewById(R.id.webview);
-        //menuBook=(ImageView)findViewById(R.id.menuBook);
-        //action_image=(ImageView)findViewById(R.id.action_image);
-        //txtNoInternet=(TextView)findViewById(R.id.txtNoInternet);
-        //progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
+
+        handler = new Handler();
+        parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
+        contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
 
 
         parentPairing= findViewById(R.id.parentPairing);
         pairingCode = findViewById(R.id.pairingCode);
+        parentContentRssFeed=(RelativeLayout)findViewById(R.id.parentContentRssFeed);
+        rssImageView = findViewById(R.id.rssImageView);
+        rssTitle = findViewById(R.id.rssTitle);
+        rssDescription = findViewById(R.id.rssDescription);
+        rssDate = findViewById(R.id.rssDate);
+        rssQR = findViewById(R.id.rssQR);
 
-        parentVideoView= findViewById(R.id.parentVideoView);
-        myVideoView = (VideoView) findViewById(R.id.videoView);
 
-        parentContentImage= findViewById(R.id.parentContentImage);
-        content_image= findViewById(R.id.content_image);
-
+        content_image = findViewById(R.id.content_image);
+        videoView = findViewById(R.id.videoView);
+        parentContentImage = findViewById(R.id.parentContentImage);
+        parentVideoView = findViewById(R.id.parentVideoView);
+        webView_lay = findViewById(R.id.webView_lay);
+        myWebView=(WebView)findViewById(R.id.webview);
+        progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
+        video_progress=(ProgressBar)findViewById(R.id.video_progress);
         View header = navigationView.getHeaderView(0);
         rootView1 = (Switch)header.findViewById(R.id.autoStartSwitch);
         rootView2 =  (Switch)header.findViewById(R.id.keepAwakeSwitch);
@@ -208,10 +243,13 @@ public class MainActivity extends AppCompatActivity {
         pairCode = getPairDetails.get(PAIRING_CODE);
         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.e("Tag","deviceId>>>"+deviceId);
+
+
         if (pairCode.equals("")){
             // Generate a random number
             Random random = new Random();
             pairCode = UUID.randomUUID().toString().substring(0,5);
+            pairCode=pairCode.toUpperCase();
             // Update the TextView with the random number and text
             pairingCode.setText(pairCode);
             sessionManagement.createPairingSession(pairCode);
@@ -220,29 +258,23 @@ public class MainActivity extends AppCompatActivity {
             pairingCode.setText(pairCode);
 
         }
-        initPairing(pairCode);
-        Timer timer = new Timer();
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                // Call the API here
-                //initPairing(pairCode);
+        if(isNetworkAvailable()){
+            parentInternetLay.setVisibility(GONE);
+            // Initialize the Timer
+            Timer timer = new Timer();
+            // Schedule the TimerTask to make API calls every X milliseconds
+            long delay = 0;  // Initial delay before the first API call
+            long period = 3000;  // Repeat the API call every 5 seconds (adjust as needed)
+            timer.schedule(new MyTask(), delay, period);
 
-            }
-        };
-        timer.scheduleAtFixedRate(task, 0, 10000);
 
-        /*menuBook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (drawer.isDrawerOpen(GravityCompat.START)) {
-                    drawer.closeDrawer(GravityCompat.START);
-                }else{
-                    drawer.openDrawer(GravityCompat.START);
-                }
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            showSnack();
+        }
 
-            }
-        });*/
+
         parent_exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -267,12 +299,6 @@ public class MainActivity extends AppCompatActivity {
                         });
                 AlertDialog alert = builder.create();
                 alert.show();
-
-
-
-
-
-
             }
         });
         parent_reload.setOnClickListener(new View.OnClickListener() {
@@ -297,15 +323,19 @@ public class MainActivity extends AppCompatActivity {
                                     keepOnTopSwitch.setFocusable(false);
                                     parent_exit.setFocusable(false);
                                     parent_reload.setFocusable(false);
-                                    myVideoView.setZOrderOnTop(false);
+                                    videoView.setZOrderOnTop(false);
                                     drawer.closeDrawer(GravityCompat.START);
                                 }
                                 if(isNetworkAvailable()){
-                                    //webviewCall(webUrl);
+                                    parentInternetLay.setVisibility(GONE);
+                                    slideShowCallCount=0;
+                                    initPairing(pairCode);
                                 }
                                 else{
+                                    parentInternetLay.setVisibility(VISIBLE);
                                     showSnack();
                                 }
+
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -365,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
                 HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
                 getAutoStartDetails = sessionManagement.getAutoStartDetails();
                 isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
-                Log.e("TAG", "isAutoStarttest>>>" + isAutoStart);
+
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.app_name);
@@ -605,6 +635,38 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
     private void initPairing(String pairCode){
+        //pairCode=pairCode1.toUpperCase();
+        HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
+        getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
+        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
+        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+        getcontentDetails = sessionManagement.getContentItemDetails();
+        List<ContentModel> list = new ArrayList<>();
+        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+        if(list==null){
+            if (pairingStatus){
+                parentPairing.setVisibility(VISIBLE);
+            }
+            else{
+                parentVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }else{
+            if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                parentPairing.setVisibility(GONE);
+            }
+            else{
+                parentVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+
         StringRequest getRequest = new StringRequest(Request.Method.GET,
                 "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
                 new Response.Listener<String>() {
@@ -615,62 +677,131 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject jsonObject = new JSONObject(response);
                             Boolean status = jsonObject.getBoolean("success");
                             if(status){
-                                parentPairing.setVisibility(View.VISIBLE);
-                                pairingCode.setText("Paired");
                                 JSONObject data = jsonObject.getJSONObject("data") ;
-                                Boolean dataStatus = data.getBoolean("status");
-                                if(dataStatus){
+                                Boolean status1 = data.getBoolean("status");
+                                if(status1){
+                                    orientation = data.getString("orientation");
+                                }
 
-                                    JSONArray dataArray = data.getJSONArray("data");
-                                    if(dataArray.length()>0){
-                                        parentPairing.setVisibility(View.GONE);
+                                DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+                                View yourChildView = findViewById(R.id.contentLay);
 
-                                        for(currentIndex =0; currentIndex<dataArray.length();){
-                                            JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+                                if (orientation.equals("90 degrees")) {
+                                    // Rotate the DrawerLayout
+                                    drawerLayout.setRotation(90);
+                                    // Adjust the layout parameters of yourChildView
+                                    DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) yourChildView.getLayoutParams();
+                                    layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    // Set any other necessary parameters
+                                    yourChildView.setLayoutParams(layoutParams);
 
-                                            String type = dataObject.getString("type");
-                                            String url = dataObject.getString("url");
-                                            String duration = dataObject.getString("duration");
-                                            String extention = dataObject.getString("extention");
-                                            contentLay(type,url,extention);
-
-
-                                            CountDownTimer timer = new CountDownTimer(0, 600000) {
-
-                                                @Override
-                                                public void onTick(long millisUntilFinished) {
-
-                                                }
-
-                                                @Override
-                                                public void onFinish() {
-                                                    try{
-                                                        currentIndex++;
-                                                    }catch(Exception e){
-                                                        Log.e("Error", "Error: " + e.toString());
-                                                    }
-                                                }
-                                            }.start();
-
-
-                                        }
-
-
-                                    }
-
+                                    // Repeat similar adjustments for other child views
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    // Rotate the DrawerLayout
+                                    drawerLayout.setRotation(180);
+                                    // Adjust the layout parameters of yourChildView
+                                    DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) yourChildView.getLayoutParams();
+                                    layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    // Set any other necessary parameters
+                                    yourChildView.setLayoutParams(layoutParams);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    // Rotate the DrawerLayout
+                                    drawerLayout.setRotation(270);
+                                    // Adjust the layout parameters of yourChildView
+                                    DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) yourChildView.getLayoutParams();
+                                    layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    // Set any other necessary parameters
+                                    yourChildView.setLayoutParams(layoutParams);
+                                }
+                                else {
+                                    // Rotate the DrawerLayout
+                                    drawerLayout.setRotation(0);
+                                    // Adjust the layout parameters of yourChildView
+                                    DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) yourChildView.getLayoutParams();
+                                    layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                                    // Set any other necessary parameters
+                                    yourChildView.setLayoutParams(layoutParams);
                                 }
 
 
 
-                            }else {
 
+
+
+                                Boolean dataStatus = data.getBoolean("status");
+                                if(dataStatus){
+                                    sessionManagement.createPairingSession(true);
+                                    pairingCode.setText("Paired");
+                                    JSONArray dataArray = data.getJSONArray("data");
+                                    if(dataArray.length()>0){
+                                        parentPairing.setVisibility(GONE);
+                                        newSlideItems.clear();
+                                        for(currentIndex =0; currentIndex<dataArray.length();currentIndex++){
+                                            JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+                                            String type = dataObject.getString("type");
+                                            String url = dataObject.getString("url");
+                                            String duration = dataObject.getString("duration");
+                                            String extention = dataObject.getString("extention");
+                                            String app_clock_hands_color= dataObject.getString("app_clock_hands_color");
+                                            String app_clock_text= dataObject.getString("app_clock_text");
+                                            String app_clock_timezone= dataObject.getString("app_clock_timezone");
+                                            String app_clock_size= dataObject.getString("app_clock_size");
+                                            String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color ");
+                                            String app_clock_major_indicator_color= dataObject.getString("app_clock_major_indicator_color");
+                                            String app_clock_innerdot_size= dataObject.getString("app_clock_innerdot_size");
+                                            String app_clock_innerdot_color= dataObject.getString("app_clock_innerdot_color");
+
+                                            String cdtime= dataObject.getString("cdtime");
+                                            String cdtranslation= dataObject.getString("cdtranslation");
+                                            String app_cd_text= dataObject.getString("app_cd_text");
+
+                                            String rssinfo= dataObject.getString("rssinfo");
+
+
+
+                                            newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
+                                                    app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
+                                                    app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
+                                                    cdtime,cdtranslation,app_cd_text,rssinfo
+                                            ));
+                                            sessionManagement.createContentDataSession(newSlideItems);
+                                        }
+
+                                        if (slideShowCallCount==0){
+                                            clearTimeout();
+                                            contentCurrentIndex=0;
+                                            contentLay(newSlideItems);
+
+                                            firstdataCount= newSlideItems.size();
+                                        }
+                                        int newDataCount=newSlideItems.size();
+                                        if(firstdataCount != newDataCount){
+                                            Log.e("time>>","Time>>");
+                                            slideItems.clear();
+                                            slideItems.addAll(newSlideItems);
+                                            slideShowCallCount=0;
+
+                                        }
+                                    }
+
+                                }
+                            }
+                            else {
+                                sessionManagement.createPairingSession(false);
                             }
                         }catch (JSONException ex){
                             ex.printStackTrace();
                             Log.e("Error", "-----Json Array----: "+ex.getMessage());
                         }
                     }
-                }, new Response.ErrorListener() {
+                },
+                new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
@@ -679,73 +810,618 @@ public class MainActivity extends AppCompatActivity {
         });
         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
         requestQueue.add(getRequest);
-
-
         getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
-    private void contentLay(String type, String url, String extention) {
-        if (type.equals("video")){
-            if (mediaControls == null) {
-                mediaControls = new MediaController(this);
-                myVideoView.setMediaController(mediaControls);
-                mediaControls.setAnchorView(myVideoView);
+    private void contentLay(List<ContentModel> list) {
 
+        slideShowCallCount++;
+        long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
-            }
-            parentContentImage.setVisibility(View.GONE);
-            parentVideoView.setVisibility(View.VISIBLE);
+        ContentModel item = list.get(contentCurrentIndex);
+        if (item.getType().equals("image")){
+            parentVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(VISIBLE);
+            webView_lay.setVisibility(GONE);
+            content_image.setImageBitmap(null);
+            content_image.destroyDrawingCache();
+            Glide.with(MainActivity.this)
+                    .load(item.getUrl())
+                    .error(R.drawable.neo_logo)
+                    .into(content_image);
 
-            videoView(url);
-        }else if(type.equals("image")){
-            parentVideoView.setVisibility(View.GONE);
-            parentContentImage.setVisibility(View.VISIBLE);
-
-            content_image.setImageResource(R.drawable.neo_logo);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
         }
+        else if(item.getType().equals("video")){
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(VISIBLE);
+            video_progress.setVisibility(VISIBLE);
+
+            /*if (mediaControls==null){
+                mediaControls  = new MediaController(MainActivity.this);
+                mediaControls.setAnchorView(videoView);
+                videoView.setMediaController(mediaControls);
+            }*/
+
+            try {
+                Uri video = Uri.parse(item.getUrl());
+                videoView.setVideoURI(video);
+
+
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+
+            //myVideoView.requestFocus();
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                // Close the progress bar and play the video
+                public void onPrepared(MediaPlayer mp) {
+                    videoView.seekTo(position);
+                    if (position == 0) {
+                        video_progress.setVisibility(GONE);
+                        //mp.setLooping(true);
+                        mp.setVolume(0f, 0f);
+
+
+                        videoView.start();
+                       /* myRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                contentLay(list);
+                            }
+                        };
+                        handler.postDelayed(myRunnable, duration);*/
+
+
+                    } else {
+                        videoView.pause();
+                    }
+                }
+            });
+            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    // Handle errors here
+                    Log.e("error>>>","VideoError");
+                    return true;
+                }
+            });
+            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+            {
+                @Override
+                public void onCompletion(MediaPlayer mp)
+                {   mp.reset();
+                    contentLay(list);
+                }
+            }); // video finish listener
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            iFrameLay(item.getUrl(),list);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            clockiFrameLay(item.getUrl(),list,item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            countDowniFrameLay(item.getUrl(),list,item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            webUriiFrameLay(item.getUrl(),list,item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            vimeoiFrameLay(item.getUrl(),list,item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(VISIBLE);
+            String rssFeedUrl = item.getUrl();
+            rssFeediFrameLay(item.getUrl(),list,item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        contentCurrentIndex++;
+        if (contentCurrentIndex >= list.size()) {
+            contentCurrentIndex = 0;
+        }
+        Log.e("newDuration","duration>>>"+duration);
+        Log.e("newDuration","newDuration>>>"+newDuration);
 
 
 
     }
 
+    private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item) {
+        List<RSSModel> rsslist = new ArrayList<>();
+        String originalString = item.getUrl();
+        String newString = originalString.replace("https://app.neosign.tv/", "");
+        String rssFeedUrl = newString;
+        String[] rssinfoArray;
 
-
-    private void videoView(String url){
-        // Create a progressbar
-        progressDialog = new ProgressDialog(MainActivity.this);
-        // Set progressbar message
-        progressDialog.setMessage("Loading...");
-
-        progressDialog.setCancelable(false);
-        // Show progressbar
-        progressDialog.show();
-
+        if (item.getRssinfo() != null) {
+            String rssinfo = item.getRssinfo();
+            rssinfoArray = rssinfo.split(",");
+        }
+        String apiUrl = "https://app.neosign.tv/api/rss-feed";
+        String apiUrlWithParams="";
         try {
-            Uri video = Uri.parse(url);
-            myVideoView.setVideoURI(video);
-            myVideoView.setMediaController(mediaControls);
-        } catch (Exception e) {
-            Log.e("Error", e.getMessage());
+            apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(rssFeedUrl, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+        StringRequest getRequest = new StringRequest(Request.Method.GET,
+                apiUrlWithParams,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("TAG","response>>>"+response);
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            if (jsonArray.length()>0){
+                                rsslist.clear();
+                                for(int i=0;i<jsonArray.length();i++){
+                                    JSONObject dataObject = jsonArray.getJSONObject(i);
+                                    String title = dataObject.getString("title");
+                                    String description = dataObject.getString("description");
 
-        //myVideoView.requestFocus();
-        myVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            // Close the progress bar and play the video
-            public void onPrepared(MediaPlayer mp) {
-                progressDialog.dismiss();
-                myVideoView.seekTo(position);
-                if (position == 0) {
-                    mp.setLooping(true);
-                    myVideoView.start();
-                } else {
-                    myVideoView.pause();
+                                    String date = dataObject.getString("date");
+                                    String qr_code = dataObject.getString("qr_code");
+                                    String photo= dataObject.getString("photo");
+                                    RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                    rsslist.add(rssModel);
+                                }
+                            }
+                            if (rsslist.size()>0){
+                                Log.e("TAG","rsslist>>>"+rsslist);
+                                for(int i=0;i<1;i++){
+                                    RSSModel item = rsslist.get(i);
+                                    Log.e("TAG","rsslist>>>"+item.getPhoto());
+                                    Glide.with(MainActivity.this)
+                                            .load(item.getPhoto())
+                                            .error(R.drawable.neo_logo)
+                                            .into(rssImageView);
+                                    rssTitle.setText(item.getTitle());
+                                    rssDescription.setText(item.getDescription());
+                                }
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        Log.e("Error", "-----VollyError----: "+error.getMessage());
+                    }
+                });
+        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+        requestQueue.add(getRequest);
+        getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        );
+
+    }
+
+    private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item) {
+        String originalString = item.getUrl();
+        String newString = originalString.replace("https://app.neosign.tv/", "");
+        String webUrl = newString;
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String dataUrl = "<iframe src='" + newString+"?autoplay=1"+"' frameborder='0' allowfullscreen='true' autoplay='true' muted='true' style='width:100%; height:100%;'></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            myWebView.loadData(dataUrl, "text/html", "utf-8");
+            myWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    Log.e("Tag","webviewError"+failingUrl);
+                }
+            });
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }
+    }
+
+    private void webUriiFrameLay(String url, List<ContentModel> list, ContentModel item) {
+        String originalString = item.getUrl();
+        String newString = originalString.replace("https://app.neosign.tv/", "");
+        String webUrl = newString;
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + webUrl + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            myWebView.loadData(dataUrl, "text/html", "utf-8");
+            myWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    Log.e("Tag","webviewError"+failingUrl);
+                }
+            });
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }
+
+    }
+
+    private void countDowniFrameLay(String url, List<ContentModel> list, ContentModel item) {
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String timeString = convertTimeFormat(item.getCdtime());
+            if (item.getApp_cd_text()==null){
+                countdownText = "";
+            }else{
+                countdownText = item.getApp_cd_text();
+            }
+            if (item.getCdtranslation()==null){
+                translationString = ",,,";
+            }else{
+                translationString = item.getCdtranslation();
+            }
+            String[] translation = translationString.split(",");
+
+            String day,hour,minute,second;
+            if(translation[0]==null){
+                day = "Days";
+            }else{
+                day = translation[0];
+            }
+            if(translation[1]==null){
+                hour = "Hours";
+            }else{
+                hour = translation[1];
+            }
+            if(translation[2]==null){
+                minute ="Minutes";
+            }else{
+                minute = translation[2];
+            }
+            if(translation[3]==null){
+                second = "Seconds";
+            }else{
+                second = translation[3];
+            }
+            Log.e("translation>>","translation"+translation[2]);
+            // Construct the URL using the parameters
+            String baseUrl = "https://webplayer.neosign.tv/countdown.php?";
+            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+            builder.appendQueryParameter("dayText", day);
+            builder.appendQueryParameter("hourText", hour);
+            builder.appendQueryParameter("minText", minute);
+            builder.appendQueryParameter("secText", second);
+            builder.appendQueryParameter("date", timeString);
+            builder.appendQueryParameter("countdownText",countdownText);
+
+
+            String clockurl = builder.build().toString();
+
+            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            myWebView.loadData(dataUrl, "text/html", "utf-8");
+            myWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    Log.e("Tag","webviewError"+failingUrl);
+                }
+            });
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }
+    }
+
+    private String convertTimeFormat(String cdtime) {
+        // Splitting the original time into hours and minutes
+        String[] timeParts = cdtime.split(":");
+        int hours = Integer.parseInt(timeParts[0]);
+        int minutes = Integer.parseInt(timeParts[1]);
+
+        // Creating a new Date object with the current date
+        Date currentDate = new Date();
+
+        // Setting the hours and minutes of the Date object
+        currentDate.setHours(hours);
+        currentDate.setMinutes(minutes);
+
+        // Formatting the date in the desired format
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd:HH:mm:ss", Locale.getDefault());
+        String formattedTime = sdf.format(currentDate);
+
+        return formattedTime;
+    }
+
+    private void clockiFrameLay(String url, List<ContentModel> list, ContentModel item) {
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String appClockHandsColor = item.getApp_clock_hands_color();
+            Log.e("appClockHandsColor>>","appClockHandsColor"+appClockHandsColor);
+            String[] appClockHandsColorArray = appClockHandsColor.split(",");
+            // Construct the URL using the parameters
+            String baseUrl = "https://webplayer.neosign.tv/clock.php?";
+            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+            builder.appendQueryParameter("text", item.getApp_clock_text());
+            builder.appendQueryParameter("size", item.getApp_clock_size());
+            builder.appendQueryParameter("hourColor", appClockHandsColorArray[0]);
+            builder.appendQueryParameter("minuteColor", appClockHandsColorArray[1]);
+            builder.appendQueryParameter("secondColor", appClockHandsColorArray[2]);
+            builder.appendQueryParameter("minorIndicator",item.getApp_clock_minor_indicator_color());
+            builder.appendQueryParameter("majorIndicator", item.getApp_clock_major_indicator_color());
+            builder.appendQueryParameter("innerDotSize",  item.getApp_clock_innerdot_size());
+            builder.appendQueryParameter("innerDotColor", item.getApp_clock_innerdot_color());
+
+            String clockurl = builder.build().toString();
+
+            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            myWebView.loadData(dataUrl, "text/html", "utf-8");
+            myWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    Log.e("Tag","webviewError"+failingUrl);
+                }
+            });
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }
+    }
+
+    private void iFrameLay(String newurl, List<ContentModel> list) {
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String myYouTubeVideoUrl = newurl;
+            // YouTube video ID
+            String videoId = null;
+            if (myYouTubeVideoUrl != null && myYouTubeVideoUrl.contains("youtube.com")) {
+                int startIndex = myYouTubeVideoUrl.indexOf("v=");
+                if (startIndex != -1) {
+                    startIndex += 2; // Move past the "v="
+                    int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
+                    if (endIndex == -1) {
+                        endIndex = myYouTubeVideoUrl.length();
+                    }
+                    videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
                 }
             }
-        });
+
+            // Create the embedded YouTube link
+            String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
+            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + embeddedLink + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            myWebView.loadData(dataUrl, "text/html", "utf-8");
+            myWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    Log.e("Tag","webviewError"+failingUrl);
+                }
+            });
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }
     }
+
 
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
@@ -763,6 +1439,10 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
         getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
         isKeepOnTop = Boolean.parseBoolean(getKeepOnTopDetails.get(IS_KEEPONTOP));
+
+        HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
+        getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
+        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
 
     }
     private void accessAllPermission() {
@@ -1082,7 +1762,7 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
-                    myVideoView.setZOrderOnTop(true);
+                    videoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_MENU:
@@ -1097,7 +1777,7 @@ public class MainActivity extends AppCompatActivity {
                     keepOnTopSwitch.setFocusable(false);
                     parent_exit.setFocusable(false);
                     parent_reload.setFocusable(false);
-                    myVideoView.setZOrderOnTop(false);
+                    videoView.setZOrderOnTop(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 else{
@@ -1113,7 +1793,7 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
-                    myVideoView.setZOrderOnTop(true);
+                    videoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
@@ -1129,7 +1809,7 @@ public class MainActivity extends AppCompatActivity {
                     keepOnTopSwitch.setFocusable(false);
                     parent_exit.setFocusable(false);
                     parent_reload.setFocusable(false);
-                    myVideoView.setZOrderOnTop(false);
+                    videoView.setZOrderOnTop(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 return true;
@@ -1151,7 +1831,7 @@ public class MainActivity extends AppCompatActivity {
                                 HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
                                 getAutoStartDetails = sessionManagement.getAutoStartDetails();
                                 isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
-                                Log.e("TAG", "isAutoStarttest>>>" + isAutoStart);
+
 
                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                                 builder.setTitle(R.string.app_name);
@@ -1297,14 +1977,16 @@ public class MainActivity extends AppCompatActivity {
                                                     keepOnTopSwitch.setFocusable(false);
                                                     parent_exit.setFocusable(false);
                                                     parent_reload.setFocusable(false);
-                                                    myVideoView.setZOrderOnTop(false);
+                                                    videoView.setZOrderOnTop(false);
                                                     drawer.closeDrawer(GravityCompat.START);
                                                 }
                                                 if(isNetworkAvailable()){
-
-                                                    //webviewCall(webUrl);
+                                                    parentInternetLay.setVisibility(GONE);
+                                                    slideShowCallCount=0;
+                                                    initPairing(pairCode);
                                                 }
                                                 else{
+                                                    parentInternetLay.setVisibility(VISIBLE);
                                                     showSnack();
                                                 }
                                             }
@@ -1419,56 +2101,81 @@ public class MainActivity extends AppCompatActivity {
         return;
     }
 
-    @SuppressLint("JavascriptInterface")
-    public void webviewCall(String newurl)
-    {
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new BrowserPage());
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            action_image.setVisibility(View.GONE);
-            txtNoInternet.setVisibility(View.GONE);
-            myWebView.loadUrl(newurl);
-        }
-        else{
-            action_image.setVisibility(View.VISIBLE);
-            txtNoInternet.setVisibility(View.VISIBLE);
-            progressBar.setVisibility(View.GONE);
-            action_image.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_network_check_24));
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    public class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String status = NetworkUtil.getConnectivityStatusString(context);
+            Log.e("status","status>>>"+status);
+            if(status.isEmpty()) {
+                status="Poor Internet Connection";
+                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
+            }else if(status.equals("null")) {
+                status="Poor Internet Connection";
+                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
+            }else if(status.equals("No internet is available")){
+                status="No internet is available";
+                showSnack();
+            }else{
+
+                initPairing(pairCode);
+            }
 
         }
     }
+    private void showSnack() {
+        String message;
+        int color;
+        message = "Sorry! No internet is available";
+        color = Color.RED;
+        Snackbar snackbar = Snackbar
+                .make(contentLay, message, Snackbar.LENGTH_LONG);
+        View sbView = snackbar.getView();
+        sbView.setBackgroundColor(color);
+        snackbar.show();
+    }
+
+    // TimerTask to be executed
+    class MyTask extends TimerTask {
+        @Override
+        public void run() {
+            // This code will run every 5 seconds
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    initPairing(pairCode);
+                }
+            });
+        }
+    }
+    public void clearTimeout() {
+        handler.removeCallbacks(myRunnable);
+    }
+
     private class BrowserPage extends WebViewClient {
+        private final List<ContentModel> list;
+        public BrowserPage(List<ContentModel> list) {
+            this.list=list;
+
+        }
+
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             if(isNetworkAvailable()){
                 progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
                 super.onPageStarted(view, url, favicon);
             }
             else{
-                action_image.setVisibility(View.VISIBLE);
-                txtNoInternet.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(VISIBLE);
                 progressBar.setVisibility(View.GONE);
-                action_image.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_network_check_24));
+
             }
 
         }
@@ -1477,28 +2184,23 @@ public class MainActivity extends AppCompatActivity {
             super.onPageFinished(view, url);
             if(isNetworkAvailable()){
                 progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                contentLay(list);
             }
             else{
-                action_image.setVisibility(View.VISIBLE);
-                txtNoInternet.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(VISIBLE);
                 progressBar.setVisibility(View.GONE);
-                action_image.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_network_check_24));
+
             }
             // Both url and title is available in this stage
             mUrl = view.getUrl();
         }
     }
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
     private class Browser extends WebChromeClient {
         private static final String TAG = "WebVIEW-Home";
         // For Android 5.0
         public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePath,
-                                         WebChromeClient.FileChooserParams fileChooserParams) {
+                                         FileChooserParams fileChooserParams) {
             // Double check that we don't have any existing callbacks
             if (mFilePathCallback != null) {
                 mFilePathCallback.onReceiveValue(null);
@@ -1561,7 +2263,7 @@ public class MainActivity extends AppCompatActivity {
             mCapturedImageURI = Uri.fromFile(file);
             // Camera capture image intent
             final Intent captureIntent = new Intent(
-                    android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    MediaStore.ACTION_IMAGE_CAPTURE);
             captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCapturedImageURI);
             Intent i = new Intent(Intent.ACTION_GET_CONTENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -1598,44 +2300,6 @@ public class MainActivity extends AppCompatActivity {
         );
         return imageFile;
     }
-
-
-
-    public class MyReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String status = NetworkUtil.getConnectivityStatusString(context);
-            Log.e("status","status>>>"+status);
-            if(status.isEmpty()) {
-                status="Poor Internet Connection";
-                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
-            }else if(status.equals("null")) {
-                status="Poor Internet Connection";
-                Toast.makeText(context, status, Toast.LENGTH_LONG).show();
-            }else if(status.equals("No internet is available")){
-                status="No internet is available";
-                showSnack();
-            }else{
-
-                //webviewCall(webUrl);
-            }
-
-        }
-    }
-    private void showSnack() {
-        String message;
-        int color;
-        message = "Sorry! No internet is available";
-        color = Color.RED;
-        Snackbar snackbar = Snackbar
-                .make(webviewLay, message, Snackbar.LENGTH_LONG);
-        View sbView = snackbar.getView();
-        sbView.setBackgroundColor(color);
-        //TextView textView = (TextView) sbView.findViewById(R.id.snackbar_text);
-        //textView.setTextColor(color);
-        snackbar.show();
-    }
-
 
 
     @Override

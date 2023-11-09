@@ -9,4 +9,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="ash_gray">#666362</color>
+    <color name="rss_back">#DEDEDEE6</color>
+
 </resources>

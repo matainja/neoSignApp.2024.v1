@@ -1,18 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/contentLay"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/neo_bg"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+
     >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container2"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <LinearLayout
+            android:id="@+id/parentInternetLay"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <ImageView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/action_image"
+            android:src="@drawable/ic_baseline_network_check_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/txtNoInternet"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:text="Sorry! poor internet connection."/>
+
+        </LinearLayout>
         <RelativeLayout
             android:id="@+id/parentPairing"
             android:layout_width="match_parent"
@@ -21,6 +52,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:background="@drawable/pairing_background"
+            android:visibility="gone"
             >
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -52,46 +84,188 @@
                     android:letterSpacing=".1"
                     android:layout_centerHorizontal="true"
                     android:layout_below="@+id/title1"/>
+
                 <TextView
                     android:id="@+id/title2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:text="@string/please_open_app_neosign_tv_to_pair_this_device_and_start_using_it"
-                    android:letterSpacing=".1"
+                    android:layout_below="@+id/pairingCode"
                     android:layout_centerHorizontal="true"
-                    android:layout_margin="10dp"
-                    android:layout_below="@+id/pairingCode"/>
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:letterSpacing=".1"
+                    android:text="@string/please_open_app_neosign_tv_to_pair_this_device_and_start_using_it"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
             </RelativeLayout>
         </RelativeLayout>
+
         <RelativeLayout
             android:id="@+id/parentVideoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/black"
+            android:visibility="gone"
             >
+
             <VideoView
                 android:id="@+id/videoView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+               android:visibility="visible"
                 />
-
+            <ProgressBar
+                android:id="@+id/video_progress"
+                android:layout_height="50dp"
+                android:layout_width="50dp"
+                android:progress="0"
+                android:max="100"
+                android:layout_centerInParent="true"/>
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/parentContentImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/black"
+            android:visibility="gone"
             >
+            <ProgressBar
+                android:layout_height="50dp"
+                android:layout_width="50dp"
+                android:progress="0"
+                android:max="100"
+                android:layout_centerInParent="true"/>
             <ImageView
                 android:id="@+id/content_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_centerInParent="true"
                 />
 
         </RelativeLayout>
+        <RelativeLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:id="@+id/webView_lay"
+            android:background="@color/black"
+            android:visibility="gone">
+            <ProgressBar
+                android:layout_height="50dp"
+                android:layout_width="50dp"
+                android:id="@+id/progress_Bar"
+                android:progress="0"
+                android:max="100"
+                android:layout_centerInParent="true"/>
+            <WebView
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:id="@+id/webview"
+                android:visibility="visible"
+                android:layout_centerInParent="true"
+                />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/parentContentRssFeed"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/rss_back"
+            android:visibility="visible"
+            >
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+
+                <ProgressBar
+                    android:layout_height="50dp"
+                    android:layout_width="50dp"
+                    android:progress="0"
+                    android:max="100"
+                    android:layout_centerInParent="true"/>
+                <LinearLayout
+                    android:id="@+id/lay1"
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- ImageView with 40% width and auto height -->
+                    <ImageView
+                        android:id="@+id/rssImageView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:layout_margin="10dp"
+                        android:adjustViewBounds="true"
+                        />
+
+                    <!-- TextView with 60% width -->
+                    <TextView
+                        android:id="@+id/rssTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        android:layout_margin="10dp"
+                        android:text="Your Text Here"
+                        android:textSize="20dp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/background_dark"
+                        />
+
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/rssDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_below="@+id/lay1"
+                    android:text="Your Text Here"
+                    />
+                <RelativeLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:orientation="horizontal"
+                    android:id="@+id/lay2"
+                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/rssDescription">
+                    <!-- TextView with 60% width -->
+                    <TextView
+                        android:id="@+id/rssDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="80dp"
+                        android:text="Your Text Here"
+                        android:layout_margin="10dp"
+                        android:gravity="bottom"
+                        />
+                    <!-- ImageView with 40% width and auto height -->
+                    <ImageView
+                        android:id="@+id/rssQR"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:adjustViewBounds="true"
+                        android:layout_margin="10dp"
+                        android:layout_alignParentRight="true"
+                        />
+
+
+
+                </RelativeLayout>
+            </RelativeLayout>
+
+
+
+
+
+        </RelativeLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -2,8 +2,14 @@ package com.matainja.bootapplication.session;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import java.util.HashMap;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.matainja.bootapplication.Model.ContentModel;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class SessionManagement {
@@ -28,7 +34,7 @@ public class SessionManagement {
     public static final String IS_AUTOSTART = "IsAutoStart";
     public static final String IS_KEEPONTOP = "IsKeepOnTop";
     public static final String PAIRING_CODE = "ParingCode";
-
+    public static final String PAIRING_STATUS = "PairingStatus";
     // Constructor
 
     public SessionManagement(Context context){
@@ -58,6 +64,15 @@ public class SessionManagement {
         // commit changes
         editor.commit();
     }
+    public void createPairingSession(boolean pairingStatus ){
+        editor.putBoolean(PAIRING_STATUS, pairingStatus);
+        // commit changes
+        editor.commit();
+    }
+
+    public void createContentDataSession( List<ContentModel> slideItems ){
+        editor.putString("slideItem", new Gson().toJson(slideItems)).apply();
+    }
     /**
      * Get stored session data
      **/
@@ -82,6 +97,18 @@ public class SessionManagement {
     public HashMap<String, String> getParingDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
         user.put(PAIRING_CODE, pref.getString(PAIRING_CODE,""));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getPairingStatusDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(PAIRING_STATUS, String.valueOf(pref.getBoolean(PAIRING_STATUS, false)));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getContentItemDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put("slideItem", pref.getString("slideItem",""));
         // return user
         return user;
     }
