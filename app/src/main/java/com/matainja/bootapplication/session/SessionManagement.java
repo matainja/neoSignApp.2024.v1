@@ -35,6 +35,7 @@ public class SessionManagement {
     public static final String IS_KEEPONTOP = "IsKeepOnTop";
     public static final String PAIRING_CODE = "ParingCode";
     public static final String PAIRING_STATUS = "PairingStatus";
+    public static final String ORIENTATION = "orientation";
     // Constructor
 
     public SessionManagement(Context context){
@@ -43,6 +44,11 @@ public class SessionManagement {
         editor = pref.edit();
     }
 
+    public void createOrientationSession(String orientation ){
+        editor.putString(ORIENTATION, orientation);
+        // commit changes
+        editor.commit();
+    }
     public void createPairingSession(String paringCode ){
         editor.putString(PAIRING_CODE, paringCode);
         // commit changes
@@ -97,6 +103,12 @@ public class SessionManagement {
     public HashMap<String, String> getParingDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
         user.put(PAIRING_CODE, pref.getString(PAIRING_CODE,""));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getOrientDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(ORIENTATION, pref.getString(ORIENTATION,"Landscape"));
         // return user
         return user;
     }
