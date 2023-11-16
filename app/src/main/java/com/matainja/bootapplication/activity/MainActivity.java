@@ -18,6 +18,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,7 +33,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
@@ -46,6 +50,7 @@ import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -56,6 +61,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -151,7 +157,9 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout parentInternetLay;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
     RelativeLayout webView_lay,parentContentRssFeed;
-    TextView rssTitle,rssDescription,rssDate;
+    RelativeLayout parentTopOverlay,parentLeftOverlay,parentRightOverlay,parentBottomOverlay;
+    TextView rssTitle,rssDescription,rssDate,textTopOverlay,textLeftOverlay,textRightOverlay,textBottomOverlay;
+    HorizontalScrollView parentRightOverlayScroll;
     ImageView rssImageView,rssQR;
     WebView myWebView;
     long newDuration=0;
@@ -180,6 +188,9 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar,video_progress,rssProgrss,pairProgress;
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
+
+    float screenWidth;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,6 +213,22 @@ public class MainActivity extends AppCompatActivity {
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
+
+        parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
+        parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
+        parentRightOverlay =(RelativeLayout)findViewById(R.id.parentRightOverlay);
+        parentBottomOverlay =(RelativeLayout)findViewById(R.id.parentBottomOverlay);
+        textTopOverlay =(TextView)findViewById(R.id.textTopOverlay);
+        textLeftOverlay =(TextView)findViewById(R.id.textLeftOverlay);
+        textRightOverlay =(TextView)findViewById(R.id.textRightOverlay);
+        textBottomOverlay =(TextView)findViewById(R.id.textBottomOverlay);
+        parentRightOverlayScroll=(HorizontalScrollView) findViewById(R.id.parentRightOverlayScroll);
+
+
+        screenWidth = getResources().getDisplayMetrics().widthPixels;
+
+
+
 
 
         parentPairing= findViewById(R.id.parentPairing);
@@ -324,8 +351,14 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
+                                slideShowCallCount=0;
+                                rssSlideShowCallCount=0;
                                 clearTimeout();
                                 clearTimeout1();
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
@@ -375,6 +408,19 @@ public class MainActivity extends AppCompatActivity {
         broadcastIntent();
 
     }
+
+    private int calculateRightTextViewWidth(TextView textRightOverlay) {
+        Paint textPaint = textRightOverlay.getPaint();
+
+        // Get the text content of the TextView
+        CharSequence text = textRightOverlay.getText();
+
+        // Calculate the width of the text based on the text size and content
+        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
+
+        return width;
+    }
+
     @SuppressLint("InvalidWakeLockTag")
     @Override
     protected void onResume() {
@@ -671,6 +717,10 @@ public class MainActivity extends AppCompatActivity {
                 parentContentImage.setVisibility(GONE);
                 webView_lay.setVisibility(GONE);
                 parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
                 parentPairing.setVisibility(VISIBLE);
             }
         }else{
@@ -682,6 +732,10 @@ public class MainActivity extends AppCompatActivity {
                 parentContentImage.setVisibility(GONE);
                 webView_lay.setVisibility(GONE);
                 parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
                 parentPairing.setVisibility(VISIBLE);
             }
         }
@@ -733,15 +787,44 @@ public class MainActivity extends AppCompatActivity {
 
                                             String rssinfo= dataObject.getString("rssinfo");
 
+                                            String laysId="",laysCID="",laysType="",laysName="",laysheight="",
+                                                    laysBgColor="",laysFontSize="",laysFontColor="",
+                                                    laysFontFamily="",
+                                                    laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
+                                            if (dataObject.has("overlays") && !dataObject.isNull("overlays")) {
+                                                JSONObject overlays = dataObject.getJSONObject("overlays");
+                                                Log.e("overlays","overlays>>>"+overlays);
+                                                laysId= String.valueOf(overlays.getInt("id"));
+                                                laysCID=overlays.getString("cid");
+                                                laysType=overlays.getString("type");
+                                                laysName=overlays.getString("name");
+                                                laysheight=overlays.getString("height");
+                                                laysBgColor=overlays.getString("bg_color");
+                                                laysFontSize=overlays.getString("font_size");
+                                                laysFontColor=overlays.getString("font_color");
+                                                laysFontFamily=overlays.getString("font_family");
+                                                laysContentType=overlays.getString("content_type");
+                                                laysContent=overlays.getString("content");
+                                                laysRssInfo=overlays.getString("rssinfo");
+                                                laysDeleted=overlays.getString("is_deleted");
+                                                Log.e("overlays","laysContentType>>>"+laysContentType);
+                                            }
+
+
+
+
 
 
                                             newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
                                                     app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
                                                     app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
-                                                    cdtime,cdtranslation,app_cd_text,rssinfo
+                                                    cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
+                                                    laysContentType,laysContent,laysRssInfo,laysDeleted
                                             ));
                                             sessionManagement.createContentDataSession(newSlideItems);
                                         }
+
+
 
                                         if (slideShowCallCount==0){
                                             clearTimeout();
@@ -764,6 +847,10 @@ public class MainActivity extends AppCompatActivity {
                                         parentContentImage.setVisibility(GONE);
                                         webView_lay.setVisibility(GONE);
                                         parentContentRssFeed.setVisibility(GONE);
+                                        parentTopOverlay.setVisibility(GONE);
+                                        parentLeftOverlay.setVisibility(GONE);
+                                        parentRightOverlay.setVisibility(GONE);
+                                        parentBottomOverlay.setVisibility(GONE);
                                         pairProgress.setVisibility(VISIBLE);
                                         //parentPairing.setVisibility(VISIBLE);
                                     }
@@ -792,6 +879,390 @@ public class MainActivity extends AppCompatActivity {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
+    private void overLays(ContentModel item) {
+        parentTopOverlay.setVisibility(GONE);
+        parentLeftOverlay.setVisibility(GONE);
+        parentRightOverlay.setVisibility(GONE);
+        parentBottomOverlay.setVisibility(GONE);
+
+        if (item.getLaysContentType().equals("RSS feed")){
+            parentTopOverlay.setVisibility(GONE);
+            parentLeftOverlay.setVisibility(GONE);
+            parentRightOverlay.setVisibility(GONE);
+            parentBottomOverlay.setVisibility(GONE);
+            Log.e("Tag","testing>>>6");
+            if(item.getLaysType().equals("Right")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(VISIBLE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                parentRightOverlay.setBackground(gradientDrawable);
+                textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                textRightOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
+                Log.e("Tag","testing>>>2");
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Left")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(VISIBLE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                parentRightOverlay.setBackground(gradientDrawable);
+                setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>8");
+                textLeftOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Top")){
+                parentTopOverlay.setVisibility(VISIBLE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                parentTopOverlay.setBackground(gradientDrawable);
+                textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>9");
+                textTopOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Bottom")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(VISIBLE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                parentBottomOverlay.setBackground(gradientDrawable);
+                textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>10");
+                textBottomOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+        }
+        else if (item.getLaysContentType().equals("Written text")){
+            parentTopOverlay.setVisibility(GONE);
+            parentLeftOverlay.setVisibility(GONE);
+            parentRightOverlay.setVisibility(GONE);
+            parentBottomOverlay.setVisibility(GONE);
+            Log.e("Tag","testing>>>6");
+            if(item.getLaysType().equals("Right")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(VISIBLE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                parentRightOverlay.setBackground(gradientDrawable);
+                textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                textRightOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
+                Log.e("Tag","testing>>>2");
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Left")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(VISIBLE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                parentRightOverlay.setBackground(gradientDrawable);
+                setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>8");
+                textLeftOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Top")){
+                parentTopOverlay.setVisibility(VISIBLE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                parentTopOverlay.setBackground(gradientDrawable);
+                textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>9");
+                textTopOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+            else if(item.getLaysType().equals("Bottom")){
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(VISIBLE);
+                int color = Color.parseColor(item.getLaysBgColor());
+                GradientDrawable gradientDrawable = new GradientDrawable();
+                gradientDrawable.setColor(color);
+                parentBottomOverlay.setBackground(gradientDrawable);
+                textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                Log.e("Tag","testing>>>10");
+                textBottomOverlay.setText(item.getLaysContent());
+                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
+                int duration = calculateDuration(item.getLaysContent());
+
+                // Create an ObjectAnimator to move the text from right to left
+                // Create an ObjectAnimator to move the text from right to left
+                ObjectAnimator animator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", dynamicWidth, -dynamicWidth);
+                animator.setDuration(duration); // Set a shorter duration for the initial load
+                animator.setRepeatMode(ObjectAnimator.RESTART);
+                animator.setRepeatCount(ObjectAnimator.INFINITE);
+
+                // Create a reset animator to bring the text back to the starting position
+                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", -dynamicWidth, dynamicWidth);
+                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
+
+                // Combine both animators into an AnimatorSet
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playSequentially(animator, resetAnimator);
+
+                // Start the animation
+                animatorSet.start();
+
+            }
+        }
+
+    }
+
+    private int calculateBottomTextViewWidth(TextView textBottomOverlay) {
+        Paint textPaint = textBottomOverlay.getPaint();
+
+        // Get the text content of the TextView
+        CharSequence text = textBottomOverlay.getText();
+
+        // Calculate the width of the text based on the text size and content
+        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
+
+        return width;
+    }
+    private void setWidthPercentage(RelativeLayout view, int percentage) {
+        // Get the screen width in pixels
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int screenWidth = displayMetrics.widthPixels;
+
+        // Calculate the desired width based on the percentage
+        int desiredWidth = (int) (screenWidth * (percentage / 100.0));
+
+        // Set the width of the view
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.width = desiredWidth;
+        view.setLayoutParams(params);
+    }
+    private void setHeightPercentage(RelativeLayout view, int percentage) {
+        // Get the screen height in pixels
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int screenHeight = displayMetrics.heightPixels;
+
+        // Calculate the desired height based on the percentage
+        int desiredHeight = (int) (screenHeight * (percentage / 100.0));
+
+        // Set the height of the view
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.height = desiredHeight;
+        view.setLayoutParams(params);
+    }
+    private int calculateDuration(String text) {
+        // You can adjust the factor based on your preference
+        int charactersPerSecond = 20;
+        int baseDuration = 8000; // 1 second as a base duration
+
+        // Calculate duration based on the number of characters
+        return baseDuration + (text.length() / charactersPerSecond) * 1000;
+    }
+    private int calculateTopTextViewWidth(TextView textTopOverlay) {
+        Paint textPaint = textTopOverlay.getPaint();
+
+        // Get the text content of the TextView
+        CharSequence text = textTopOverlay.getText();
+
+        // Calculate the width of the text based on the text size and content
+        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
+
+        return width;
+    }
+
+    private int calculateLeftTextViewWidth(TextView textLeftOverlay) {
+        Paint textPaint = textLeftOverlay.getPaint();
+
+        // Get the text content of the TextView
+        CharSequence text = textLeftOverlay.getText();
+
+        // Calculate the width of the text based on the text size and content
+        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
+
+        return width;
+    }
+
     private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
@@ -800,6 +1271,10 @@ public class MainActivity extends AppCompatActivity {
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
         ContentModel item = list.get(contentCurrentIndex);
+        Log.e("newDuration","getLaysContentType()>>>"+item.getLaysContentType());
+
+        overLays(item);
+
         if (item.getType().equals("image")){
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
@@ -2311,8 +2786,14 @@ public class MainActivity extends AppCompatActivity {
                                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int id) {
                                                 dialog.cancel();
+                                                slideShowCallCount=0;
+                                                rssSlideShowCallCount=0;
                                                 clearTimeout();
                                                 clearTimeout1();
+                                                parentTopOverlay.setVisibility(GONE);
+                                                parentLeftOverlay.setVisibility(GONE);
+                                                parentRightOverlay.setVisibility(GONE);
+                                                parentBottomOverlay.setVisibility(GONE);
                                                 parentVideoView.setVisibility(GONE);
                                                 parentContentImage.setVisibility(GONE);
                                                 webView_lay.setVisibility(GONE);

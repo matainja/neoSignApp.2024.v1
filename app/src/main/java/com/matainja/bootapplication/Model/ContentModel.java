@@ -11,6 +11,116 @@ public class ContentModel {
             app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color;
     String app_queue_departments,overlays,queue_display,queue_terminal;
     String cclass,transition,cdtime,cdtranslation,app_cd_text,speed,rssinfo;
+    String laysId="",laysCID="",laysType="",laysName="",laysheight="",
+            laysBgColor="",laysFontSize="",laysFontColor="",
+            laysFontFamily="",
+            laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
+
+    public String getLaysId() {
+        return laysId;
+    }
+
+    public void setLaysId(String laysId) {
+        this.laysId = laysId;
+    }
+
+    public String getLaysCID() {
+        return laysCID;
+    }
+
+    public void setLaysCID(String laysCID) {
+        this.laysCID = laysCID;
+    }
+
+    public String getLaysType() {
+        return laysType;
+    }
+
+    public void setLaysType(String laysType) {
+        this.laysType = laysType;
+    }
+
+    public String getlaysName() {
+        return laysName;
+    }
+
+    public void setlaysName(String laysName) {
+        laysName = laysName;
+    }
+
+    public String getLaysheight() {
+        return laysheight;
+    }
+
+    public void setLaysheight(String laysheight) {
+        this.laysheight = laysheight;
+    }
+
+    public String getLaysBgColor() {
+        return laysBgColor;
+    }
+
+    public void setLaysBgColor(String laysBgColor) {
+        this.laysBgColor = laysBgColor;
+    }
+
+    public String getLaysFontSize() {
+        return laysFontSize;
+    }
+
+    public void setLaysFontSize(String laysFontSize) {
+        this.laysFontSize = laysFontSize;
+    }
+
+    public String getLaysFontColor() {
+        return laysFontColor;
+    }
+
+    public void setLaysFontColor(String laysFontColor) {
+        this.laysFontColor = laysFontColor;
+    }
+
+    public String getLaysFontFamily() {
+        return laysFontFamily;
+    }
+
+    public void setLaysFontFamily(String laysFontFamily) {
+        this.laysFontFamily = laysFontFamily;
+    }
+
+    public String getLaysContentType() {
+        return laysContentType;
+    }
+
+    public void setLaysContentType(String laysContentType) {
+        this.laysContentType = laysContentType;
+    }
+
+    public String getLaysContent() {
+        return laysContent;
+    }
+
+    public void setLaysContent(String laysContent) {
+        this.laysContent = laysContent;
+    }
+
+    public String getLaysRssInfo() {
+        return laysRssInfo;
+    }
+
+    public void setLaysRssInfo(String laysRssInfo) {
+        this.laysRssInfo = laysRssInfo;
+    }
+
+    public String getLaysDeleted() {
+        return laysDeleted;
+    }
+
+    public void setLaysDeleted(String laysDeleted) {
+        this.laysDeleted = laysDeleted;
+    }
+
+
 
     public String getCclass() {
         return cclass;
@@ -192,7 +302,11 @@ public class ContentModel {
                         String app_clock_innerdot_size,
                         String app_clock_innerdot_color,
                         String cdtime, String cdtranslation,
-                        String app_cd_text, String rssinfo) {
+                        String app_cd_text, String rssinfo, String laysId,
+                        String laysCID, String laysType, String laysName,
+                        String laysheight, String laysBgColor, String laysFontSize,
+                        String laysFontColor, String laysFontFamily, String laysContentType,
+                        String laysContent, String laysRssInfo, String laysDeleted) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -210,6 +324,22 @@ public class ContentModel {
         this.cdtranslation=cdtranslation;
         this.app_cd_text=app_cd_text;
         this.rssinfo=rssinfo;
+
+        this.laysId=laysId;
+        this.laysCID=laysCID;
+        this.laysType=laysType;
+        this.laysName=laysName;
+        this.laysheight=laysheight;
+        this.laysBgColor=laysBgColor;
+        this.laysFontSize=laysFontSize;
+        this.laysFontColor=laysFontColor;
+        this.laysFontFamily=laysFontFamily;
+        this.laysContentType=laysContentType;
+        this.laysContent=laysContent;
+        this.laysRssInfo=laysRssInfo;
+        this.laysDeleted=laysDeleted;
+
+
 
     }
 
