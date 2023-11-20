@@ -76,18 +76,39 @@
         android:gravity="center"
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_alignParentBottom="true">
+        android:layout_above="@+id/beta"
+        >
 
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="neosign.tv"
-            android:layout_below="@+id/poweredby"
             android:textSize="16sp"
             android:gravity="center"
             android:textAlignment="center"
             android:letterSpacing=".2"
+            android:textColor="@color/white"/>
+
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/beta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Beta version"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:textAlignment="center"
             android:textColor="@color/white"/>
 
 

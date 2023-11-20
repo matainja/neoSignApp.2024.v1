@@ -34,6 +34,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
@@ -50,12 +51,19 @@ import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -167,13 +175,19 @@ public class MainActivity extends AppCompatActivity {
     Runnable myRunnable;
     Handler handler1;
     Runnable myRunnable1;
+    Handler handler2;
+    Runnable myRunnable2;
     int currentIndex;
     int contentCurrentIndex=0;
     int slideShowCallCount=0;
     int rssContentCurrentIndex=0;
     int rssSlideShowCallCount=0;
+    int overlayRssSlideShowCallCount=0;
+    int overlaysRssContentCurrentIndex=0;
     private int currentPage = 0;
     int firstdataCount=0;
+    int firstRssFeeddataCount=0;
+    int firstRssFeedLaysdataCount=0;
     int count=0;
     String mUrl;
     private static final int FILECHOOSER_RESULTCODE   = 1;
@@ -188,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar,video_progress,rssProgrss,pairProgress;
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
+    ContentModel overLaysContentModel;
 
     float screenWidth;
 
@@ -209,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
 
         handler = new Handler();
         handler1 = new Handler();
+        handler2 = new Handler();
+
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -353,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
                                 dialog.cancel();
                                 slideShowCallCount=0;
                                 rssSlideShowCallCount=0;
+                                overlayRssSlideShowCallCount=0;
                                 clearTimeout();
                                 clearTimeout1();
                                 parentTopOverlay.setVisibility(GONE);
@@ -880,17 +898,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void overLays(ContentModel item) {
-        parentTopOverlay.setVisibility(GONE);
-        parentLeftOverlay.setVisibility(GONE);
-        parentRightOverlay.setVisibility(GONE);
-        parentBottomOverlay.setVisibility(GONE);
+        overLaysContentModel=item;
 
         if (item.getLaysContentType().equals("RSS feed")){
-            parentTopOverlay.setVisibility(GONE);
-            parentLeftOverlay.setVisibility(GONE);
-            parentRightOverlay.setVisibility(GONE);
-            parentBottomOverlay.setVisibility(GONE);
-            Log.e("Tag","testing>>>6");
             if(item.getLaysType().equals("Right")){
                 parentTopOverlay.setVisibility(GONE);
                 parentLeftOverlay.setVisibility(GONE);
@@ -906,28 +916,6 @@ public class MainActivity extends AppCompatActivity {
 
                 setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                textRightOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
-                Log.e("Tag","testing>>>2");
-                int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
-
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
-                // Start the animation
-                animatorSet.start();
-
             }
             else if(item.getLaysType().equals("Left")){
                 parentTopOverlay.setVisibility(GONE);
@@ -940,31 +928,9 @@ public class MainActivity extends AppCompatActivity {
                 gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
                 textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                parentRightOverlay.setBackground(gradientDrawable);
+                parentLeftOverlay.setBackground(gradientDrawable);
                 setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>8");
-                textLeftOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
-
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
-                // Start the animation
-                animatorSet.start();
-
+                setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
             }
             else if(item.getLaysType().equals("Top")){
                 parentTopOverlay.setVisibility(VISIBLE);
@@ -978,28 +944,6 @@ public class MainActivity extends AppCompatActivity {
                 textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>9");
-                textTopOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
-
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
-                // Start the animation
-                animatorSet.start();
-
             }
             else if(item.getLaysType().equals("Bottom")){
                 parentTopOverlay.setVisibility(GONE);
@@ -1013,36 +957,85 @@ public class MainActivity extends AppCompatActivity {
                 textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>10");
-                textBottomOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
-
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
-                // Start the animation
-                animatorSet.start();
-
             }
+
+
+            Log.e("Tag","testing>>>6");
+            List<RSSModel> overlaysRssList = new ArrayList<>();
+            String overlayContent=item.getLaysContent();
+            String newString = overlayContent.replace("https://app.neosign.tv/", "");
+
+            String apiUrl = "https://app.neosign.tv/api/rss-feed";
+            String apiUrlWithParams="";
+            try {
+                apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+
+            StringRequest getRequest = new StringRequest(Request.Method.GET,
+                    apiUrlWithParams,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("TAG","response>>>"+response);
+                            rssProgrss.setVisibility(GONE);
+                            try {
+                                JSONArray jsonArray = new JSONArray(response);
+                                if (jsonArray.length()>0){
+                                    overlaysRssList.clear();
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject dataObject = jsonArray.getJSONObject(i);
+                                        String title = dataObject.getString("title");
+                                        String description = dataObject.getString("description");
+
+                                        String date = dataObject.getString("date");
+                                        String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                        Log.e("TAG","qr_code>>>"+qr_code);
+                                        String photo= dataObject.getString("photo");
+                                        RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                        overlaysRssList.add(rssModel);
+                                    }
+                                }
+
+                                if (overlayRssSlideShowCallCount==0){
+                                    clearTimeout2();
+                                    overlaysRssContentCurrentIndex=0;
+                                    overlayRssContentLay(overlaysRssList,item);
+                                    firstRssFeedLaysdataCount= overlaysRssList.size();
+                                }
+
+                            int newDataCount=overlaysRssList.size();
+                            if(firstRssFeedLaysdataCount != newDataCount){
+                                overlayRssSlideShowCallCount=0;
+                            }
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.e("Error", "-----VollyError----: "+error.getMessage());
+                        }
+                    });
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            requestQueue.add(getRequest);
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            );
+
+
         }
         else if (item.getLaysContentType().equals("Written text")){
-            parentTopOverlay.setVisibility(GONE);
-            parentLeftOverlay.setVisibility(GONE);
-            parentRightOverlay.setVisibility(GONE);
-            parentBottomOverlay.setVisibility(GONE);
             Log.e("Tag","testing>>>6");
             if(item.getLaysType().equals("Right")){
                 parentTopOverlay.setVisibility(GONE);
@@ -1060,26 +1053,24 @@ public class MainActivity extends AppCompatActivity {
                 setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
                 textRightOverlay.setText(item.getLaysContent());
+                int screenWidth = getResources().getDisplayMetrics().widthPixels;
                 int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
                 Log.e("Tag","testing>>>2");
                 int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textRightOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
                 // Start the animation
-                animatorSet.start();
+                textRightOverlay.startAnimation(marqueeAnimation);
+
 
             }
             else if(item.getLaysType().equals("Left")){
@@ -1093,30 +1084,27 @@ public class MainActivity extends AppCompatActivity {
                 gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
                 textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                parentRightOverlay.setBackground(gradientDrawable);
+                parentLeftOverlay.setBackground(gradientDrawable);
                 setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
                 Log.e("Tag","testing>>>8");
                 textLeftOverlay.setText(item.getLaysContent());
+                int screenWidth = getResources().getDisplayMetrics().widthPixels;
                 int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
                 int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textLeftOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
                 // Start the animation
-                animatorSet.start();
+                textLeftOverlay.startAnimation(marqueeAnimation);
 
             }
             else if(item.getLaysType().equals("Top")){
@@ -1135,24 +1123,19 @@ public class MainActivity extends AppCompatActivity {
                 textTopOverlay.setText(item.getLaysContent());
                 int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
                 int duration = calculateDuration(item.getLaysContent());
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textTopOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
                 // Start the animation
-                animatorSet.start();
-
+                textTopOverlay.startAnimation(marqueeAnimation);
             }
             else if(item.getLaysType().equals("Bottom")){
                 parentTopOverlay.setVisibility(GONE);
@@ -1170,28 +1153,160 @@ public class MainActivity extends AppCompatActivity {
                 textBottomOverlay.setText(item.getLaysContent());
                 int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
                 int duration = calculateDuration(item.getLaysContent());
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Create an ObjectAnimator to move the text from right to left
-                // Create an ObjectAnimator to move the text from right to left
-                ObjectAnimator animator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", dynamicWidth, -dynamicWidth);
-                animator.setDuration(duration); // Set a shorter duration for the initial load
-                animator.setRepeatMode(ObjectAnimator.RESTART);
-                animator.setRepeatCount(ObjectAnimator.INFINITE);
-
-                // Create a reset animator to bring the text back to the starting position
-                ObjectAnimator resetAnimator = ObjectAnimator.ofFloat(textBottomOverlay, "translationX", -dynamicWidth, dynamicWidth);
-                resetAnimator.setDuration(0); // Set the duration to 0 since it's an instantaneous reset
-
-                // Combine both animators into an AnimatorSet
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.playSequentially(animator, resetAnimator);
-
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
                 // Start the animation
-                animatorSet.start();
+                textBottomOverlay.startAnimation(marqueeAnimation);
 
             }
+        }else{
+            parentTopOverlay.setVisibility(GONE);
+            parentLeftOverlay.setVisibility(GONE);
+            parentRightOverlay.setVisibility(GONE);
+            parentBottomOverlay.setVisibility(GONE);
         }
 
+    }
+
+    private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
+        overlayRssSlideShowCallCount++;
+        long duration = 20000;
+
+        if (overlaysRssList.size()>0){
+            RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
+            String ovelaytext;
+            if (overLaysContentModel.getLaysRssInfo() != null) {
+                String rssinfo = overLaysContentModel.getLaysRssInfo();
+                String[] rssinfoArray = rssinfo.split(",");
+                List<String> rssinfoList = Arrays.asList(rssinfoArray);
+
+                ovelaytext=item.getDate();
+
+                if (rssinfoList.contains("1")) {
+                    String text = item.getTitle();
+                    SpannableString spannableString = new SpannableString(text);
+                    // Set text size for a specific part of the string
+                    float relativeSize = 22f; // Change this value to adjust the size
+                    spannableString.setSpan(new RelativeSizeSpan(relativeSize), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Set text style for a specific part of the string (e.g., bold)
+                    spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    ovelaytext=String.format(ovelaytext, 18f)+ "  " +spannableString;
+                }
+                if (rssinfoList.contains("2")) {
+                    ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
+                }
+
+            }else{
+                ovelaytext=String.format(item.getDate(), 18f) + "  " + String.format(item.getTitle(), 20f,true) +  "  " + String.format(item.getDescription(), 20f);
+            }
+            if(overLaysContentModel.getLaysType().equals("Right")){
+                Log.e("Tag","testingRight>>>9");
+                textRightOverlay.setText(ovelaytext);
+                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
+                int duration1 = calculateDuration(ovelaytext);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
+
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
+                // Start the animation
+                textRightOverlay.startAnimation(marqueeAnimation);
+
+            }
+            else if(overLaysContentModel.getLaysType().equals("Left")){
+                Log.e("Tag","testingLeft>>>9");
+                textLeftOverlay.setText(ovelaytext);
+                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
+                int duration1 = calculateDuration(ovelaytext);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
+
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
+                // Start the animation
+                textLeftOverlay.startAnimation(marqueeAnimation);
+
+            }
+            else if(overLaysContentModel.getLaysType().equals("Top")){
+                Log.e("Tag","testingTop>>>9");
+                textTopOverlay.setText(ovelaytext);
+                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
+                int duration1 = calculateDuration(ovelaytext);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
+
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
+                // Start the animation
+                textTopOverlay.startAnimation(marqueeAnimation);
+
+            }
+            else if(overLaysContentModel.getLaysType().equals("Bottom")){
+                Log.e("Tag","testingBottom>>>9");
+                textBottomOverlay.setText(ovelaytext);
+                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
+                int duration1 = calculateDuration(ovelaytext);
+                // Create a translation animation to make it scroll horizontally
+                TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, -1f,
+                        Animation.RELATIVE_TO_SELF, 0f,
+                        Animation.RELATIVE_TO_SELF, 0f);
+
+                // Set the animation properties
+                marqueeAnimation.setInterpolator(new LinearInterpolator());
+                marqueeAnimation.setRepeatCount(Animation.INFINITE);
+                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
+                // Start the animation
+                textBottomOverlay.startAnimation(marqueeAnimation);
+
+            }
+
+
+
+
+
+
+        }
+        overlaysRssContentCurrentIndex++;
+        if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
+            overlaysRssContentCurrentIndex = 0;
+        }
+        myRunnable2 = new Runnable() {
+            @Override
+            public void run() {
+                overlayRssContentLay(overlaysRssList, overLaysContentModel);
+            }
+        };
+        handler2.postDelayed(myRunnable2, duration);
     }
 
     private int calculateBottomTextViewWidth(TextView textBottomOverlay) {
@@ -1233,8 +1348,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private int calculateDuration(String text) {
         // You can adjust the factor based on your preference
-        int charactersPerSecond = 20;
-        int baseDuration = 8000; // 1 second as a base duration
+        int charactersPerSecond = 5;
+        int baseDuration = 1000; // 1 second as a base duration
 
         // Calculate duration based on the number of characters
         return baseDuration + (text.length() / charactersPerSecond) * 1000;
@@ -1272,8 +1387,11 @@ public class MainActivity extends AppCompatActivity {
 
         ContentModel item = list.get(contentCurrentIndex);
         Log.e("newDuration","getLaysContentType()>>>"+item.getLaysContentType());
+        parentTopOverlay.setVisibility(GONE);
+        parentLeftOverlay.setVisibility(GONE);
+        parentRightOverlay.setVisibility(GONE);
+        parentBottomOverlay.setVisibility(GONE);
 
-        overLays(item);
 
         if (item.getType().equals("image")){
             parentVideoView.setVisibility(GONE);
@@ -1532,6 +1650,8 @@ public class MainActivity extends AppCompatActivity {
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
+
+        overLays(item);
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -1610,10 +1730,16 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
+
                             if (rssSlideShowCallCount==0){
                                 clearTimeout1();
                                 rssContentCurrentIndex=0;
                                 rssContentLay(rsslist);
+                                firstRssFeeddataCount= rsslist.size();
+                            }
+                            int newDataCount=rsslist.size();
+                            if(firstRssFeeddataCount != newDataCount){
+                                rssSlideShowCallCount=0;
                             }
 
                         } catch (JSONException e) {
@@ -2788,6 +2914,7 @@ public class MainActivity extends AppCompatActivity {
                                                 dialog.cancel();
                                                 slideShowCallCount=0;
                                                 rssSlideShowCallCount=0;
+                                                overlayRssSlideShowCallCount=0;
                                                 clearTimeout();
                                                 clearTimeout1();
                                                 parentTopOverlay.setVisibility(GONE);
@@ -2992,6 +3119,9 @@ public class MainActivity extends AppCompatActivity {
     }
     public void clearTimeout1() {
         handler1.removeCallbacks(myRunnable1);
+    }
+    public void clearTimeout2() {
+        handler2.removeCallbacks(myRunnable2);
     }
     private class BrowserPage extends WebViewClient {
         private final List<ContentModel> list;

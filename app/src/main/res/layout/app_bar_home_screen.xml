@@ -300,6 +300,8 @@
                 android:layout_height="wrap_content"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:layout_margin="10dp"
                 android:layout_gravity="center_vertical"
                 android:text="" />
@@ -327,6 +329,8 @@
                 android:layout_margin="10dp"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:layout_gravity="center_vertical"
                 android:text="" />
         </HorizontalScrollView>
@@ -353,6 +357,8 @@
                 android:layout_margin="10dp"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:layout_gravity="center_vertical"
                 android:text="" />
         </HorizontalScrollView>
@@ -379,6 +385,11 @@
                 android:paddingTop="16dp"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
+                android:textSize="18sp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:layout_gravity="center_vertical"
                 android:text="Single line text view that scrolls automatically if the text is too long to fit in the widget" />
         </HorizontalScrollView>
