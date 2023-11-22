@@ -906,11 +906,21 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(VISIBLE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
                 parentRightOverlay.setBackground(gradientDrawable);
+
                 textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
 
@@ -922,13 +932,21 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(VISIBLE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                parentLeftOverlay.setBackground(gradientDrawable);
                 textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                parentLeftOverlay.setBackground(gradientDrawable);
                 setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
             }
@@ -937,9 +955,17 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 parentTopOverlay.setBackground(gradientDrawable);
                 textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
@@ -950,9 +976,17 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(VISIBLE);
-                int color = Color.parseColor(item.getLaysBgColor());
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 parentBottomOverlay.setBackground(gradientDrawable);
                 textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
@@ -1042,11 +1076,21 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(VISIBLE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
                 parentRightOverlay.setBackground(gradientDrawable);
+
                 textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
 
@@ -1078,13 +1122,24 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(VISIBLE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                parentLeftOverlay.setBackground(gradientDrawable);
+
                 textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                parentLeftOverlay.setBackground(gradientDrawable);
+
                 setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
                 Log.e("Tag","testing>>>8");
@@ -1112,10 +1167,20 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
-                int color = Color.parseColor(item.getLaysBgColor());
+
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 parentTopOverlay.setBackground(gradientDrawable);
+
                 textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
@@ -1142,10 +1207,22 @@ public class MainActivity extends AppCompatActivity {
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(VISIBLE);
-                int color = Color.parseColor(item.getLaysBgColor());
+                Log.e("Tag","Color>>>"+item.getLaysBgColor());
+                Log.e("Tag","Color>>>"+item.getLaysFontColor());
+
+                String colorCode = item.getLaysBgColor();
+                String solid = colorCode.substring(0, 7);
+                String alphaStr = colorCode.substring(colorCode.length() - 2);
+                // Convert the alpha component to an integer
+                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                // Convert the solid color to an integer
+                int solidColor = Color.parseColor(solid);
+                // Apply alpha to the solid color
+                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
                 GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(color);
+                gradientDrawable.setColor(finalColor);
                 parentBottomOverlay.setBackground(gradientDrawable);
+
                 textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
@@ -1457,7 +1534,15 @@ public class MainActivity extends AppCompatActivity {
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 // Close the progress bar and play the video
                 public void onPrepared(MediaPlayer mp) {
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            contentLay(list);
+                        }
+                    };
+                    handler.postDelayed(myRunnable, duration);
                     videoView.seekTo(position);
+
                     if (position == 0) {
                         video_progress.setVisibility(GONE);
                         //mp.setLooping(true);
@@ -1499,8 +1584,8 @@ public class MainActivity extends AppCompatActivity {
             {
                 @Override
                 public void onCompletion(MediaPlayer mp)
-                {   mp.reset();
-                    contentLay(list);
+                {  // mp.reset();
+                    //contentLay(list);
                 }
             }); // video finish listener
         }
