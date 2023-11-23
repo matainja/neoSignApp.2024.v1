@@ -36,6 +36,7 @@ public class SessionManagement {
     public static final String PAIRING_CODE = "ParingCode";
     public static final String PAIRING_STATUS = "PairingStatus";
     public static final String ORIENTATION = "orientation";
+    public static final String STRECH = "strech";
     // Constructor
 
     public SessionManagement(Context context){
@@ -43,7 +44,11 @@ public class SessionManagement {
         pref = _context.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         editor = pref.edit();
     }
-
+    public void createStrechSession(String strech ){
+        editor.putString(STRECH, strech);
+        // commit changes
+        editor.commit();
+    }
     public void createOrientationSession(String orientation ){
         editor.putString(ORIENTATION, orientation);
         // commit changes
@@ -109,6 +114,12 @@ public class SessionManagement {
     public HashMap<String, String> getOrientDetails(){
         HashMap<String, String> user = new HashMap<String, String>();
         user.put(ORIENTATION, pref.getString(ORIENTATION,"Landscape"));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getStrechDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(STRECH, pref.getString(STRECH,"off"));
         // return user
         return user;
     }

@@ -8,6 +8,7 @@ import static com.matainja.bootapplication.session.SessionManagement.IS_WAKEUP;
 import static com.matainja.bootapplication.session.SessionManagement.ORIENTATION;
 import static com.matainja.bootapplication.session.SessionManagement.PAIRING_CODE;
 import static com.matainja.bootapplication.session.SessionManagement.PAIRING_STATUS;
+import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -53,6 +54,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
@@ -63,6 +65,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -153,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
     String pairCode;
     String countdownText;
     String orientation="Landscape";
+    String strech="off";
     String translationString;
 
     private Switch rootView1;
@@ -167,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout webView_lay,parentContentRssFeed;
     RelativeLayout parentTopOverlay,parentLeftOverlay,parentRightOverlay,parentBottomOverlay;
     TextView rssTitle,rssDescription,rssDate,textTopOverlay,textLeftOverlay,textRightOverlay,textBottomOverlay;
-    HorizontalScrollView parentRightOverlayScroll;
     ImageView rssImageView,rssQR;
     WebView myWebView;
     long newDuration=0;
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
 
-    float screenWidth;
+
 
     @SuppressLint({"CutPasteId", "MissingInflatedId"})
     @Override
@@ -239,10 +242,8 @@ public class MainActivity extends AppCompatActivity {
         textLeftOverlay =(TextView)findViewById(R.id.textLeftOverlay);
         textRightOverlay =(TextView)findViewById(R.id.textRightOverlay);
         textBottomOverlay =(TextView)findViewById(R.id.textBottomOverlay);
-        parentRightOverlayScroll=(HorizontalScrollView) findViewById(R.id.parentRightOverlayScroll);
 
 
-        screenWidth = getResources().getDisplayMetrics().widthPixels;
 
 
 
@@ -772,6 +773,8 @@ public class MainActivity extends AppCompatActivity {
                                 Boolean status1 = data.getBoolean("status");
                                 if(status1){
                                     String orientations = data.getString("orientation");
+                                    String stretch = data.getString("stretch");
+                                    sessionManagement.createStrechSession(stretch);
                                     sessionManagement.createOrientationSession(orientations);
                                 }
 
@@ -1097,24 +1100,9 @@ public class MainActivity extends AppCompatActivity {
                 setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
                 textRightOverlay.setText(item.getLaysContent());
-                int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
-                Log.e("Tag","testing>>>2");
-                int duration = calculateDuration(item.getLaysContent());
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
-                // Start the animation
-                textRightOverlay.startAnimation(marqueeAnimation);
 
+                textAnimation(textRightOverlay);
 
             }
             else if(item.getLaysType().equals("Left")){
@@ -1144,23 +1132,8 @@ public class MainActivity extends AppCompatActivity {
                 setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
                 Log.e("Tag","testing>>>8");
                 textLeftOverlay.setText(item.getLaysContent());
-                int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
-                // Start the animation
-                textLeftOverlay.startAnimation(marqueeAnimation);
-
+                textAnimation(textLeftOverlay);
             }
             else if(item.getLaysType().equals("Top")){
                 parentTopOverlay.setVisibility(VISIBLE);
@@ -1186,21 +1159,8 @@ public class MainActivity extends AppCompatActivity {
                 setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
                 Log.e("Tag","testing>>>9");
                 textTopOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
-                // Start the animation
-                textTopOverlay.startAnimation(marqueeAnimation);
+                textAnimation(textTopOverlay);
             }
             else if(item.getLaysType().equals("Bottom")){
                 parentTopOverlay.setVisibility(GONE);
@@ -1227,22 +1187,15 @@ public class MainActivity extends AppCompatActivity {
                 textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
                 Log.e("Tag","testing>>>10");
-                textBottomOverlay.setText(item.getLaysContent());
-                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
-                int duration = calculateDuration(item.getLaysContent());
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
 
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration); // Adjust the duration as needed
-                // Start the animation
-                textBottomOverlay.startAnimation(marqueeAnimation);
+                textBottomOverlay.setText(item.getLaysContent());
+
+                textAnimation(textBottomOverlay);
+
+
+
+
+
 
             }
         }else{
@@ -1252,6 +1205,45 @@ public class MainActivity extends AppCompatActivity {
             parentBottomOverlay.setVisibility(GONE);
         }
 
+    }
+    private void rotateVideoView(VideoView videoView, float degrees) {
+        // Create a rotation animation
+        RotateAnimation rotateAnimation = new RotateAnimation(0, degrees,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
+        // Set the animation duration
+        rotateAnimation.setDuration(0);
+
+        // Apply the rotation animation to the VideoView
+        videoView.startAnimation(rotateAnimation);
+    }
+    private void textAnimation(TextView textOverlay) {
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        Paint textPaint = textOverlay.getPaint();
+        // Get the text content of the TextView
+        CharSequence text = textOverlay.getText();
+        // Calculate the width of the text based on the text size and content
+        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
+        Log.e("screenWidth>>",""+screenWidth+" "+width);
+        if (width <= screenWidth) {
+            // Create a translation animation to make it scroll horizontally
+            TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 1f,
+                    Animation.RELATIVE_TO_SELF, -1f,
+                    Animation.RELATIVE_TO_SELF, 0f,
+                    Animation.RELATIVE_TO_SELF, 0f);
+
+            // Set the animation properties
+            marqueeAnimation.setInterpolator(new LinearInterpolator());
+            marqueeAnimation.setRepeatCount(Animation.INFINITE);
+            marqueeAnimation.setRepeatMode(Animation.RESTART);
+            marqueeAnimation.setDuration(10000); // Adjust the duration as needed
+            // Start the animation
+            textOverlay.startAnimation(marqueeAnimation);
+        }else{
+            textOverlay.setHorizontallyScrolling(true);
+            textOverlay.setSelected(true);
+        }
     }
 
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
@@ -1289,82 +1281,24 @@ public class MainActivity extends AppCompatActivity {
             if(overLaysContentModel.getLaysType().equals("Right")){
                 Log.e("Tag","testingRight>>>9");
                 textRightOverlay.setText(ovelaytext);
-                int dynamicWidth = calculateRightTextViewWidth(textRightOverlay);
-                int duration1 = calculateDuration(ovelaytext);
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
-
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
-                // Start the animation
-                textRightOverlay.startAnimation(marqueeAnimation);
-
+                textAnimation(textRightOverlay);
             }
             else if(overLaysContentModel.getLaysType().equals("Left")){
                 Log.e("Tag","testingLeft>>>9");
                 textLeftOverlay.setText(ovelaytext);
-                int dynamicWidth = calculateLeftTextViewWidth(textLeftOverlay);
-                int duration1 = calculateDuration(ovelaytext);
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
-
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
-                // Start the animation
-                textLeftOverlay.startAnimation(marqueeAnimation);
+                textAnimation(textLeftOverlay);
 
             }
             else if(overLaysContentModel.getLaysType().equals("Top")){
                 Log.e("Tag","testingTop>>>9");
                 textTopOverlay.setText(ovelaytext);
-                int dynamicWidth = calculateTopTextViewWidth(textTopOverlay);
-                int duration1 = calculateDuration(ovelaytext);
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
-
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
-                // Start the animation
-                textTopOverlay.startAnimation(marqueeAnimation);
+                textAnimation(textTopOverlay);
 
             }
             else if(overLaysContentModel.getLaysType().equals("Bottom")){
                 Log.e("Tag","testingBottom>>>9");
                 textBottomOverlay.setText(ovelaytext);
-                int dynamicWidth = calculateBottomTextViewWidth(textBottomOverlay);
-                int duration1 = calculateDuration(ovelaytext);
-                // Create a translation animation to make it scroll horizontally
-                TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, -1f,
-                        Animation.RELATIVE_TO_SELF, 0f,
-                        Animation.RELATIVE_TO_SELF, 0f);
-
-                // Set the animation properties
-                marqueeAnimation.setInterpolator(new LinearInterpolator());
-                marqueeAnimation.setRepeatCount(Animation.INFINITE);
-                marqueeAnimation.setDuration(duration1); // Adjust the duration as needed
-                // Start the animation
-                textBottomOverlay.startAnimation(marqueeAnimation);
-
+                textAnimation(textBottomOverlay);
             }
 
 
@@ -1459,6 +1393,9 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
         orientation=getOrientationDetails.get(ORIENTATION);
+        HashMap<String, String> getStrechsDetails = new HashMap<String, String>();
+        getStrechsDetails = sessionManagement.getStrechDetails();
+        strech=getStrechsDetails.get(STRECH);
         slideShowCallCount++;
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
@@ -1477,10 +1414,16 @@ public class MainActivity extends AppCompatActivity {
             webView_lay.setVisibility(GONE);
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
-            Glide.with(MainActivity.this)
+            if (strech.equals("off")){
+
+            }else{
+                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
+            }
+            Glide.with(getApplicationContext())
                     .load(item.getUrl())
                     .error(R.drawable.neo_logo)
                     .into(content_image);
+
 
             if (orientation.equals("90 degrees")) {
                 // Rotate the DrawerLayout
@@ -1523,6 +1466,42 @@ public class MainActivity extends AppCompatActivity {
             try {
                 Uri video = Uri.parse(item.getUrl());
                 videoView.setVideoURI(video);
+               /* if (orientation.equals("90 degrees")) {
+                    // Rotate the DrawerLayout
+                    //videoView.setRotation(90);
+                   // rotateVideoView(videoView, 90);
+                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 90f)
+                            .setDuration(4000);
+                    anim.setInterpolator(new LinearInterpolator());
+                    anim.start();
+                }
+                else if (orientation.equals("180 degrees")) {
+                    // Rotate the DrawerLayout
+                    //videoView.setRotation(180);
+                    //rotateVideoView(videoView, 180);
+                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 1800f)
+                            .setDuration(4000);
+                    anim.setInterpolator(new LinearInterpolator());
+                    anim.start();
+                }
+                else if (orientation.equals("270 degrees")) {
+                    // Rotate the DrawerLayout
+                    //videoView.setRotation(270);
+                    //rotateVideoView(videoView, 270);
+                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 270f)
+                            .setDuration(4000);
+                    anim.setInterpolator(new LinearInterpolator());
+                    anim.start();
+                }
+                else {
+                    // Rotate the DrawerLayout
+                    //videoView.setRotation(0);
+                    //rotateVideoView(videoView, 0);
+                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 0f)
+                            .setDuration(4000);
+                    anim.setInterpolator(new LinearInterpolator());
+                    anim.start();
+                }*/
 
 
             } catch (Exception e) {
@@ -1548,22 +1527,6 @@ public class MainActivity extends AppCompatActivity {
                         //mp.setLooping(true);
                         mp.setVolume(0f, 0f);
                         videoView.start();
-                        if (orientation.equals("90 degrees")) {
-                            // Rotate the DrawerLayout
-                            videoView.setRotation(90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            // Rotate the DrawerLayout
-                            videoView.setRotation(180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            // Rotate the DrawerLayout
-                            videoView.setRotation(270);
-                        }
-                        else {
-                            // Rotate the DrawerLayout
-                            videoView.setRotation(0);
-                        }
 
 
 
@@ -1855,7 +1818,7 @@ public class MainActivity extends AppCompatActivity {
         long duration = 10000;
         if (rsslist.size()>0){
             RSSModel item = rsslist.get(rssContentCurrentIndex);
-            Glide.with(MainActivity.this)
+            Glide.with(getApplicationContext())
                     .load(item.getPhoto())
                     .error(R.drawable.neo_logo)
                     .into(rssImageView);

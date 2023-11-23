@@ -292,23 +292,18 @@
         android:background="@color/rss_back"
         android:visibility="gone"
         >
-        <HorizontalScrollView
+        <TextView
+            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:id="@+id/textTopOverlay"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_gravity="center_vertical">
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
 
-            <TextView
-                android:id="@+id/textTopOverlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:layout_margin="10dp"
-                android:layout_gravity="center_vertical"
-                android:text="" />
-        </HorizontalScrollView>
 
     </RelativeLayout>
     <RelativeLayout
@@ -319,24 +314,17 @@
         android:layout_gravity="center_vertical|start"
         android:visibility="gone"
         >
-        <HorizontalScrollView
-            android:id="@+id/parentLeftOverlayScroll"
+        <TextView
+            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:id="@+id/textLeftOverlay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/textLeftOverlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:layout_gravity="center_vertical"
-                android:text="" />
-        </HorizontalScrollView>
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
 
     </RelativeLayout>
     <RelativeLayout
@@ -347,25 +335,17 @@
         android:visibility="gone"
         android:layout_gravity="center_vertical|end"
         >
-        <HorizontalScrollView
-            android:id="@+id/parentRightOverlayScroll"
+        <TextView
+            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:id="@+id/textRightOverlay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/textRightOverlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:layout_gravity="center_vertical"
-                android:text="" />
-        </HorizontalScrollView>
-
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/parentBottomOverlay"
@@ -375,27 +355,18 @@
         android:visibility="gone"
         android:layout_gravity="bottom"
         >
-        <HorizontalScrollView
+        <TextView
+            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:id="@+id/textBottomOverlay"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/textBottomOverlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="16dp"
-                android:paddingTop="16dp"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textSize="18sp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:layout_gravity="center_vertical"
-                android:text="Single line text view that scrolls automatically if the text is too long to fit in the widget" />
-        </HorizontalScrollView>
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:fadeScrollbars="false"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
