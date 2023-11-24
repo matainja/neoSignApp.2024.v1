@@ -19,8 +19,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,6 +37,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -54,13 +53,14 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -72,7 +72,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -201,7 +200,8 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
     ImageView content_image;
-    VideoView videoView;
+    SurfaceView videoView;
+    private MediaPlayer mediaPlayer;
     ProgressBar progressBar,video_progress,rssProgrss,pairProgress;
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
@@ -228,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler();
         handler1 = new Handler();
         handler2 = new Handler();
+        mediaPlayer = new MediaPlayer();
 
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
@@ -1451,106 +1452,48 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
+            if (orientation.equals("90 degrees")) {
+                videoView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                videoView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                videoView.setRotation(270);
+            }
+            else {
+                videoView.setRotation(0);
+            }
+
+
             webView_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
 
-            /*if (mediaControls==null){
-                mediaControls  = new MediaController(MainActivity.this);
-                mediaControls.setAnchorView(videoView);
-                videoView.setMediaController(mediaControls);
-            }*/
 
-            try {
-                Uri video = Uri.parse(item.getUrl());
-                videoView.setVideoURI(video);
-               /* if (orientation.equals("90 degrees")) {
-                    // Rotate the DrawerLayout
-                    //videoView.setRotation(90);
-                   // rotateVideoView(videoView, 90);
-                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 90f)
-                            .setDuration(4000);
-                    anim.setInterpolator(new LinearInterpolator());
-                    anim.start();
+
+            SurfaceHolder surfaceHolder = videoView.getHolder();
+            surfaceHolder.addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(SurfaceHolder holder) {
+                    // Replace with your actual video URL
+                    String videoUrl = item.getUrl();
+                    playVideo(videoUrl,list,duration);
                 }
-                else if (orientation.equals("180 degrees")) {
-                    // Rotate the DrawerLayout
-                    //videoView.setRotation(180);
-                    //rotateVideoView(videoView, 180);
-                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 1800f)
-                            .setDuration(4000);
-                    anim.setInterpolator(new LinearInterpolator());
-                    anim.start();
+
+                @Override
+                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                    // Not needed for this example
                 }
-                else if (orientation.equals("270 degrees")) {
-                    // Rotate the DrawerLayout
-                    //videoView.setRotation(270);
-                    //rotateVideoView(videoView, 270);
-                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 270f)
-                            .setDuration(4000);
-                    anim.setInterpolator(new LinearInterpolator());
-                    anim.start();
-                }
-                else {
-                    // Rotate the DrawerLayout
-                    //videoView.setRotation(0);
-                    //rotateVideoView(videoView, 0);
-                    final ObjectAnimator anim = ObjectAnimator.ofFloat(videoView, View.ROTATION, 0f, 0f)
-                            .setDuration(4000);
-                    anim.setInterpolator(new LinearInterpolator());
-                    anim.start();
-                }*/
 
-
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-
-            //myVideoView.requestFocus();
-            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                // Close the progress bar and play the video
-                public void onPrepared(MediaPlayer mp) {
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            contentLay(list);
-                        }
-                    };
-                    handler.postDelayed(myRunnable, duration);
-                    videoView.seekTo(position);
-
-                    if (position == 0) {
-                        video_progress.setVisibility(GONE);
-                        //mp.setLooping(true);
-                        mp.setVolume(0f, 0f);
-                        videoView.start();
-
-
-
-                    } else {
-                        videoView.pause();
-                    }
+                @Override
+                public void surfaceDestroyed(SurfaceHolder holder) {
+                    releaseMediaPlayer();
                 }
             });
-            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    // Handle errors here
-                    Log.e("error>>>","VideoError");
-                    return true;
-                }
-            });
-            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-            {
-                @Override
-                public void onCompletion(MediaPlayer mp)
-                {  // mp.reset();
-                    //contentLay(list);
-                }
-            }); // video finish listener
+
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             parentContentImage.setVisibility(GONE);
@@ -1710,6 +1653,52 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    private void playVideo(String path, List<ContentModel> list, long duration) {
+        releaseMediaPlayer();
+
+        try {
+
+            mediaPlayer.setDisplay(videoView.getHolder());
+
+            // Set the data source to the video file
+            mediaPlayer.setDataSource(this, Uri.parse(path));
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(this, Uri.parse(path));
+
+            // Set up an OnPreparedListener to perform an action when the media is prepared
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    // Do something when the media is prepared
+                    Toast.makeText(MainActivity.this, "Media is prepared", Toast.LENGTH_SHORT).show();
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            contentLay(list);
+                        }
+                    };
+                    handler.postDelayed(myRunnable, duration);
+                    // Start the video playback
+                    video_progress.setVisibility(GONE);
+                    mediaPlayer.start();
+                }
+            });
+
+            // Prepare the media asynchronously
+            mediaPlayer.prepareAsync();
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Error playing video", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void releaseMediaPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
 
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         List<RSSModel> rsslist = new ArrayList<>();
@@ -3318,6 +3307,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
 }
