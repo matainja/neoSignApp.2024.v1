@@ -124,12 +124,11 @@
             android:visibility="gone">
 
 
-            <SurfaceView
+            <TextureView
                 android:id="@+id/videoView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_centerInParent="true"
-                android:orientation="horizontal"
                 android:visibility="visible"/>
             <!--<VideoView
                 android:id="@+id/videoView"
@@ -203,6 +202,7 @@
             android:visibility="gone">
 
             <RelativeLayout
+                android:id="@+id/childContentRssFeed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true">
@@ -299,7 +299,7 @@
         android:visibility="gone"
         >
         <TextView
-            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:text=""
             android:id="@+id/textTopOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -321,7 +321,7 @@
         android:visibility="gone"
         >
         <TextView
-            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:text=""
             android:id="@+id/textLeftOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -342,7 +342,7 @@
         android:layout_gravity="center_vertical|end"
         >
         <TextView
-            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:text=""
             android:id="@+id/textRightOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -362,7 +362,7 @@
         android:layout_gravity="bottom"
         >
         <TextView
-            android:text="START | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | lunch 20.00 | Dinner 60.00 | Travel 60.00 | Doctor 5000.00 | END"
+            android:text=""
             android:id="@+id/textBottomOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

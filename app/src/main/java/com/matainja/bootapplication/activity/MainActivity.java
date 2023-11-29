@@ -33,11 +33,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -59,13 +59,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -75,13 +74,11 @@ import android.webkit.WebViewClient;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -100,6 +97,7 @@ import com.google.gson.reflect.TypeToken;
 import com.matainja.bootapplication.Model.ContentModel;
 import com.matainja.bootapplication.Model.RSSModel;
 import com.matainja.bootapplication.R;
+import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
 
@@ -149,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String Videos_URL = "https://app.neosign.tv/storage/app/public/content/147/videos/BXS0VN61JxLgDjtWbhqMgEb9nCEobaKDRdL1J1YI.mp4";
     ProgressBar progress_bar;
     private ProgressDialog progressDialog;
-    private MediaController mediaControls;
+    private RotatableMediaController mediaControls;
     private int position = 0;
     TextView pairingCode;
     String pairCode;
@@ -167,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton keepExit,keepReload;
     LinearLayout parentInternetLay;
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
-    RelativeLayout webView_lay,parentContentRssFeed;
+    RelativeLayout webView_lay,parentContentRssFeed,childContentRssFeed;
     RelativeLayout parentTopOverlay,parentLeftOverlay,parentRightOverlay,parentBottomOverlay;
     TextView rssTitle,rssDescription,rssDate,textTopOverlay,textLeftOverlay,textRightOverlay,textBottomOverlay;
     ImageView rssImageView,rssQR;
@@ -200,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
     ImageView content_image;
-    SurfaceView videoView;
+    TextureView videoView;
     private MediaPlayer mediaPlayer;
     ProgressBar progressBar,video_progress,rssProgrss,pairProgress;
     List<ContentModel> slideItems = new ArrayList<>();
@@ -209,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    @SuppressLint({"CutPasteId", "MissingInflatedId"})
+    @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -228,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler();
         handler1 = new Handler();
         handler2 = new Handler();
-        mediaPlayer = new MediaPlayer();
+
 
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
@@ -253,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
         parentPairing= findViewById(R.id.parentPairing);
         pairingCode = findViewById(R.id.pairingCode);
         parentContentRssFeed=(RelativeLayout)findViewById(R.id.parentContentRssFeed);
+        childContentRssFeed=(RelativeLayout)findViewById(R.id.childContentRssFeed);
         rssImageView = findViewById(R.id.rssImageView);
         rssTitle = findViewById(R.id.rssTitle);
         rssDescription = findViewById(R.id.rssDescription);
@@ -395,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
                                     keepOnTopSwitch.setFocusable(false);
                                     parent_exit.setFocusable(false);
                                     parent_reload.setFocusable(false);
-                                    videoView.setZOrderOnTop(false);
+                                    //videoView.setZOrderOnTop(false);
                                     drawer.closeDrawer(GravityCompat.START);
                                 }
                                 if(isNetworkAvailable()){
@@ -429,17 +428,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private int calculateRightTextViewWidth(TextView textRightOverlay) {
-        Paint textPaint = textRightOverlay.getPaint();
 
-        // Get the text content of the TextView
-        CharSequence text = textRightOverlay.getText();
-
-        // Calculate the width of the text based on the text size and content
-        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-
-        return width;
-    }
 
     @SuppressLint("InvalidWakeLockTag")
     @Override
@@ -1207,17 +1196,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    private void rotateVideoView(VideoView videoView, float degrees) {
-        // Create a rotation animation
-        RotateAnimation rotateAnimation = new RotateAnimation(0, degrees,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-
-        // Set the animation duration
-        rotateAnimation.setDuration(0);
-
-        // Apply the rotation animation to the VideoView
-        videoView.startAnimation(rotateAnimation);
-    }
     private void textAnimation(TextView textOverlay) {
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         Paint textPaint = textOverlay.getPaint();
@@ -1238,7 +1216,7 @@ public class MainActivity extends AppCompatActivity {
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(10000); // Adjust the duration as needed
+            marqueeAnimation.setDuration(15000); // Adjust the duration as needed
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
         }else{
@@ -1321,17 +1299,6 @@ public class MainActivity extends AppCompatActivity {
         handler2.postDelayed(myRunnable2, duration);
     }
 
-    private int calculateBottomTextViewWidth(TextView textBottomOverlay) {
-        Paint textPaint = textBottomOverlay.getPaint();
-
-        // Get the text content of the TextView
-        CharSequence text = textBottomOverlay.getText();
-
-        // Calculate the width of the text based on the text size and content
-        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-
-        return width;
-    }
     private void setWidthPercentage(RelativeLayout view, int percentage) {
         // Get the screen width in pixels
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -1357,37 +1324,6 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         params.height = desiredHeight;
         view.setLayoutParams(params);
-    }
-    private int calculateDuration(String text) {
-        // You can adjust the factor based on your preference
-        int charactersPerSecond = 5;
-        int baseDuration = 1000; // 1 second as a base duration
-
-        // Calculate duration based on the number of characters
-        return baseDuration + (text.length() / charactersPerSecond) * 1000;
-    }
-    private int calculateTopTextViewWidth(TextView textTopOverlay) {
-        Paint textPaint = textTopOverlay.getPaint();
-
-        // Get the text content of the TextView
-        CharSequence text = textTopOverlay.getText();
-
-        // Calculate the width of the text based on the text size and content
-        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-
-        return width;
-    }
-
-    private int calculateLeftTextViewWidth(TextView textLeftOverlay) {
-        Paint textPaint = textLeftOverlay.getPaint();
-
-        // Get the text content of the TextView
-        CharSequence text = textLeftOverlay.getText();
-
-        // Calculate the width of the text based on the text size and content
-        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-
-        return width;
     }
 
     private void contentLay(List<ContentModel> list) {
@@ -1452,69 +1388,66 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
-            if (orientation.equals("90 degrees")) {
-                videoView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                videoView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                videoView.setRotation(270);
-            }
-            else {
-                videoView.setRotation(0);
-            }
-
-
             webView_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
+            Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
+            if(videoView.getSurfaceTexture()!=null){
+                releaseMediaPlayer();
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list);
+            }
 
-
-            SurfaceHolder surfaceHolder = videoView.getHolder();
-            surfaceHolder.addCallback(new SurfaceHolder.Callback() {
+            videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
                 @Override
-                public void surfaceCreated(SurfaceHolder holder) {
-                    // Replace with your actual video URL
-                    String videoUrl = item.getUrl();
-                    playVideo(videoUrl,list,duration);
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list);
                 }
 
                 @Override
-                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                    // Not needed for this example
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+                    // Handle size changes if needed
                 }
 
                 @Override
-                public void surfaceDestroyed(SurfaceHolder holder) {
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    // Release the MediaPlayer when the TextureView is destroyed
                     releaseMediaPlayer();
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+
                 }
             });
 
+
         }
+
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(90);
+
+                myWebView.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(180);
+
+                myWebView.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
                 // Rotate the DrawerLayout
-                webView_lay.setRotation(270);
+                myWebView.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(0);
+
+                myWebView.setRotation(0);
             }
 
             iFrameLay(item.getUrl(),list,duration);
@@ -1526,20 +1459,19 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(90);
+                myWebView.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(180);
+
+                myWebView.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(270);
+
+                myWebView.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(0);
+
+                myWebView.setRotation(0);
             }
             clockiFrameLay(item.getUrl(),list,item,duration);
 
@@ -1550,20 +1482,19 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(90);
+
+                myWebView.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(180);
+
+                myWebView.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(270);
+
+                myWebView.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(0);
+                myWebView.setRotation(0);
             }
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
@@ -1574,20 +1505,20 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(90);
+
+                myWebView.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(180);
+
+                myWebView.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(270);
+
+                myWebView.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(0);
+
+                myWebView.setRotation(0);
             }
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
@@ -1598,20 +1529,20 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(90);
+
+                myWebView.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(180);
+
+                myWebView.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(270);
+
+                myWebView.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                webView_lay.setRotation(0);
+
+                myWebView.setRotation(0);
             }
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
@@ -1623,20 +1554,16 @@ public class MainActivity extends AppCompatActivity {
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                parentContentRssFeed.setRotation(90);
+                childContentRssFeed.setRotation(90);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                parentContentRssFeed.setRotation(180);
+                childContentRssFeed.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                parentContentRssFeed.setRotation(270);
+                childContentRssFeed.setRotation(270);
             }
             else {
-                // Rotate the DrawerLayout
-                parentContentRssFeed.setRotation(0);
+                childContentRssFeed.setRotation(0);
             }
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
@@ -1653,51 +1580,120 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    private void playVideo(String path, List<ContentModel> list, long duration) {
-        releaseMediaPlayer();
 
+    private void initializeAndPrepareMediaPlayer(SurfaceTexture surface,String videoUrl, long duration, List<ContentModel> list) {
+        // Initialize MediaPlayer
+        mediaPlayer = new MediaPlayer();
         try {
+            // Set the data source to a sample video URL, replace with your own video source
+            mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
 
-            mediaPlayer.setDisplay(videoView.getHolder());
+            // Set the Surface for the MediaPlayer
+            mediaPlayer.setSurface(new Surface(surface));
+            Log.e("Tag","videoview");
 
-            // Set the data source to the video file
-            mediaPlayer.setDataSource(this, Uri.parse(path));
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(this, Uri.parse(path));
+            // Prepare the MediaPlayer asynchronously
+            mediaPlayer.prepareAsync();
 
-            // Set up an OnPreparedListener to perform an action when the media is prepared
+            // Set an event listener to start playing when prepared
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    // Do something when the media is prepared
-                    Toast.makeText(MainActivity.this, "Media is prepared", Toast.LENGTH_SHORT).show();
+
+                    // Adjust the rotation of the TextureView
+                    if (orientation.equals("90 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(270);
+                    }
+                    else {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(0);
+                    }
+
+                    video_progress.setVisibility(GONE);
+                    // Start playing the video
+                    mp.start();
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
                             contentLay(list);
+
                         }
                     };
                     handler.postDelayed(myRunnable, duration);
-                    // Start the video playback
-                    video_progress.setVisibility(GONE);
-                    mediaPlayer.start();
                 }
             });
 
-            // Prepare the media asynchronously
-            mediaPlayer.prepareAsync();
-
         } catch (IOException e) {
-            Toast.makeText(this, "Error playing video", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
+    private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list) {
+        // Initialize MediaPlayer
+        mediaPlayer = new MediaPlayer();
+        try {
+            // Set the data source to a sample video URL, replace with your own video source
+            mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
+            mediaPlayer.setSurface(new Surface(videoView.getSurfaceTexture()));
+            // Prepare the MediaPlayer asynchronously
+            mediaPlayer.prepareAsync();
 
+            // Set an event listener to start playing when prepared
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+
+                    // Adjust the rotation of the TextureView
+                    if (orientation.equals("90 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(270);
+                    }
+                    else {
+                        // Rotate the DrawerLayout
+                        videoView.setRotation(0);
+                    }
+
+                    video_progress.setVisibility(GONE);
+                    // Start playing the video
+                    mp.start();
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            contentLay(list);
+
+                        }
+                    };
+                    handler.postDelayed(myRunnable, duration);
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void releaseMediaPlayer() {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
         }
     }
+
 
 
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
@@ -2745,7 +2741,7 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
-                    videoView.setZOrderOnTop(true);
+                    //videoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_MENU:
@@ -2760,7 +2756,7 @@ public class MainActivity extends AppCompatActivity {
                     keepOnTopSwitch.setFocusable(false);
                     parent_exit.setFocusable(false);
                     parent_reload.setFocusable(false);
-                    videoView.setZOrderOnTop(false);
+                    //videoView.setZOrderOnTop(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 else{
@@ -2776,7 +2772,7 @@ public class MainActivity extends AppCompatActivity {
                     parent_reload.setBackgroundColor(Color.TRANSPARENT);
                     parent_exit.setBackgroundColor(Color.TRANSPARENT);
                     parent_auto_start.setBackgroundColor(R.drawable.menu_selection);
-                    videoView.setZOrderOnTop(true);
+                    //videoView.setZOrderOnTop(true);
                 }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
@@ -2792,7 +2788,7 @@ public class MainActivity extends AppCompatActivity {
                     keepOnTopSwitch.setFocusable(false);
                     parent_exit.setFocusable(false);
                     parent_reload.setFocusable(false);
-                    videoView.setZOrderOnTop(false);
+                    //videoView.setZOrderOnTop(false);
                     drawer.closeDrawer(GravityCompat.START);
                 }
                 return true;
@@ -2974,7 +2970,7 @@ public class MainActivity extends AppCompatActivity {
                                                     keepOnTopSwitch.setFocusable(false);
                                                     parent_exit.setFocusable(false);
                                                     parent_reload.setFocusable(false);
-                                                    videoView.setZOrderOnTop(false);
+                                                    //videoView.setZOrderOnTop(false);
                                                     drawer.closeDrawer(GravityCompat.START);
                                                 }
                                                 if(isNetworkAvailable()){
@@ -3307,7 +3303,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releaseMediaPlayer();
+        //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
 }
