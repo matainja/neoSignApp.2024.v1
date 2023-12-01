@@ -120,7 +120,7 @@
             android:id="@+id/parentVideoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/black"
+            android:background="@color/rss_back"
             android:visibility="gone">
 
 
@@ -151,7 +151,7 @@
             android:id="@+id/parentContentImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/black"
+            android:background="@color/rss_back"
             android:visibility="gone">
             <ProgressBar
                 android:id="@+id/imageProgress"
@@ -174,7 +174,7 @@
             android:id="@+id/webView_lay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/black"
+            android:background="@color/rss_back"
             android:visibility="gone">
 
             <ProgressBar

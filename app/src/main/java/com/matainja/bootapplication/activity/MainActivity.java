@@ -892,14 +892,40 @@ public class MainActivity extends AppCompatActivity {
 
     private void overLays(ContentModel item) {
         overLaysContentModel=item;
+        if (orientation.equals("90 degrees")) {
+            parentTopOverlay.setRotation(90);
+            parentLeftOverlay.setRotation(90);
+            parentRightOverlay.setRotation(90);
+            parentBottomOverlay.setRotation(90);
+
+        }
+        else if (orientation.equals("180 degrees")) {
+            parentTopOverlay.setRotation(180);
+            parentLeftOverlay.setRotation(180);
+            parentRightOverlay.setRotation(180);
+            parentBottomOverlay.setRotation(180);
+
+        }
+        else if (orientation.equals("270 degrees")) {
+            parentTopOverlay.setRotation(270);
+            parentLeftOverlay.setRotation(270);
+            parentRightOverlay.setRotation(270);
+            parentBottomOverlay.setRotation(270);
+
+        }
+        else {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+
+        }
+
+
+
 
         if (item.getLaysContentType().equals("RSS feed")){
             if(item.getLaysType().equals("Right")){
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(VISIBLE);
-                parentBottomOverlay.setVisibility(GONE);
-
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -919,12 +945,12 @@ public class MainActivity extends AppCompatActivity {
 
                 setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(VISIBLE);
             }
             else if(item.getLaysType().equals("Left")){
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(VISIBLE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -942,12 +968,12 @@ public class MainActivity extends AppCompatActivity {
                 textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                 setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                parentTopOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(VISIBLE);
             }
             else if(item.getLaysType().equals("Top")){
-                parentTopOverlay.setVisibility(VISIBLE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -963,12 +989,12 @@ public class MainActivity extends AppCompatActivity {
                 textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                parentLeftOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentTopOverlay.setVisibility(VISIBLE);
             }
             else if(item.getLaysType().equals("Bottom")){
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(VISIBLE);
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -984,6 +1010,10 @@ public class MainActivity extends AppCompatActivity {
                 textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                 textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                 setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(VISIBLE);
             }
 
 
@@ -1067,9 +1097,8 @@ public class MainActivity extends AppCompatActivity {
             if(item.getLaysType().equals("Right")){
                 parentTopOverlay.setVisibility(GONE);
                 parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(VISIBLE);
                 parentBottomOverlay.setVisibility(GONE);
-
+                parentRightOverlay.setVisibility(VISIBLE);
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -1097,10 +1126,9 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(item.getLaysType().equals("Left")){
                 parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(VISIBLE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
-
+                parentLeftOverlay.setVisibility(VISIBLE);
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
                 String alphaStr = colorCode.substring(colorCode.length() - 2);
@@ -1126,10 +1154,10 @@ public class MainActivity extends AppCompatActivity {
                 textAnimation(textLeftOverlay);
             }
             else if(item.getLaysType().equals("Top")){
-                parentTopOverlay.setVisibility(VISIBLE);
                 parentLeftOverlay.setVisibility(GONE);
                 parentRightOverlay.setVisibility(GONE);
                 parentBottomOverlay.setVisibility(GONE);
+                parentTopOverlay.setVisibility(VISIBLE);
 
                 String colorCode = item.getLaysBgColor();
                 String solid = colorCode.substring(0, 7);
@@ -1232,8 +1260,8 @@ public class MainActivity extends AppCompatActivity {
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
             String ovelaytext;
-            if (overLaysContentModel.getLaysRssInfo() != null) {
-                String rssinfo = overLaysContentModel.getLaysRssInfo();
+            if (contentModel.getLaysRssInfo() != null) {
+                String rssinfo = contentModel.getLaysRssInfo();
                 String[] rssinfoArray = rssinfo.split(",");
                 List<String> rssinfoList = Arrays.asList(rssinfoArray);
 
@@ -1257,24 +1285,27 @@ public class MainActivity extends AppCompatActivity {
             }else{
                 ovelaytext=String.format(item.getDate(), 18f) + "  " + String.format(item.getTitle(), 20f,true) +  "  " + String.format(item.getDescription(), 20f);
             }
-            if(overLaysContentModel.getLaysType().equals("Right")){
+            if(contentModel.getLaysType().equals("Right")){
                 Log.e("Tag","testingRight>>>9");
                 textRightOverlay.setText(ovelaytext);
                 textAnimation(textRightOverlay);
             }
-            else if(overLaysContentModel.getLaysType().equals("Left")){
+            else if(contentModel.getLaysType().equals("Left")){
                 Log.e("Tag","testingLeft>>>9");
                 textLeftOverlay.setText(ovelaytext);
                 textAnimation(textLeftOverlay);
 
             }
-            else if(overLaysContentModel.getLaysType().equals("Top")){
+            else if(contentModel.getLaysType().equals("Top")){
+
                 Log.e("Tag","testingTop>>>9");
                 textTopOverlay.setText(ovelaytext);
                 textAnimation(textTopOverlay);
 
             }
-            else if(overLaysContentModel.getLaysType().equals("Bottom")){
+            else if(contentModel.getLaysType().equals("Bottom")){
+
+
                 Log.e("Tag","testingBottom>>>9");
                 textBottomOverlay.setText(ovelaytext);
                 textAnimation(textBottomOverlay);
@@ -1293,7 +1324,7 @@ public class MainActivity extends AppCompatActivity {
         myRunnable2 = new Runnable() {
             @Override
             public void run() {
-                overlayRssContentLay(overlaysRssList, overLaysContentModel);
+                overlayRssContentLay(overlaysRssList, contentModel);
             }
         };
         handler2.postDelayed(myRunnable2, duration);
@@ -1378,10 +1409,14 @@ public class MainActivity extends AppCompatActivity {
                 // Rotate the DrawerLayout
                 content_image.setRotation(0);
             }
-
+            overLays(item);
             myRunnable = new Runnable() {
                 @Override
                 public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
                     contentLay(list);
                 }
             };
@@ -1393,17 +1428,18 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
+
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
             if(videoView.getSurfaceTexture()!=null){
                 releaseMediaPlayer();
-                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list);
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
             }
 
             videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list);
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
                 }
 
                 @Override
@@ -1433,6 +1469,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
+
             if (orientation.equals("90 degrees")) {
 
                 myWebView.setRotation(90);
@@ -1450,7 +1487,7 @@ public class MainActivity extends AppCompatActivity {
                 myWebView.setRotation(0);
             }
 
-            iFrameLay(item.getUrl(),list,duration);
+            iFrameLay(item.getUrl(),list,duration,item);
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
@@ -1569,7 +1606,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        overLays(item);
+
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -1581,7 +1618,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void initializeAndPrepareMediaPlayer(SurfaceTexture surface,String videoUrl, long duration, List<ContentModel> list) {
+    private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
         try {
@@ -1599,7 +1636,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-
+                    overLays(item);
                     // Adjust the rotation of the TextureView
                     if (orientation.equals("90 degrees")) {
                         // Rotate the DrawerLayout
@@ -1621,9 +1658,15 @@ public class MainActivity extends AppCompatActivity {
                     video_progress.setVisibility(GONE);
                     // Start playing the video
                     mp.start();
+                    videoView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            videoView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
 
                         }
@@ -1636,7 +1679,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list) {
+    private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
         try {
@@ -1650,7 +1693,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-
+                    overLays(item);
                     // Adjust the rotation of the TextureView
                     if (orientation.equals("90 degrees")) {
                         // Rotate the DrawerLayout
@@ -1672,9 +1715,15 @@ public class MainActivity extends AppCompatActivity {
                     video_progress.setVisibility(GONE);
                     // Start playing the video
                     mp.start();
+                    videoView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            videoView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
 
                         }
@@ -1691,20 +1740,21 @@ public class MainActivity extends AppCompatActivity {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
+
         }
     }
 
 
 
-    private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
+    private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         List<RSSModel> rsslist = new ArrayList<>();
-        String originalString = item.getUrl();
+        String originalString = item1.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
         String rssFeedUrl = newString;
 
 
-        if (item.getRssinfo() != null) {
-            String rssinfo = item.getRssinfo();
+        if (item1.getRssinfo() != null) {
+            String rssinfo = item1.getRssinfo();
             String[] rssinfoArray = rssinfo.split(",");
             List<String> rssinfoList = Arrays.asList(rssinfoArray);
             if (rssinfoList.contains("1")) {
@@ -1737,9 +1787,20 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         Log.e("TAG","response>>>"+response);
                         rssProgrss.setVisibility(GONE);
+                        overLays(item1);
                         myRunnable = new Runnable() {
                             @Override
                             public void run() {
+                                myWebView.setVisibility(GONE);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                rssImageView.setVisibility(GONE);
+                                rssTitle.setVisibility(GONE);
+                                rssDescription.setVisibility(GONE);
+                                rssDate.setVisibility(GONE);
+                                rssQR.setVisibility(GONE);
                                 contentLay(list);
                             }
                         };
@@ -1767,7 +1828,7 @@ public class MainActivity extends AppCompatActivity {
                             if (rssSlideShowCallCount==0){
                                 clearTimeout1();
                                 rssContentCurrentIndex=0;
-                                rssContentLay(rsslist);
+                                rssContentLay(rsslist,item1);
                                 firstRssFeeddataCount= rsslist.size();
                             }
                             int newDataCount=rsslist.size();
@@ -1798,7 +1859,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void rssContentLay(List<RSSModel> rsslist) {
+    private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
+        rssImageView.setVisibility(VISIBLE);
+        rssTitle.setVisibility(VISIBLE);
+        rssDescription.setVisibility(VISIBLE);
+        rssDate.setVisibility(VISIBLE);
+        rssQR.setVisibility(VISIBLE);
+        myWebView.setVisibility(VISIBLE);
         rssSlideShowCallCount++;
         long duration = 10000;
         if (rsslist.size()>0){
@@ -1831,7 +1898,7 @@ public class MainActivity extends AppCompatActivity {
         myRunnable1 = new Runnable() {
             @Override
             public void run() {
-                rssContentLay(rsslist);
+                rssContentLay(rsslist, item1);
             }
         };
         handler1.postDelayed(myRunnable1, duration);
@@ -1889,9 +1956,15 @@ public class MainActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
                     Log.e("test>>>","list"+list);
                     view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
                         }
                     };
@@ -1979,12 +2052,19 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if(isNetworkAvailable()){
+                    overLays(item);
                     progressBar.setVisibility(View.GONE);
                     Log.e("test>>>","list"+list);
                     view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
                         }
                     };
@@ -2069,12 +2149,19 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if(isNetworkAvailable()){
+                    overLays(item);
                     progressBar.setVisibility(View.GONE);
                     Log.e("test>>>","list"+list);
                     view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
                         }
                     };
@@ -2229,12 +2316,19 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if(isNetworkAvailable()){
+                    overLays(item);
                     progressBar.setVisibility(View.GONE);
                     Log.e("test>>>","list"+list);
                     view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
                         }
                     };
@@ -2295,7 +2389,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void iFrameLay(String newurl, List<ContentModel> list, long duration) {
+    private void iFrameLay(String newurl, List<ContentModel> list, long duration, ContentModel item) {
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         String customCSS = "iframe { border: none; }";
@@ -2341,12 +2435,19 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if(isNetworkAvailable()){
+                    overLays(item);
                     progressBar.setVisibility(View.GONE);
                     Log.e("test>>>","list"+list);
                     view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
                     myRunnable = new Runnable() {
                         @Override
                         public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
                         }
                     };
