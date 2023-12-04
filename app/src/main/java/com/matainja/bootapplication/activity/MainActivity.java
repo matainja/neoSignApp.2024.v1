@@ -11,8 +11,10 @@ import static com.matainja.bootapplication.session.SessionManagement.PAIRING_STA
 import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
@@ -32,10 +34,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
 import android.media.MediaPlayer;
@@ -57,12 +62,14 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -88,6 +95,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 import com.google.android.material.navigation.NavigationView;
@@ -100,6 +110,7 @@ import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -204,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
-
+    ConstraintLayout container2;
 
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
@@ -232,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
-
+        container2=(ConstraintLayout)findViewById(R.id.container2);
         parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
         parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
         parentRightOverlay =(RelativeLayout)findViewById(R.id.parentRightOverlay);
@@ -892,38 +903,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void overLays(ContentModel item) {
         overLaysContentModel=item;
-        if (orientation.equals("90 degrees")) {
-            parentTopOverlay.setRotation(90);
-            parentLeftOverlay.setRotation(90);
-            parentRightOverlay.setRotation(90);
-            parentBottomOverlay.setRotation(90);
-
-        }
-        else if (orientation.equals("180 degrees")) {
-            parentTopOverlay.setRotation(180);
-            parentLeftOverlay.setRotation(180);
-            parentRightOverlay.setRotation(180);
-            parentBottomOverlay.setRotation(180);
-
-        }
-        else if (orientation.equals("270 degrees")) {
-            parentTopOverlay.setRotation(270);
-            parentLeftOverlay.setRotation(270);
-            parentRightOverlay.setRotation(270);
-            parentBottomOverlay.setRotation(270);
-
-        }
-        else {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-
-        }
-
-
-
-
         if (item.getLaysContentType().equals("RSS feed")){
             if(item.getLaysType().equals("Right")){
                 String colorCode = item.getLaysBgColor();
@@ -1216,7 +1195,8 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-        }else{
+        }
+        else{
             parentTopOverlay.setVisibility(GONE);
             parentLeftOverlay.setVisibility(GONE);
             parentRightOverlay.setVisibility(GONE);
@@ -1374,6 +1354,70 @@ public class MainActivity extends AppCompatActivity {
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
 
+        // Adjust the rotation of the TextureView
+        if (orientation.equals("90 degrees")) {
+            if (item.getType().equals("image")){
+                /*contentLay.setRotation(0);
+                parentTopOverlay.setRotation(90);
+                parentLeftOverlay.setRotation(90);
+                parentRightOverlay.setRotation(90);
+                parentBottomOverlay.setRotation(90);*/
+                parentTopOverlay.setRotation(0);
+                parentLeftOverlay.setRotation(0);
+                parentRightOverlay.setRotation(0);
+                parentBottomOverlay.setRotation(0);
+                contentLay.setRotation(0);
+                contentLay.setRotation(90);
+            }
+            else{
+                parentTopOverlay.setRotation(0);
+                parentLeftOverlay.setRotation(0);
+                parentRightOverlay.setRotation(0);
+                parentBottomOverlay.setRotation(0);
+                contentLay.setRotation(0);
+                contentLay.setRotation(90);
+            }
+
+
+        }
+        else if (orientation.equals("180 degrees")) {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay.setRotation(0);
+            contentLay.setRotation(180);
+        }
+        else if (orientation.equals("270 degrees")) {
+            if (item.getType().equals("image")){
+               /* contentLay.setRotation(0);
+                parentTopOverlay.setRotation(270);
+                parentLeftOverlay.setRotation(270);
+                parentRightOverlay.setRotation(270);
+                parentBottomOverlay.setRotation(270);*/
+                parentTopOverlay.setRotation(0);
+                parentLeftOverlay.setRotation(0);
+                parentRightOverlay.setRotation(0);
+                parentBottomOverlay.setRotation(0);
+                contentLay.setRotation(0);
+                contentLay.setRotation(270);
+            }
+            else{
+                parentTopOverlay.setRotation(0);
+                parentLeftOverlay.setRotation(0);
+                parentRightOverlay.setRotation(0);
+                parentBottomOverlay.setRotation(0);
+                contentLay.setRotation(0);
+                contentLay.setRotation(270);
+            }
+        }
+        else {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay.setRotation(0);
+        }
 
         if (item.getType().equals("image")){
             parentVideoView.setVisibility(GONE);
@@ -1382,33 +1426,83 @@ public class MainActivity extends AppCompatActivity {
             webView_lay.setVisibility(GONE);
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
-            if (strech.equals("off")){
 
-            }else{
-                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
-            }
-            Glide.with(getApplicationContext())
-                    .load(item.getUrl())
-                    .error(R.drawable.neo_logo)
-                    .into(content_image);
+
 
 
             if (orientation.equals("90 degrees")) {
-                // Rotate the DrawerLayout
-                content_image.setRotation(90);
+                /*Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(new CustomTarget<Drawable>() {
+                            @Override
+                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 90); // Rotate by 90 degrees
+
+                                content_image.setImageBitmap(rotatedBitmap);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                // Implement as needed
+                            }
+                        });
+*/
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(content_image);
             }
             else if (orientation.equals("180 degrees")) {
-                // Rotate the DrawerLayout
-                content_image.setRotation(180);
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(content_image);
+
             }
             else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                content_image.setRotation(270);
+                /*Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(new CustomTarget<Drawable>() {
+                            @Override
+                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270);
+
+                                content_image.setImageBitmap(rotatedBitmap);
+                                ViewGroup.LayoutParams layoutParams = content_image.getLayoutParams();
+                                layoutParams.width = rotatedBitmap.getWidth();  // Swap width and height
+                                layoutParams.height = rotatedBitmap.getHeight(); // Swap width and height
+                                content_image.setLayoutParams(layoutParams);
+
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                // Implement as needed
+                            }
+                        });*/
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(content_image);
             }
             else {
-                // Rotate the DrawerLayout
-                content_image.setRotation(0);
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(content_image);
             }
+            if (strech.equals("off")){
+                content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            }
+            else{
+                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
+
+            }
+
             overLays(item);
             myRunnable = new Runnable() {
                 @Override
@@ -1470,23 +1564,6 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
-            if (orientation.equals("90 degrees")) {
-
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                // Rotate the DrawerLayout
-                myWebView.setRotation(270);
-            }
-            else {
-
-                myWebView.setRotation(0);
-            }
-
             iFrameLay(item.getUrl(),list,duration,item);
 
         }
@@ -1495,21 +1572,6 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-
-                myWebView.setRotation(270);
-            }
-            else {
-
-                myWebView.setRotation(0);
-            }
             clockiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1518,21 +1580,6 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
-
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1541,22 +1588,6 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
-
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-
-                myWebView.setRotation(270);
-            }
-            else {
-
-                myWebView.setRotation(0);
-            }
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1565,22 +1596,6 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
-
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-
-                myWebView.setRotation(270);
-            }
-            else {
-
-                myWebView.setRotation(0);
-            }
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
@@ -1590,18 +1605,6 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
-            if (orientation.equals("90 degrees")) {
-                childContentRssFeed.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                childContentRssFeed.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                childContentRssFeed.setRotation(270);
-            }
-            else {
-                childContentRssFeed.setRotation(0);
-            }
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1637,24 +1640,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     overLays(item);
-                    // Adjust the rotation of the TextureView
-                    if (orientation.equals("90 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(90);
-                    }
-                    else if (orientation.equals("180 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(270);
-                    }
-                    else {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(0);
-                    }
-
                     video_progress.setVisibility(GONE);
                     // Start playing the video
                     mp.start();
@@ -1694,23 +1679,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     overLays(item);
-                    // Adjust the rotation of the TextureView
-                    if (orientation.equals("90 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(90);
-                    }
-                    else if (orientation.equals("180 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(270);
-                    }
-                    else {
-                        // Rotate the DrawerLayout
-                        videoView.setRotation(0);
-                    }
 
                     video_progress.setVisibility(GONE);
                     // Start playing the video
@@ -1744,7 +1712,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private Bitmap rotateBitmap(Bitmap originalBitmap, float degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
 
+        return Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), matrix, true);
+    }
 
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         List<RSSModel> rsslist = new ArrayList<>();

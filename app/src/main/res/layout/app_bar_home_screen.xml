@@ -6,9 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/neo_bg"
+    android:scaleType="fitXY"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-
     >
     <ProgressBar
         android:id="@+id/pairProgress"
@@ -24,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_anchor="@+id/pairProgress"
+        android:scaleType="fitXY"
         app:layout_anchorGravity="center">
 
         <LinearLayout
@@ -120,7 +120,7 @@
             android:id="@+id/parentVideoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/rss_back"
+            android:background="@color/white"
             android:visibility="gone">
 
 
@@ -151,7 +151,8 @@
             android:id="@+id/parentContentImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/rss_back"
+            android:background="@color/white"
+            android:scaleType="fitXY"
             android:visibility="gone">
             <ProgressBar
                 android:id="@+id/imageProgress"
@@ -164,7 +165,8 @@
                 android:id="@+id/content_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_centerInParent="true" />
+                android:layout_centerInParent="true"
+                />
 
 
 
@@ -174,7 +176,7 @@
             android:id="@+id/webView_lay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/rss_back"
+            android:background="@color/white"
             android:visibility="gone">
 
             <ProgressBar
@@ -189,6 +191,7 @@
                 android:id="@+id/webview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="fitXY"
                 android:layout_centerInParent="true"
                 android:visibility="visible" />
 
@@ -198,7 +201,7 @@
             android:id="@+id/parentContentRssFeed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/rss_back"
+            android:background="@color/white"
             android:visibility="gone">
 
             <RelativeLayout
