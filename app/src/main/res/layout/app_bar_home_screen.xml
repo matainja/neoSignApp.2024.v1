@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/neo_bg"
-    android:scaleType="fitXY"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
     <ProgressBar
@@ -18,364 +17,357 @@
         android:layout_gravity="center"
     />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_anchor="@+id/pairProgress"
-        android:scaleType="fitXY"
-        app:layout_anchorGravity="center">
+    <LinearLayout
+        android:id="@+id/parentInternetLay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        >
 
-        <LinearLayout
-            android:id="@+id/parentInternetLay"
+        <ImageView
+            android:id="@+id/action_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_network_check_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/txtNoInternet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:text="Sorry! poor internet connection."
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
 
-            <ImageView
-                android:id="@+id/action_image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_network_check_24"
-                app:tint="@color/white" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/parentPairing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/pairing_background"
+        android:visibility="gone"
+        >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center">
 
             <TextView
-                android:id="@+id/txtNoInternet"
+                android:id="@+id/title1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Sorry! poor internet connection."
-                android:textColor="#FFFFFF"
-                android:textSize="16sp" />
+                android:layout_centerHorizontal="true"
+                android:layout_margin="10dp"
+                android:letterSpacing=".1"
+                android:text="@string/pairing_code"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-        </LinearLayout>
-
-        <RelativeLayout
-            android:id="@+id/parentPairing"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/pairing_background"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent">
-
-            <RelativeLayout
+            <TextView
+                android:id="@+id/pairingCode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center">
+                android:layout_below="@+id/title1"
+                android:layout_centerHorizontal="true"
+                android:letterSpacing=".1"
+                android:text=""
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textSize="40sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/title1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_margin="10dp"
-                    android:letterSpacing=".1"
-                    android:text="@string/pairing_code"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/pairingCode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/title1"
-                    android:layout_centerHorizontal="true"
-                    android:letterSpacing=".1"
-                    android:text=""
-                    android:textAllCaps="true"
-                    android:textColor="@color/white"
-                    android:textSize="40sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/title2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/pairingCode"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:letterSpacing=".1"
-                    android:text="@string/please_open_app_neosign_tv_to_pair_this_device_and_start_using_it"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </RelativeLayout>
+            <TextView
+                android:id="@+id/title2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/pairingCode"
+                android:layout_centerHorizontal="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:letterSpacing=".1"
+                android:text="@string/please_open_app_neosign_tv_to_pair_this_device_and_start_using_it"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </RelativeLayout>
+    </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/parentVideoView"
+    <RelativeLayout
+        android:id="@+id/parentVideoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone">
+
+
+        <TextureView
+            android:id="@+id/videoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"
-            android:visibility="gone">
-
-
-            <TextureView
-                android:id="@+id/videoView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:visibility="visible"/>
-            <!--<VideoView
-                android:id="@+id/videoView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:orientation="horizontal"
-                android:visibility="visible"
-                />-->
-            <ProgressBar
-                android:id="@+id/video_progress"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:max="100"
-                android:progress="0" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/parentContentImage"
+            android:layout_centerInParent="true"
+            android:visibility="visible"/>
+        <!--<VideoView
+            android:id="@+id/videoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"
+            android:layout_centerInParent="true"
+            android:orientation="horizontal"
+            android:visibility="visible"
+            />-->
+        <ProgressBar
+            android:id="@+id/video_progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:max="100"
+            android:progress="0" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/parentContentImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:scaleType="fitXY"
+        android:visibility="gone">
+        <ProgressBar
+            android:id="@+id/imageProgress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:max="100"
+            android:progress="0" />
+        <ImageView
+            android:id="@+id/content_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            />
+
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/webView_lay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progress_Bar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:max="100"
+            android:progress="0" />
+
+        <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:scaleType="fitXY"
-            android:visibility="gone">
+            android:layout_centerInParent="true"
+            android:visibility="visible" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/parentContentRssFeed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:id="@+id/childContentRssFeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/lay1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- ImageView with 40% width and auto height -->
+                <ImageView
+                    android:id="@+id/rssImageView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="4"
+                    android:adjustViewBounds="true"
+                    android:visibility="gone" />
+
+                <!-- TextView with 60% width -->
+                <TextView
+                    android:id="@+id/rssTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="6"
+                    android:text=""
+                    android:textColor="@android:color/background_dark"
+                    android:textSize="22dp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
             <ProgressBar
-                android:id="@+id/imageProgress"
+                android:id="@+id/rssProgrss"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_centerInParent="true"
                 android:max="100"
                 android:progress="0" />
-            <ImageView
-                android:id="@+id/content_image"
+
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/lay2"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
+                android:layout_height="80dp"
+                android:layout_below="@+id/rssDescription"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+                <!-- TextView with 60% width -->
+                <ImageView
+                    android:id="@+id/rssQR"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="10dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
+                <!-- ImageView with 40% width and auto height -->
+                <TextView
+                    android:id="@+id/rssDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="80dp"
+                    android:layout_margin="10dp"
+                    android:gravity="bottom"
+                    android:text="" />
+
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/rssDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/lay1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:text=""
+                android:visibility="gone" />
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/contentLay1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <RelativeLayout
+            android:id="@+id/parentTopOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@color/rss_back"
+            android:visibility="gone"
+            >
+            <TextView
+                android:text=""
+                android:id="@+id/textTopOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
                 />
 
 
-
         </RelativeLayout>
-
         <RelativeLayout
-            android:id="@+id/webView_lay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white"
-            android:visibility="gone">
-
-            <ProgressBar
-                android:id="@+id/progress_Bar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:max="100"
-                android:progress="0" />
-
-            <WebView
-                android:id="@+id/webview"
+            android:id="@+id/parentLeftOverlay"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/right_radius"
+            android:layout_gravity="center_vertical|start"
+            android:visibility="gone"
+            >
+            <TextView
+                android:text=""
+                android:id="@+id/textLeftOverlay"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:layout_centerInParent="true"
-                android:visibility="visible" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/parentContentRssFeed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white"
-            android:visibility="gone">
-
-            <RelativeLayout
-                android:id="@+id/childContentRssFeed"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true">
-
-                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:id="@+id/lay1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- ImageView with 40% width and auto height -->
-                    <ImageView
-                        android:id="@+id/rssImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:layout_weight="4"
-                        android:adjustViewBounds="true"
-                        android:visibility="gone" />
-
-                    <!-- TextView with 60% width -->
-                    <TextView
-                        android:id="@+id/rssTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:layout_weight="6"
-                        android:text=""
-                        android:textColor="@android:color/background_dark"
-                        android:textSize="22dp"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-
-                <ProgressBar
-                    android:id="@+id/rssProgrss"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_centerInParent="true"
-                    android:max="100"
-                    android:progress="0" />
-
-                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:id="@+id/lay2"
-                    android:layout_width="match_parent"
-                    android:layout_height="80dp"
-                    android:layout_below="@+id/rssDescription"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-                    <!-- TextView with 60% width -->
-                    <ImageView
-                        android:id="@+id/rssQR"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_margin="10dp"
-                        android:scaleType="fitCenter"
-                        android:visibility="gone" />
-                    <!-- ImageView with 40% width and auto height -->
-                    <TextView
-                        android:id="@+id/rssDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="80dp"
-                        android:layout_margin="10dp"
-                        android:gravity="bottom"
-                        android:text="" />
-
-
-                </RelativeLayout>
-
-                <TextView
-                    android:id="@+id/rssDescription"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/lay1"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp"
-                    android:text=""
-                    android:visibility="gone" />
-            </RelativeLayout>
-
+                android:maxLines="1"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                />
 
         </RelativeLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <RelativeLayout
-        android:id="@+id/parentTopOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@color/rss_back"
-        android:visibility="gone"
-        >
-        <TextView
-            android:text=""
-            android:id="@+id/textTopOverlay"
+        <RelativeLayout
+            android:id="@+id/parentRightOverlay"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/left_radius"
+            android:visibility="gone"
+            android:layout_gravity="center_vertical|end"
+            >
+            <TextView
+                android:text=""
+                android:id="@+id/textRightOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/parentBottomOverlay"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:layout_centerVertical="true"
-            />
+            android:layout_height="80dp"
+            android:background="@color/rss_back"
+            android:visibility="gone"
+            android:layout_gravity="bottom"
+            >
+            <TextView
+                android:text=""
+                android:id="@+id/textBottomOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:fadeScrollbars="false"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                />
 
+        </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    </RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/parentLeftOverlay"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/right_radius"
-        android:layout_gravity="center_vertical|start"
-        android:visibility="gone"
-        >
-        <TextView
-            android:text=""
-            android:id="@+id/textLeftOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:layout_centerVertical="true"
-            />
-
-    </RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/parentRightOverlay"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/left_radius"
-        android:visibility="gone"
-        android:layout_gravity="center_vertical|end"
-        >
-        <TextView
-            android:text=""
-            android:id="@+id/textRightOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:layout_centerVertical="true"
-            />
-    </RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/parentBottomOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@color/rss_back"
-        android:visibility="gone"
-        android:layout_gravity="bottom"
-        >
-        <TextView
-            android:text=""
-            android:id="@+id/textBottomOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:fadeScrollbars="false"
-            android:scrollHorizontally="true"
-            android:layout_centerVertical="true"
-            />
-
-    </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

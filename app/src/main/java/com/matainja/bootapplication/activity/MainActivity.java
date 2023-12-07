@@ -15,9 +15,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
@@ -60,6 +62,8 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.transition.TransitionManager;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -136,6 +140,7 @@ import java.util.UUID;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity {
     CoordinatorLayout contentLay;
+    CoordinatorLayout contentLay1;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -215,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
-    ConstraintLayout container2;
+
 
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
@@ -241,9 +246,10 @@ public class MainActivity extends AppCompatActivity {
 
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
+        contentLay1=(CoordinatorLayout) findViewById(R.id.contentLay1);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
-        container2=(ConstraintLayout)findViewById(R.id.container2);
+
         parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
         parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
         parentRightOverlay =(RelativeLayout)findViewById(R.id.parentRightOverlay);
@@ -1224,7 +1230,7 @@ public class MainActivity extends AppCompatActivity {
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(15000); // Adjust the duration as needed
+            marqueeAnimation.setDuration(20000); // Adjust the duration as needed
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
         }else{
@@ -1354,70 +1360,7 @@ public class MainActivity extends AppCompatActivity {
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
 
-        // Adjust the rotation of the TextureView
-        if (orientation.equals("90 degrees")) {
-            if (item.getType().equals("image")){
-                /*contentLay.setRotation(0);
-                parentTopOverlay.setRotation(90);
-                parentLeftOverlay.setRotation(90);
-                parentRightOverlay.setRotation(90);
-                parentBottomOverlay.setRotation(90);*/
-                parentTopOverlay.setRotation(0);
-                parentLeftOverlay.setRotation(0);
-                parentRightOverlay.setRotation(0);
-                parentBottomOverlay.setRotation(0);
-                contentLay.setRotation(0);
-                contentLay.setRotation(90);
-            }
-            else{
-                parentTopOverlay.setRotation(0);
-                parentLeftOverlay.setRotation(0);
-                parentRightOverlay.setRotation(0);
-                parentBottomOverlay.setRotation(0);
-                contentLay.setRotation(0);
-                contentLay.setRotation(90);
-            }
 
-
-        }
-        else if (orientation.equals("180 degrees")) {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay.setRotation(0);
-            contentLay.setRotation(180);
-        }
-        else if (orientation.equals("270 degrees")) {
-            if (item.getType().equals("image")){
-               /* contentLay.setRotation(0);
-                parentTopOverlay.setRotation(270);
-                parentLeftOverlay.setRotation(270);
-                parentRightOverlay.setRotation(270);
-                parentBottomOverlay.setRotation(270);*/
-                parentTopOverlay.setRotation(0);
-                parentLeftOverlay.setRotation(0);
-                parentRightOverlay.setRotation(0);
-                parentBottomOverlay.setRotation(0);
-                contentLay.setRotation(0);
-                contentLay.setRotation(270);
-            }
-            else{
-                parentTopOverlay.setRotation(0);
-                parentLeftOverlay.setRotation(0);
-                parentRightOverlay.setRotation(0);
-                parentBottomOverlay.setRotation(0);
-                contentLay.setRotation(0);
-                contentLay.setRotation(270);
-            }
-        }
-        else {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay.setRotation(0);
-        }
 
         if (item.getType().equals("image")){
             parentVideoView.setVisibility(GONE);
@@ -1427,18 +1370,14 @@ public class MainActivity extends AppCompatActivity {
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
 
-
-
-
-            if (orientation.equals("90 degrees")) {
-                /*Glide.with(getApplicationContext())
+Glide.with(getApplicationContext())
                         .load(item.getUrl())
                         .error(R.drawable.neo_logo)
                         .into(new CustomTarget<Drawable>() {
                             @Override
                             public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                                 Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 90); // Rotate by 90 degrees
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
 
                                 content_image.setImageBitmap(rotatedBitmap);
                             }
@@ -1448,53 +1387,13 @@ public class MainActivity extends AppCompatActivity {
                                 // Implement as needed
                             }
                         });
-*/
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(content_image);
-            }
-            else if (orientation.equals("180 degrees")) {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(content_image);
+            /*Glide.with(getApplicationContext())
+                    .load(item.getUrl())
+                    .error(R.drawable.neo_logo)
+                    .into(content_image);*/
 
-            }
-            else if (orientation.equals("270 degrees")) {
-                /*Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(new CustomTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270);
 
-                                content_image.setImageBitmap(rotatedBitmap);
-                                ViewGroup.LayoutParams layoutParams = content_image.getLayoutParams();
-                                layoutParams.width = rotatedBitmap.getWidth();  // Swap width and height
-                                layoutParams.height = rotatedBitmap.getHeight(); // Swap width and height
-                                content_image.setLayoutParams(layoutParams);
 
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Implement as needed
-                            }
-                        });*/
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(content_image);
-            }
-            else {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(content_image);
-            }
             if (strech.equals("off")){
                 content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             }
@@ -1523,6 +1422,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
 
+            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
             if(videoView.getSurfaceTexture()!=null){
@@ -1610,6 +1510,51 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        // Adjust the rotation of the TextureView
+        if (orientation.equals("90 degrees")) {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay.setRotation(0);
+            contentLay.setRotation(90);
+
+
+        }
+        else if (orientation.equals("180 degrees")) {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay.setRotation(0);
+            contentLay.setRotation(180);
+
+        }
+        else if (orientation.equals("270 degrees")) {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay1.setRotation(0);
+            // Rotate the layout
+            contentLay1.setRotation(270f);
+            /*ViewGroup.LayoutParams layoutParams = contentLay.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            contentLay.setLayoutParams(layoutParams);*/
+
+
+
+        }
+        else {
+            parentTopOverlay.setRotation(0);
+            parentLeftOverlay.setRotation(0);
+            parentRightOverlay.setRotation(0);
+            parentBottomOverlay.setRotation(0);
+            contentLay.setRotation(0);
+
+        }
+
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -1620,6 +1565,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
     private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
         // Initialize MediaPlayer
@@ -3374,10 +3320,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+
+
+
+
+
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
+
+
+
+
 }
