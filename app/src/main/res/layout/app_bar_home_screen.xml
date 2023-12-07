@@ -178,6 +178,7 @@
             android:id="@+id/webview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:scaleType="fitXY"
             android:layout_centerInParent="true"
             android:visibility="visible" />
@@ -195,6 +196,7 @@
             android:id="@+id/childContentRssFeed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:layout_centerInParent="true">
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -279,95 +281,98 @@
 
     </RelativeLayout>
 
+
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/contentLay1"
+        android:id="@+id/contentLay2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-        <RelativeLayout
-            android:id="@+id/parentTopOverlay"
+
+    <RelativeLayout
+        android:id="@+id/parentTopOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/rss_back"
+        android:visibility="gone"
+        >
+        <TextView
+            android:text=""
+            android:id="@+id/textTopOverlay"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="@color/rss_back"
-            android:visibility="gone"
-            >
-            <TextView
-                android:text=""
-                android:id="@+id/textTopOverlay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:scrollHorizontally="true"
-                android:layout_centerVertical="true"
-                />
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
 
 
-        </RelativeLayout>
-        <RelativeLayout
-            android:id="@+id/parentLeftOverlay"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/right_radius"
-            android:layout_gravity="center_vertical|start"
-            android:visibility="gone"
-            >
-            <TextView
-                android:text=""
-                android:id="@+id/textLeftOverlay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:scrollHorizontally="true"
-                android:layout_centerVertical="true"
-                />
-
-        </RelativeLayout>
-        <RelativeLayout
-            android:id="@+id/parentRightOverlay"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/left_radius"
-            android:visibility="gone"
-            android:layout_gravity="center_vertical|end"
-            >
-            <TextView
-                android:text=""
-                android:id="@+id/textRightOverlay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:scrollHorizontally="true"
-                android:layout_centerVertical="true"
-                />
-        </RelativeLayout>
-        <RelativeLayout
-            android:id="@+id/parentBottomOverlay"
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/parentLeftOverlay"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/right_radius"
+        android:layout_gravity="center_vertical|start"
+        android:visibility="gone"
+        >
+        <TextView
+            android:text=""
+            android:id="@+id/textLeftOverlay"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="@color/rss_back"
-            android:visibility="gone"
-            android:layout_gravity="bottom"
-            >
-            <TextView
-                android:text=""
-                android:id="@+id/textBottomOverlay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:fadeScrollbars="false"
-                android:scrollHorizontally="true"
-                android:layout_centerVertical="true"
-                />
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
 
-        </RelativeLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/parentRightOverlay"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/left_radius"
+        android:visibility="gone"
+        android:layout_gravity="center_vertical|end"
+        >
+        <TextView
+            android:text=""
+            android:id="@+id/textRightOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/parentBottomOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/rss_back"
+        android:visibility="gone"
+        android:layout_gravity="bottom"
+        >
+        <TextView
+            android:text=""
+            android:id="@+id/textBottomOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:fadeScrollbars="false"
+            android:scrollHorizontally="true"
+            android:layout_centerVertical="true"
+            />
+
+    </RelativeLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

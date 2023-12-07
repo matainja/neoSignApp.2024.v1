@@ -73,6 +73,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -140,7 +141,7 @@ import java.util.UUID;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity {
     CoordinatorLayout contentLay;
-    CoordinatorLayout contentLay1;
+    CoordinatorLayout contentLay2;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -221,21 +222,13 @@ public class MainActivity extends AppCompatActivity {
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
 
-
-
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       /* getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);*/
         initSession();
-
-
-
-
 
         //accessAllPermission();
 
@@ -243,13 +236,11 @@ public class MainActivity extends AppCompatActivity {
         handler1 = new Handler();
         handler2 = new Handler();
 
-
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
-        contentLay1=(CoordinatorLayout) findViewById(R.id.contentLay1);
+        contentLay2=(CoordinatorLayout) findViewById(R.id.contentLay2);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
-
         parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
         parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
         parentRightOverlay =(RelativeLayout)findViewById(R.id.parentRightOverlay);
@@ -258,12 +249,6 @@ public class MainActivity extends AppCompatActivity {
         textLeftOverlay =(TextView)findViewById(R.id.textLeftOverlay);
         textRightOverlay =(TextView)findViewById(R.id.textRightOverlay);
         textBottomOverlay =(TextView)findViewById(R.id.textBottomOverlay);
-
-
-
-
-
-
 
         parentPairing= findViewById(R.id.parentPairing);
         pairingCode = findViewById(R.id.pairingCode);
@@ -274,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
         rssDescription = findViewById(R.id.rssDescription);
         rssDate = findViewById(R.id.rssDate);
         rssQR = findViewById(R.id.rssQR);
-
 
         content_image = findViewById(R.id.content_image);
         videoView = findViewById(R.id.videoView);
@@ -309,7 +293,6 @@ public class MainActivity extends AppCompatActivity {
         parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
 
-
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
         HashMap<String, String> getPairDetails = new HashMap<String, String>();
@@ -317,7 +300,6 @@ public class MainActivity extends AppCompatActivity {
         pairCode = getPairDetails.get(PAIRING_CODE);
         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.e("Tag","deviceId>>>"+deviceId);
-
 
         if (pairCode.equals("")){
             // Generate a random number
@@ -340,14 +322,11 @@ public class MainActivity extends AppCompatActivity {
             long delay = 0;  // Initial delay before the first API call
             long period = 3000;  // Repeat the API call every 5 seconds (adjust as needed)
             timer.schedule(new MyTask(), delay, period);
-
-
         }
         else{
             parentInternetLay.setVisibility(VISIBLE);
             showSnack();
         }
-
 
         parent_exit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -437,15 +416,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-
         MyReceiver = new MyReceiver();
         broadcastIntent();
-
     }
-
-
 
     @SuppressLint("InvalidWakeLockTag")
     @Override
@@ -1195,11 +1168,6 @@ public class MainActivity extends AppCompatActivity {
 
                 textAnimation(textBottomOverlay);
 
-
-
-
-
-
             }
         }
         else{
@@ -1360,8 +1328,6 @@ public class MainActivity extends AppCompatActivity {
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
 
-
-
         if (item.getType().equals("image")){
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
@@ -1370,7 +1336,8 @@ public class MainActivity extends AppCompatActivity {
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
 
-Glide.with(getApplicationContext())
+            if (orientation.equals("90 degrees")) {
+                Glide.with(getApplicationContext())
                         .load(item.getUrl())
                         .error(R.drawable.neo_logo)
                         .into(new CustomTarget<Drawable>() {
@@ -1387,11 +1354,66 @@ Glide.with(getApplicationContext())
                                 // Implement as needed
                             }
                         });
-            /*Glide.with(getApplicationContext())
-                    .load(item.getUrl())
-                    .error(R.drawable.neo_logo)
-                    .into(content_image);*/
+            }
+            else if (orientation.equals("180 degrees")) {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(new CustomTarget<Drawable>() {
+                            @Override
+                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 180); // Rotate by 90 degrees
 
+                                content_image.setImageBitmap(rotatedBitmap);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                // Implement as needed
+                            }
+                        });
+
+            }
+            else if (orientation.equals("270 degrees")) {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(new CustomTarget<Drawable>() {
+                            @Override
+                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
+
+                                content_image.setImageBitmap(rotatedBitmap);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                // Implement as needed
+                            }
+                        });
+            }
+            else {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .into(new CustomTarget<Drawable>() {
+                            @Override
+                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 0); // Rotate by 90 degrees
+
+                                content_image.setImageBitmap(rotatedBitmap);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                                // Implement as needed
+                            }
+                        });
+
+            }
 
 
             if (strech.equals("off")){
@@ -1421,6 +1443,24 @@ Glide.with(getApplicationContext())
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
+
+
+            if (orientation.equals("90 degrees")) {
+                videoView.setRotation(0);
+                videoView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                videoView.setRotation(0);
+                videoView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                videoView.setRotation(0);
+                videoView.setRotation(270);
+            }
+            else {
+                videoView.setRotation(0);
+            }
+
 
             videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
@@ -1457,13 +1497,26 @@ Glide.with(getApplicationContext())
 
 
         }
-
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-
+            if (orientation.equals("90 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(270);
+            }
+            else {
+                myWebView.setRotation(0);
+            }
             iFrameLay(item.getUrl(),list,duration,item);
 
         }
@@ -1472,6 +1525,21 @@ Glide.with(getApplicationContext())
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
+            if (orientation.equals("90 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(270);
+            }
+            else {
+                myWebView.setRotation(0);
+            }
             clockiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1480,6 +1548,21 @@ Glide.with(getApplicationContext())
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
+            if (orientation.equals("90 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(270);
+            }
+            else {
+                myWebView.setRotation(0);
+            }
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1488,6 +1571,21 @@ Glide.with(getApplicationContext())
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
+            if (orientation.equals("90 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(270);
+            }
+            else {
+                myWebView.setRotation(0);
+            }
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1496,6 +1594,21 @@ Glide.with(getApplicationContext())
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
+            if (orientation.equals("90 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                myWebView.setRotation(0);
+                myWebView.setRotation(270);
+            }
+            else {
+                myWebView.setRotation(0);
+            }
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
@@ -1505,6 +1618,21 @@ Glide.with(getApplicationContext())
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
+            if (orientation.equals("90 degrees")) {
+                childContentRssFeed.setRotation(0);
+                childContentRssFeed.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                childContentRssFeed.setRotation(0);
+                childContentRssFeed.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                childContentRssFeed.setRotation(0);
+                childContentRssFeed.setRotation(270);
+            }
+            else {
+                childContentRssFeed.setRotation(0);
+            }
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1516,8 +1644,8 @@ Glide.with(getApplicationContext())
             parentLeftOverlay.setRotation(0);
             parentRightOverlay.setRotation(0);
             parentBottomOverlay.setRotation(0);
-            contentLay.setRotation(0);
-            contentLay.setRotation(90);
+            contentLay2.setRotation(0);
+            contentLay2.setRotation(90);
 
 
         }
@@ -1526,8 +1654,8 @@ Glide.with(getApplicationContext())
             parentLeftOverlay.setRotation(0);
             parentRightOverlay.setRotation(0);
             parentBottomOverlay.setRotation(0);
-            contentLay.setRotation(0);
-            contentLay.setRotation(180);
+            contentLay2.setRotation(0);
+            contentLay2.setRotation(180);
 
         }
         else if (orientation.equals("270 degrees")) {
@@ -1535,15 +1663,9 @@ Glide.with(getApplicationContext())
             parentLeftOverlay.setRotation(0);
             parentRightOverlay.setRotation(0);
             parentBottomOverlay.setRotation(0);
-            contentLay1.setRotation(0);
+            contentLay2.setRotation(0);
             // Rotate the layout
-            contentLay1.setRotation(270f);
-            /*ViewGroup.LayoutParams layoutParams = contentLay.getLayoutParams();
-            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            contentLay.setLayoutParams(layoutParams);*/
-
-
+            contentLay2.setRotation(270f);
 
         }
         else {
@@ -1551,7 +1673,7 @@ Glide.with(getApplicationContext())
             parentLeftOverlay.setRotation(0);
             parentRightOverlay.setRotation(0);
             parentBottomOverlay.setRotation(0);
-            contentLay.setRotation(0);
+            contentLay2.setRotation(0);
 
         }
 
@@ -1562,10 +1684,7 @@ Glide.with(getApplicationContext())
         Log.e("newDuration","duration>>>"+duration);
         Log.e("newDuration","newDuration>>>"+newDuration);
 
-
-
     }
-
 
     private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
         // Initialize MediaPlayer
@@ -2421,7 +2540,6 @@ Glide.with(getApplicationContext())
         }
     }
 
-
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -3114,7 +3232,6 @@ Glide.with(getApplicationContext())
         return;
     }
 
-
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -3318,16 +3435,6 @@ Glide.with(getApplicationContext())
         );
         return imageFile;
     }
-
-
-
-
-
-
-
-
-
-
 
     @Override
     protected void onDestroy() {
