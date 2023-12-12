@@ -1337,81 +1337,93 @@ public class MainActivity extends AppCompatActivity {
             content_image.destroyDrawingCache();
 
             if (orientation.equals("90 degrees")) {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(new CustomTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .into(new CustomTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
 
-                                content_image.setImageBitmap(rotatedBitmap);
-                            }
+                                    content_image.setImageBitmap(rotatedBitmap);
+                                }
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Implement as needed
-                            }
-                        });
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                    // Implement as needed
+                                }
+                            });
+                }
+
             }
             else if (orientation.equals("180 degrees")) {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(new CustomTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 180); // Rotate by 90 degrees
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .into(new CustomTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 180); // Rotate by 90 degrees
 
-                                content_image.setImageBitmap(rotatedBitmap);
-                            }
+                                    content_image.setImageBitmap(rotatedBitmap);
+                                }
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Implement as needed
-                            }
-                        });
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                    // Implement as needed
+                                }
+                            });
+                }
+
 
             }
             else if (orientation.equals("270 degrees")) {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(new CustomTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .into(new CustomTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
 
-                                content_image.setImageBitmap(rotatedBitmap);
-                            }
+                                    content_image.setImageBitmap(rotatedBitmap);
+                                }
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Implement as needed
-                            }
-                        });
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                    // Implement as needed
+                                }
+                            });
+                }
+
             }
             else {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .into(new CustomTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 0); // Rotate by 90 degrees
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .into(new CustomTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
+                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 0); // Rotate by 90 degrees
 
-                                content_image.setImageBitmap(rotatedBitmap);
-                            }
+                                    content_image.setImageBitmap(rotatedBitmap);
+                                }
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Implement as needed
-                            }
-                        });
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+                                    // Implement as needed
+                                }
+                            });
+                }
+
 
             }
 
@@ -1704,6 +1716,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    mp.setVolume(0f, 0f);
                     overLays(item);
                     video_progress.setVisibility(GONE);
                     // Start playing the video
@@ -1718,7 +1731,7 @@ public class MainActivity extends AppCompatActivity {
                             parentRightOverlay.setVisibility(GONE);
                             parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
-
+                            mediaPlayer.stop();
                         }
                     };
                     handler.postDelayed(myRunnable, duration);
@@ -1743,6 +1756,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    mp.setVolume(0f, 0f);
                     overLays(item);
 
                     video_progress.setVisibility(GONE);
@@ -1758,6 +1772,7 @@ public class MainActivity extends AppCompatActivity {
                             parentRightOverlay.setVisibility(GONE);
                             parentBottomOverlay.setVisibility(GONE);
                             contentLay(list);
+                            mediaPlayer.stop();
 
                         }
                     };
@@ -1908,10 +1923,13 @@ public class MainActivity extends AppCompatActivity {
         long duration = 10000;
         if (rsslist.size()>0){
             RSSModel item = rsslist.get(rssContentCurrentIndex);
-            Glide.with(getApplicationContext())
-                    .load(item.getPhoto())
-                    .error(R.drawable.neo_logo)
-                    .into(rssImageView);
+            if (item.getPhoto() != null) {
+                Glide.with(getApplicationContext())
+                        .load(item.getPhoto())
+                        .error(R.drawable.neo_logo)
+                        .into(rssImageView);
+            }
+
             rssTitle.setText(item.getTitle());
             rssDescription.setText(item.getDescription());
             rssDate.setText(item.getDate());
