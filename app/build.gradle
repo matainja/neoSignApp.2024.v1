@@ -44,6 +44,11 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
 
+    //For pusher
+    implementation 'com.pusher:pusher-java-client:2.2.8'
+    implementation 'com.loopj.android:android-async-http:1.4.10'
+
+
 
 
 }

@@ -105,6 +105,7 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 import com.google.android.material.navigation.NavigationView;
@@ -117,6 +118,15 @@ import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
+import com.matainja.bootapplication.util.Util;
+import com.pusher.client.Pusher;
+import com.pusher.client.PusherOptions;
+import com.pusher.client.channel.Channel;
+import com.pusher.client.channel.PusherEvent;
+import com.pusher.client.channel.SubscriptionEventListener;
+import com.pusher.client.connection.ConnectionEventListener;
+import com.pusher.client.connection.ConnectionState;
+import com.pusher.client.connection.ConnectionStateChange;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -224,6 +234,8 @@ public class MainActivity extends AppCompatActivity {
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
+    private Channel channel;
+    private Pusher pusher;
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -319,12 +331,14 @@ public class MainActivity extends AppCompatActivity {
         }
         if(isNetworkAvailable()){
             parentInternetLay.setVisibility(GONE);
-            // Initialize the Timer
+            initPusher();
+
+           /* // Initialize the Timer
             Timer timer = new Timer();
             // Schedule the TimerTask to make API calls every X milliseconds
             long delay = 0;  // Initial delay before the first API call
             long period = 3000;  // Repeat the API call every 5 seconds (adjust as needed)
-            timer.schedule(new MyTask(), delay, period);
+            timer.schedule(new MyTask(), delay, period);*/
         }
         else{
             parentInternetLay.setVisibility(VISIBLE);
@@ -702,6 +716,42 @@ public class MainActivity extends AppCompatActivity {
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
+
+    private void initPusher() {
+
+        PusherOptions options = new PusherOptions();
+        options.setCluster("ap2");
+        pusher = new Pusher("f5c1c68ffe43d214dfe1", options);
+
+        pusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
+            }
+
+            @Override
+            public void onError(String message, String code, Exception e) {
+                Log.i("Pusher", "There was a problem connecting! " +
+                        "\ncode: " + code +
+                        "\nmessage: " + message +
+                        "\nException: " + e);
+            }
+        }, ConnectionState.ALL);
+        Log.e("Tag","pairCode>>>"+"screen"+pairCode);
+
+        channel = pusher.subscribe("screen."+pairCode);
+
+        channel.bind("screen-content", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                Log.i("Pusher", "Received event with data: " + event.toString());
+            }
+        });
+    }
+
+
+
     private void initPairing(String pairCode){
         //pairCode=pairCode1.toUpperCase();
         HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
@@ -847,7 +897,12 @@ public class MainActivity extends AppCompatActivity {
                                         parentRightOverlay.setVisibility(GONE);
                                         parentBottomOverlay.setVisibility(GONE);
                                         pairProgress.setVisibility(VISIBLE);
-                                        //parentPairing.setVisibility(VISIBLE);
+                                        if (slideShowCallCount==0){
+                                            parentPairing.setVisibility(VISIBLE);
+                                        }else{
+                                            parentPairing.setVisibility(GONE);
+                                        }
+
                                     }
                                 }
                             }
@@ -1329,6 +1384,7 @@ public class MainActivity extends AppCompatActivity {
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
 
+
             if (orientation.equals("90 degrees")) {
                 if (item.getUrl() != null) {
                     Glide.with(getApplicationContext())
@@ -1367,8 +1423,6 @@ public class MainActivity extends AppCompatActivity {
                             .transform(new RotateTransformation(0))  // Rotate by 270 degrees
                             .into(content_image);
                 }
-
-
             }
 
 
@@ -1602,23 +1656,6 @@ public class MainActivity extends AppCompatActivity {
             parentBottomOverlay.setRotation(0);
             contentLay2.setRotation(0);
             contentLay2.setRotation(90);
-
-
-            // get screen size from DisplayMetrics if you need to rotate before the screen is shown
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
-            int height = displayMetrics.heightPixels;
-            int width = displayMetrics.widthPixels;
-
-            Log.e("heightwidth>>1","heightwidth>>1"+height+width);
-
-            contentLay2.getLayoutParams().height=width;
-            contentLay2.getLayoutParams().width=height;
-            Log.e("heightwidth>>2","heightwidth>>2"+contentLay2.getLayoutParams().height+ contentLay2.getLayoutParams().width);
-
-
-
         }
         else if (orientation.equals("180 degrees")) {
             parentTopOverlay.setRotation(0);
@@ -1637,11 +1674,6 @@ public class MainActivity extends AppCompatActivity {
             contentLay2.setRotation(0);
             // Rotate the layout
             contentLay2.setRotation(270f);
-            ViewGroup.LayoutParams layoutParams = contentLay2.getLayoutParams();
-            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            contentLay2.setLayoutParams(layoutParams);
-            contentLay2.requestLayout();
 
         }
         else {
