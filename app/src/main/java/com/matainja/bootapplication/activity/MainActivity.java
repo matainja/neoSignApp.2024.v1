@@ -100,6 +100,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
@@ -125,6 +127,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -370,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
                                 overlayRssSlideShowCallCount=0;
                                 clearTimeout();
                                 clearTimeout1();
+                                clearTimeout2();
                                 parentTopOverlay.setVisibility(GONE);
                                 parentLeftOverlay.setVisibility(GONE);
                                 parentRightOverlay.setVisibility(GONE);
@@ -810,12 +814,6 @@ public class MainActivity extends AppCompatActivity {
                                                 laysDeleted=overlays.getString("is_deleted");
                                                 Log.e("overlays","laysContentType>>>"+laysContentType);
                                             }
-
-
-
-
-
-
                                             newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
                                                     app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
                                                     app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
@@ -825,13 +823,10 @@ public class MainActivity extends AppCompatActivity {
                                             sessionManagement.createContentDataSession(newSlideItems);
                                         }
 
-
-
                                         if (slideShowCallCount==0){
                                             clearTimeout();
                                             contentCurrentIndex=0;
                                             contentLay(newSlideItems);
-
                                             firstdataCount= newSlideItems.size();
                                         }
                                         int newDataCount=newSlideItems.size();
@@ -840,7 +835,6 @@ public class MainActivity extends AppCompatActivity {
                                             slideItems.clear();
                                             slideItems.addAll(newSlideItems);
                                             slideShowCallCount=0;
-
                                         }
                                     }
                                     else{
@@ -1013,7 +1007,6 @@ public class MainActivity extends AppCompatActivity {
                                         overlaysRssList.add(rssModel);
                                     }
                                 }
-
                                 if (overlayRssSlideShowCallCount==0){
                                     clearTimeout2();
                                     overlaysRssContentCurrentIndex=0;
@@ -1341,65 +1334,28 @@ public class MainActivity extends AppCompatActivity {
                     Glide.with(getApplicationContext())
                             .load(item.getUrl())
                             .error(R.drawable.neo_logo)
-                            .into(new CustomTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
-
-                                    content_image.setImageBitmap(rotatedBitmap);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                    // Implement as needed
-                                }
-                            });
+                            .transform(new RotateTransformation(90))  // Rotate by 270 degrees
+                            .into(content_image);
                 }
 
             }
             else if (orientation.equals("180 degrees")) {
-                if (item.getUrl() != null) {
-                    Glide.with(getApplicationContext())
-                            .load(item.getUrl())
-                            .error(R.drawable.neo_logo)
-                            .into(new CustomTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 180); // Rotate by 90 degrees
-
-                                    content_image.setImageBitmap(rotatedBitmap);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                    // Implement as needed
-                                }
-                            });
-                }
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .transform(new RotateTransformation(180))  // Rotate by 270 degrees
+                        .into(content_image);
 
 
             }
             else if (orientation.equals("270 degrees")) {
+
                 if (item.getUrl() != null) {
                     Glide.with(getApplicationContext())
                             .load(item.getUrl())
                             .error(R.drawable.neo_logo)
-                            .into(new CustomTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 270); // Rotate by 90 degrees
-
-                                    content_image.setImageBitmap(rotatedBitmap);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                    // Implement as needed
-                                }
-                            });
+                            .transform(new RotateTransformation(270))  // Rotate by 270 degrees
+                            .into(content_image);
                 }
 
             }
@@ -1408,20 +1364,8 @@ public class MainActivity extends AppCompatActivity {
                     Glide.with(getApplicationContext())
                             .load(item.getUrl())
                             .error(R.drawable.neo_logo)
-                            .into(new CustomTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    Bitmap originalBitmap = ((BitmapDrawable) resource).getBitmap();
-                                    Bitmap rotatedBitmap = rotateBitmap(originalBitmap, 0); // Rotate by 90 degrees
-
-                                    content_image.setImageBitmap(rotatedBitmap);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-                                    // Implement as needed
-                                }
-                            });
+                            .transform(new RotateTransformation(0))  // Rotate by 270 degrees
+                            .into(content_image);
                 }
 
 
@@ -1660,6 +1604,21 @@ public class MainActivity extends AppCompatActivity {
             contentLay2.setRotation(90);
 
 
+            // get screen size from DisplayMetrics if you need to rotate before the screen is shown
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+
+            Log.e("heightwidth>>1","heightwidth>>1"+height+width);
+
+            contentLay2.getLayoutParams().height=width;
+            contentLay2.getLayoutParams().width=height;
+            Log.e("heightwidth>>2","heightwidth>>2"+contentLay2.getLayoutParams().height+ contentLay2.getLayoutParams().width);
+
+
+
         }
         else if (orientation.equals("180 degrees")) {
             parentTopOverlay.setRotation(0);
@@ -1678,6 +1637,11 @@ public class MainActivity extends AppCompatActivity {
             contentLay2.setRotation(0);
             // Rotate the layout
             contentLay2.setRotation(270f);
+            ViewGroup.LayoutParams layoutParams = contentLay2.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            contentLay2.setLayoutParams(layoutParams);
+            contentLay2.requestLayout();
 
         }
         else {
@@ -1697,7 +1661,29 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
+    public class RotateTransformation extends BitmapTransformation {
+        private static final String ID = "com.example.RotateTransformation";
+        private final byte[] ID_BYTES = ID.getBytes();
 
+        private float rotationAngle;
+
+        public RotateTransformation(float rotationAngle) {
+            this.rotationAngle = rotationAngle;
+        }
+
+        @Override
+        public void updateDiskCacheKey(MessageDigest messageDigest) {
+            messageDigest.update(ID_BYTES);
+        }
+
+        @Override
+        protected Bitmap transform(@NonNull BitmapPool pool, @NonNull Bitmap toTransform, int outWidth, int outHeight) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotationAngle);
+
+            return Bitmap.createBitmap(toTransform, 0, 0, toTransform.getWidth(), toTransform.getHeight(), matrix, true);
+        }
+    }
     private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
@@ -1877,7 +1863,6 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
-
                             if (rssSlideShowCallCount==0){
                                 clearTimeout1();
                                 rssContentCurrentIndex=0;
@@ -1926,6 +1911,7 @@ public class MainActivity extends AppCompatActivity {
             if (item.getPhoto() != null) {
                 Glide.with(getApplicationContext())
                         .load(item.getPhoto())
+                        .transform(new RotateTransformation(0))
                         .error(R.drawable.neo_logo)
                         .into(rssImageView);
             }
@@ -3106,6 +3092,7 @@ public class MainActivity extends AppCompatActivity {
                                                 overlayRssSlideShowCallCount=0;
                                                 clearTimeout();
                                                 clearTimeout1();
+                                                clearTimeout2();
                                                 parentTopOverlay.setVisibility(GONE);
                                                 parentLeftOverlay.setVisibility(GONE);
                                                 parentRightOverlay.setVisibility(GONE);
@@ -3311,44 +3298,6 @@ public class MainActivity extends AppCompatActivity {
     public void clearTimeout2() {
         handler2.removeCallbacks(myRunnable2);
     }
-    private class BrowserPage extends WebViewClient {
-        private final List<ContentModel> list;
-        public BrowserPage(List<ContentModel> list) {
-            this.list=list;
-
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            if(isNetworkAvailable()){
-                progressBar.setVisibility(View.VISIBLE);
-                parentInternetLay.setVisibility(GONE);
-                super.onPageStarted(view, url, favicon);
-            }
-            else{
-                parentInternetLay.setVisibility(VISIBLE);
-                progressBar.setVisibility(View.GONE);
-
-            }
-
-        }
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            if(isNetworkAvailable()){
-                progressBar.setVisibility(View.GONE);
-                Log.e("test>>>","list"+list);
-                contentLay(list);
-            }
-            else{
-                parentInternetLay.setVisibility(VISIBLE);
-                progressBar.setVisibility(View.GONE);
-
-            }
-            // Both url and title is available in this stage
-            mUrl = view.getUrl();
-        }
-    }
     private class Browser extends WebChromeClient {
         private static final String TAG = "WebVIEW-Home";
         // For Android 5.0
@@ -3457,6 +3406,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        clearTimeout();
+        clearTimeout1();
+        clearTimeout2();
         //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
