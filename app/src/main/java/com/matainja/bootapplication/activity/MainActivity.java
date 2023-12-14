@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         if(isNetworkAvailable()){
             parentInternetLay.setVisibility(GONE);
             initPusher();
-
+            initPairing(pairCode);
            /* // Initialize the Timer
             Timer timer = new Timer();
             // Schedule the TimerTask to make API calls every X milliseconds
@@ -713,6 +713,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        pusher.unsubscribe("screen."+pairCode);
+    }
+
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
@@ -745,7 +752,173 @@ public class MainActivity extends AppCompatActivity {
         channel.bind("screen-content", new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
-                Log.i("Pusher", "Received event with data: " + event.toString());
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        Log.e("Pusher", "Received event with data: " + event.toString());
+                        HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
+                        getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
+                        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
+                        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+                        getcontentDetails = sessionManagement.getContentItemDetails();
+                        List<ContentModel> list = new ArrayList<>();
+                        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+                        if(list==null){
+                            if (pairingStatus){
+                                parentPairing.setVisibility(VISIBLE);
+                            }
+                            else{
+                                parentVideoView.setVisibility(GONE);
+                                parentContentImage.setVisibility(GONE);
+                                webView_lay.setVisibility(GONE);
+                                parentContentRssFeed.setVisibility(GONE);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                parentPairing.setVisibility(VISIBLE);
+                            }
+                        }else{
+                            if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                                parentPairing.setVisibility(GONE);
+                            }
+                            else{
+                                parentVideoView.setVisibility(GONE);
+                                parentContentImage.setVisibility(GONE);
+                                webView_lay.setVisibility(GONE);
+                                parentContentRssFeed.setVisibility(GONE);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                parentPairing.setVisibility(VISIBLE);
+                            }
+                        }
+                        try{
+                            JSONObject jsonObject = new JSONObject(event.getData().toString());
+                            Log.e("Tag","jsonObject>>>"+jsonObject);
+
+                            JSONObject content = jsonObject.getJSONObject("content") ;
+                            Boolean status1 = content.getBoolean("status");
+                            if(status1){
+                                String orientations = content.getString("orientation");
+                                String stretch = content.getString("stretch");
+                                sessionManagement.createStrechSession(stretch);
+                                sessionManagement.createOrientationSession(orientations);
+                            }else{
+                                sessionManagement.createPairingSession(false);
+                            }
+
+                            Boolean dataStatus = content.getBoolean("status");
+                            if(dataStatus){
+                                sessionManagement.createPairingSession(true);
+                                pairingCode.setText("Paired");
+                                JSONArray dataArray = content.getJSONArray("data");
+                                if(dataArray.length()>0){
+                                    parentPairing.setVisibility(GONE);
+                                    pairProgress.setVisibility(GONE);
+                                    newSlideItems.clear();
+                                    for(currentIndex =0; currentIndex<dataArray.length();currentIndex++){
+                                        JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+                                        String type = dataObject.getString("type");
+                                        String url = dataObject.getString("url");
+                                        String duration = dataObject.getString("duration");
+                                        String extention = dataObject.getString("extention");
+                                        String app_clock_hands_color= dataObject.getString("app_clock_hands_color");
+                                        String app_clock_text= dataObject.getString("app_clock_text");
+                                        String app_clock_timezone= dataObject.getString("app_clock_timezone");
+                                        String app_clock_size= dataObject.getString("app_clock_size");
+                                        String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color ");
+                                        String app_clock_major_indicator_color= dataObject.getString("app_clock_major_indicator_color");
+                                        String app_clock_innerdot_size= dataObject.getString("app_clock_innerdot_size");
+                                        String app_clock_innerdot_color= dataObject.getString("app_clock_innerdot_color");
+
+                                        String cdtime= dataObject.getString("cdtime");
+                                        String cdtranslation= dataObject.getString("cdtranslation");
+                                        String app_cd_text= dataObject.getString("app_cd_text");
+
+                                        String rssinfo= dataObject.getString("rssinfo");
+
+                                        String laysId="",laysCID="",laysType="",laysName="",laysheight="",
+                                                laysBgColor="",laysFontSize="",laysFontColor="",
+                                                laysFontFamily="",
+                                                laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
+                                        if (dataObject.has("overlays") && !dataObject.isNull("overlays")) {
+                                            JSONObject overlays = dataObject.getJSONObject("overlays");
+                                            Log.e("overlays","overlays>>>"+overlays);
+                                            laysId= String.valueOf(overlays.getInt("id"));
+                                            laysCID=overlays.getString("cid");
+                                            laysType=overlays.getString("type");
+                                            laysName=overlays.getString("name");
+                                            laysheight=overlays.getString("height");
+                                            laysBgColor=overlays.getString("bg_color");
+                                            laysFontSize=overlays.getString("font_size");
+                                            laysFontColor=overlays.getString("font_color");
+                                            laysFontFamily=overlays.getString("font_family");
+                                            laysContentType=overlays.getString("content_type");
+                                            laysContent=overlays.getString("content");
+                                            laysRssInfo=overlays.getString("rssinfo");
+                                            laysDeleted=overlays.getString("is_deleted");
+                                            Log.e("overlays","laysContentType>>>"+laysContentType);
+                                        }
+                                        newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
+                                                app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
+                                                app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
+                                                cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
+                                                laysContentType,laysContent,laysRssInfo,laysDeleted
+                                        ));
+                                        sessionManagement.createContentDataSession(newSlideItems);
+                                    }
+                                    clearTimeout();
+                                    contentCurrentIndex=0;
+                                    contentLay(newSlideItems);
+                                    firstdataCount= newSlideItems.size();
+
+                               /* if (slideShowCallCount==0){
+                                    clearTimeout();
+                                    contentCurrentIndex=0;
+                                    contentLay(newSlideItems);
+                                    firstdataCount= newSlideItems.size();
+                                }
+                                int newDataCount=newSlideItems.size();
+                                if(firstdataCount != newDataCount){
+                                    Log.e("time>>","Time>>");
+                                    slideItems.clear();
+                                    slideItems.addAll(newSlideItems);
+                                    slideShowCallCount=0;
+                                }*/
+                                }
+                                else{
+                                    parentVideoView.setVisibility(GONE);
+                                    parentContentImage.setVisibility(GONE);
+                                    webView_lay.setVisibility(GONE);
+                                    parentContentRssFeed.setVisibility(GONE);
+                                    parentTopOverlay.setVisibility(GONE);
+                                    parentLeftOverlay.setVisibility(GONE);
+                                    parentRightOverlay.setVisibility(GONE);
+                                    parentBottomOverlay.setVisibility(GONE);
+                                    pairProgress.setVisibility(VISIBLE);
+                                    if (slideShowCallCount==0){
+                                        parentPairing.setVisibility(VISIBLE);
+                                    }else{
+                                        parentPairing.setVisibility(GONE);
+                                    }
+
+                                }
+                            }
+                        }catch (JSONException ex){
+                            ex.printStackTrace();
+                            Log.e("Error", "-----Json Array----: "+ex.getMessage());
+                        }
+
+
+                    }
+                });
+
+
             }
         });
     }
@@ -753,180 +926,30 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initPairing(String pairCode){
-        //pairCode=pairCode1.toUpperCase();
-        HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
-        getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
-        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
-        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
-        getcontentDetails = sessionManagement.getContentItemDetails();
-        List<ContentModel> list = new ArrayList<>();
-        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
-        if(list==null){
-            if (pairingStatus){
-                parentPairing.setVisibility(VISIBLE);
-            }
-            else{
-                parentVideoView.setVisibility(GONE);
-                parentContentImage.setVisibility(GONE);
-                webView_lay.setVisibility(GONE);
-                parentContentRssFeed.setVisibility(GONE);
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentPairing.setVisibility(VISIBLE);
-            }
-        }else{
-            if (pairingStatus && Objects.requireNonNull(list).size()>0){
-                parentPairing.setVisibility(GONE);
-            }
-            else{
-                parentVideoView.setVisibility(GONE);
-                parentContentImage.setVisibility(GONE);
-                webView_lay.setVisibility(GONE);
-                parentContentRssFeed.setVisibility(GONE);
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentPairing.setVisibility(VISIBLE);
-            }
-        }
-
+        Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
         StringRequest getRequest = new StringRequest(Request.Method.GET,
                 "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.e("TAG","----API-response--------"+response);
-                        try{
-                            JSONObject jsonObject = new JSONObject(response);
-                            Boolean status = jsonObject.getBoolean("success");
-                            if(status){
-                                JSONObject data = jsonObject.getJSONObject("data") ;
-                                Boolean status1 = data.getBoolean("status");
-                                if(status1){
-                                    String orientations = data.getString("orientation");
-                                    String stretch = data.getString("stretch");
-                                    sessionManagement.createStrechSession(stretch);
-                                    sessionManagement.createOrientationSession(orientations);
-                                }
+                        Log.e("TAG","response>>>"+response);
 
-                                Boolean dataStatus = data.getBoolean("status");
-                                if(dataStatus){
-                                    sessionManagement.createPairingSession(true);
-                                    pairingCode.setText("Paired");
-                                    JSONArray dataArray = data.getJSONArray("data");
-                                    if(dataArray.length()>0){
-                                        parentPairing.setVisibility(GONE);
-                                        pairProgress.setVisibility(GONE);
-                                        newSlideItems.clear();
-                                        for(currentIndex =0; currentIndex<dataArray.length();currentIndex++){
-                                            JSONObject dataObject = dataArray.getJSONObject(currentIndex);
-                                            String type = dataObject.getString("type");
-                                            String url = dataObject.getString("url");
-                                            String duration = dataObject.getString("duration");
-                                            String extention = dataObject.getString("extention");
-                                            String app_clock_hands_color= dataObject.getString("app_clock_hands_color");
-                                            String app_clock_text= dataObject.getString("app_clock_text");
-                                            String app_clock_timezone= dataObject.getString("app_clock_timezone");
-                                            String app_clock_size= dataObject.getString("app_clock_size");
-                                            String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color ");
-                                            String app_clock_major_indicator_color= dataObject.getString("app_clock_major_indicator_color");
-                                            String app_clock_innerdot_size= dataObject.getString("app_clock_innerdot_size");
-                                            String app_clock_innerdot_color= dataObject.getString("app_clock_innerdot_color");
 
-                                            String cdtime= dataObject.getString("cdtime");
-                                            String cdtranslation= dataObject.getString("cdtranslation");
-                                            String app_cd_text= dataObject.getString("app_cd_text");
-
-                                            String rssinfo= dataObject.getString("rssinfo");
-
-                                            String laysId="",laysCID="",laysType="",laysName="",laysheight="",
-                                                    laysBgColor="",laysFontSize="",laysFontColor="",
-                                                    laysFontFamily="",
-                                                    laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
-                                            if (dataObject.has("overlays") && !dataObject.isNull("overlays")) {
-                                                JSONObject overlays = dataObject.getJSONObject("overlays");
-                                                Log.e("overlays","overlays>>>"+overlays);
-                                                laysId= String.valueOf(overlays.getInt("id"));
-                                                laysCID=overlays.getString("cid");
-                                                laysType=overlays.getString("type");
-                                                laysName=overlays.getString("name");
-                                                laysheight=overlays.getString("height");
-                                                laysBgColor=overlays.getString("bg_color");
-                                                laysFontSize=overlays.getString("font_size");
-                                                laysFontColor=overlays.getString("font_color");
-                                                laysFontFamily=overlays.getString("font_family");
-                                                laysContentType=overlays.getString("content_type");
-                                                laysContent=overlays.getString("content");
-                                                laysRssInfo=overlays.getString("rssinfo");
-                                                laysDeleted=overlays.getString("is_deleted");
-                                                Log.e("overlays","laysContentType>>>"+laysContentType);
-                                            }
-                                            newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
-                                                    app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
-                                                    app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
-                                                    cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
-                                                    laysContentType,laysContent,laysRssInfo,laysDeleted
-                                            ));
-                                            sessionManagement.createContentDataSession(newSlideItems);
-                                        }
-
-                                        if (slideShowCallCount==0){
-                                            clearTimeout();
-                                            contentCurrentIndex=0;
-                                            contentLay(newSlideItems);
-                                            firstdataCount= newSlideItems.size();
-                                        }
-                                        int newDataCount=newSlideItems.size();
-                                        if(firstdataCount != newDataCount){
-                                            Log.e("time>>","Time>>");
-                                            slideItems.clear();
-                                            slideItems.addAll(newSlideItems);
-                                            slideShowCallCount=0;
-                                        }
-                                    }
-                                    else{
-                                        parentVideoView.setVisibility(GONE);
-                                        parentContentImage.setVisibility(GONE);
-                                        webView_lay.setVisibility(GONE);
-                                        parentContentRssFeed.setVisibility(GONE);
-                                        parentTopOverlay.setVisibility(GONE);
-                                        parentLeftOverlay.setVisibility(GONE);
-                                        parentRightOverlay.setVisibility(GONE);
-                                        parentBottomOverlay.setVisibility(GONE);
-                                        pairProgress.setVisibility(VISIBLE);
-                                        if (slideShowCallCount==0){
-                                            parentPairing.setVisibility(VISIBLE);
-                                        }else{
-                                            parentPairing.setVisibility(GONE);
-                                        }
-
-                                    }
-                                }
-                            }
-                            else {
-                                sessionManagement.createPairingSession(false);
-                            }
-                        }catch (JSONException ex){
-                            ex.printStackTrace();
-                            Log.e("Error", "-----Json Array----: "+ex.getMessage());
-                        }
                     }
                 },
                 new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-                Log.e("Error", "-----VollyError----: "+error.getMessage());
-            }
-        });
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        Log.e("Error", "-----VollyError----: "+error.getMessage());
+                    }
+                });
         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
         requestQueue.add(getRequest);
         getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        );
     }
 
     private void overLays(ContentModel item) {
