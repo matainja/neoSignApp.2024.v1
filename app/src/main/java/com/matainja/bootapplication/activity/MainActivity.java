@@ -11,15 +11,11 @@ import static com.matainja.bootapplication.session.SessionManagement.PAIRING_STA
 import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
@@ -40,9 +36,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
 import android.media.MediaPlayer;
@@ -62,19 +56,14 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.transition.TransitionManager;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -102,9 +91,6 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
 
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
@@ -118,7 +104,6 @@ import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
 import com.matainja.bootapplication.util.NetworkUtil;
-import com.matainja.bootapplication.util.Util;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.Channel;
@@ -127,7 +112,6 @@ import com.pusher.client.channel.SubscriptionEventListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -147,7 +131,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
@@ -714,11 +697,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onPause(){
-        super.onPause();
-        pusher.unsubscribe("screen."+pairCode);
-    }
 
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -872,8 +850,13 @@ public class MainActivity extends AppCompatActivity {
                                         ));
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
+
                                     clearTimeout();
+                                    clearTimeout1();
+                                    clearTimeout2();
                                     contentCurrentIndex=0;
+                                    rssSlideShowCallCount=0;
+                                    overlayRssSlideShowCallCount=0;
                                     contentLay(newSlideItems);
                                     firstdataCount= newSlideItems.size();
 
@@ -908,7 +891,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
 
                                 }
-                            }
+                            }else{}
                         }catch (JSONException ex){
                             ex.printStackTrace();
                             Log.e("Error", "-----Json Array----: "+ex.getMessage());
@@ -946,7 +929,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
         requestQueue.add(getRequest);
-        getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+        getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         );
@@ -1114,7 +1097,7 @@ public class MainActivity extends AppCompatActivity {
                     });
             RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
             requestQueue.add(getRequest);
-            getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                     DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                     DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
             );
@@ -1478,9 +1461,10 @@ public class MainActivity extends AppCompatActivity {
             video_progress.setVisibility(VISIBLE);
 
 
-            if (orientation.equals("90 degrees")) {
+           /* if (orientation.equals("90 degrees")) {
                 videoView.setRotation(0);
                 videoView.setRotation(90);
+
             }
             else if (orientation.equals("180 degrees")) {
                 videoView.setRotation(0);
@@ -1492,7 +1476,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 videoView.setRotation(0);
-            }
+            }*/
 
 
             videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -1511,7 +1495,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-                    // Handle size changes if needed
+
+
                 }
 
                 @Override
@@ -1535,7 +1520,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
+           /* if (orientation.equals("90 degrees")) {
                 myWebView.setRotation(0);
                 myWebView.setRotation(90);
             }
@@ -1549,7 +1534,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 myWebView.setRotation(0);
-            }
+            }*/
             iFrameLay(item.getUrl(),list,duration,item);
 
         }
@@ -1558,7 +1543,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
+            /*if (orientation.equals("90 degrees")) {
                 myWebView.setRotation(0);
                 myWebView.setRotation(90);
             }
@@ -1572,7 +1557,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 myWebView.setRotation(0);
-            }
+            }*/
             clockiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1581,7 +1566,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
+           /* if (orientation.equals("90 degrees")) {
                 myWebView.setRotation(0);
                 myWebView.setRotation(90);
             }
@@ -1595,7 +1580,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 myWebView.setRotation(0);
-            }
+            }*/
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1604,7 +1589,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
+           /* if (orientation.equals("90 degrees")) {
                 myWebView.setRotation(0);
                 myWebView.setRotation(90);
             }
@@ -1618,7 +1603,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 myWebView.setRotation(0);
-            }
+            }*/
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1627,7 +1612,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            if (orientation.equals("90 degrees")) {
+           /* if (orientation.equals("90 degrees")) {
                 myWebView.setRotation(0);
                 myWebView.setRotation(90);
             }
@@ -1641,7 +1626,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 myWebView.setRotation(0);
-            }
+            }*/
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
@@ -1651,9 +1636,11 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
-            if (orientation.equals("90 degrees")) {
+            /*if (orientation.equals("90 degrees")) {
                 childContentRssFeed.setRotation(0);
-                childContentRssFeed.setRotation(90);
+                //childContentRssFeed.setRotation(90);
+                // Rotate screenBody by 90 degrees
+                childContentRssFeed.setRotation(90f);
             }
             else if (orientation.equals("180 degrees")) {
                 childContentRssFeed.setRotation(0);
@@ -1665,14 +1652,15 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 childContentRssFeed.setRotation(0);
-            }
+
+            }*/
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
 
 
-        // Adjust the rotation of the TextureView
-        if (orientation.equals("90 degrees")) {
+
+        /*if (orientation.equals("90 degrees")) {
             parentTopOverlay.setRotation(0);
             parentLeftOverlay.setRotation(0);
             parentRightOverlay.setRotation(0);
@@ -1706,6 +1694,19 @@ public class MainActivity extends AppCompatActivity {
             parentBottomOverlay.setRotation(0);
             contentLay2.setRotation(0);
 
+        }*/
+
+        if (orientation.equals("90 degrees")) {
+            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+        }
+        else if (orientation.equals("180 degrees")) {
+            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 180);
+        }
+        else if (orientation.equals("270 degrees")) {
+            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
+        }
+        else {
+            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 0);
         }
 
         contentCurrentIndex++;
@@ -1715,6 +1716,71 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","duration>>>"+duration);
         Log.e("newDuration","newDuration>>>"+newDuration);
 
+    }
+    private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        contentLay2.setRotation(rotationDegrees);
+
+        // Get the dimensions of the VideoView
+        int contentLay2Width = contentLay2.getWidth();
+        int contentLay2Height = contentLay2.getHeight();
+
+        // Check for valid dimensions
+        if (contentLay2Width > 0 && contentLay2Height > 0) {
+            // Calculate the scale factors to fill the entire screen
+            float scaleX = (float) contentLay2Height / contentLay2Width;
+            float scaleY = (float) contentLay2Width / contentLay2Height;
+
+            // Apply the scaling to fill the entire screen
+            contentLay2.setScaleX(scaleX);
+            contentLay2.setScaleY(scaleY);
+        }
+
+    }
+    private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        myWebView.setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) myWebView.getHeight() / myWebView.getWidth();
+        float scaleY = (float) myWebView.getWidth() / myWebView.getHeight();
+
+        // Apply the scaling to fill the entire screen
+        myWebView.setScaleX(scaleX);
+        myWebView.setScaleY(scaleY);
+    }
+    private void configureRSSFeedTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        parentContentRssFeed.setRotation(rotationDegrees);
+
+        // Get the dimensions of the VideoView
+        int childContentRssFeedViewWidth = parentContentRssFeed.getWidth();
+        int childContentRssFeedViewHeight = parentContentRssFeed.getHeight();
+
+        // Check for valid dimensions
+        if (childContentRssFeedViewWidth > 0 && childContentRssFeedViewHeight > 0) {
+            // Calculate the scale factors to fill the entire screen
+            float scaleX = (float) childContentRssFeedViewHeight / childContentRssFeedViewWidth;
+            float scaleY = (float) childContentRssFeedViewWidth / childContentRssFeedViewHeight;
+
+            // Apply the scaling to fill the entire screen
+            parentContentRssFeed.setScaleX(scaleX);
+            parentContentRssFeed.setScaleY(scaleY);
+        }
+
+
+    }
+    private void configureVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        videoView.setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) videoView.getHeight() / videoView.getWidth();
+        float scaleY = (float) videoView.getWidth() / videoView.getHeight();
+
+        // Apply the scaling to fill the entire screen
+        videoView.setScaleX(scaleX);
+        videoView.setScaleY(scaleY);
     }
     public class RotateTransformation extends BitmapTransformation {
         private static final String ID = "com.example.RotateTransformation";
@@ -1745,18 +1811,35 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Set the data source to a sample video URL, replace with your own video source
             mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
-
+            // Prepare the MediaPlayer asynchronously
+            mediaPlayer.prepareAsync();
             // Set the Surface for the MediaPlayer
             mediaPlayer.setSurface(new Surface(surface));
             Log.e("Tag","videoview");
 
-            // Prepare the MediaPlayer asynchronously
-            mediaPlayer.prepareAsync();
+
 
             // Set an event listener to start playing when prepared
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                    }
+                    else {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
+                    }
+
+
+
+
                     mp.setVolume(0f, 0f);
                     overLays(item);
                     video_progress.setVisibility(GONE);
@@ -1789,14 +1872,30 @@ public class MainActivity extends AppCompatActivity {
         try {
             // Set the data source to a sample video URL, replace with your own video source
             mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
-            mediaPlayer.setSurface(new Surface(videoView.getSurfaceTexture()));
             // Prepare the MediaPlayer asynchronously
             mediaPlayer.prepareAsync();
+            mediaPlayer.setSurface(new Surface(videoView.getSurfaceTexture()));
+
 
             // Set an event listener to start playing when prepared
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                    }
+                    else {
+                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
+                    }
+
+
                     mp.setVolume(0f, 0f);
                     overLays(item);
 
@@ -1841,6 +1940,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
+        // Handle size changes if needed
+        if (orientation.equals("90 degrees")) {
+            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
+        }
+        else if (orientation.equals("180 degrees")) {
+            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 180);
+        }
+        else if (orientation.equals("270 degrees")) {
+            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
+        }
+        else {
+            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 0);
+        }
         List<RSSModel> rsslist = new ArrayList<>();
         String originalString = item1.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
@@ -1945,7 +2057,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
         requestQueue.add(getRequest);
-        getRequest.setRetryPolicy(new DefaultRetryPolicy(500000,
+        getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         );
@@ -2035,6 +2147,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
                     super.onPageStarted(view, url, favicon);
@@ -2134,6 +2260,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
                     super.onPageStarted(view, url, favicon);
@@ -2231,6 +2371,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
                     super.onPageStarted(view, url, favicon);
@@ -2398,6 +2552,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
                     super.onPageStarted(view, url, favicon);
@@ -2517,6 +2685,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
                     super.onPageStarted(view, url, favicon);
