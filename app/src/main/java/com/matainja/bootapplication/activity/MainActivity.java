@@ -1823,18 +1823,37 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+
+
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            videoView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            videoView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            videoView.setRotation(270);
+                        }
+                        else {
+                            videoView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
-                    }
-                    else {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                        }
+                        else {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
+                        }
+
                     }
 
 
@@ -1881,19 +1900,37 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            videoView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            videoView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            videoView.setRotation(270);
+                        }
+                        else {
+                            videoView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                        }
+                        else {
+                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
+                        }
+
                     }
-                    else if (orientation.equals("270 degrees")) {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
-                    }
-                    else {
-                        configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
-                    }
+
 
 
                     mp.setVolume(0f, 0f);
@@ -1940,19 +1977,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
-        // Handle size changes if needed
-        if (orientation.equals("90 degrees")) {
-            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
+        if (strech.equals("off")){
+            if (orientation.equals("90 degrees")) {
+                parentContentRssFeed.setRotation(90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                parentContentRssFeed.setRotation(180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                parentContentRssFeed.setRotation(270);
+            }
+            else {
+                parentContentRssFeed.setRotation(0);
+            }
         }
-        else if (orientation.equals("180 degrees")) {
-            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 180);
+        else{
+            // Handle size changes if needed
+            if (orientation.equals("90 degrees")) {
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
+            }
+            else {
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 0);
+            }
+
+
         }
-        else if (orientation.equals("270 degrees")) {
-            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
-        }
-        else {
-            configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 0);
-        }
+
         List<RSSModel> rsslist = new ArrayList<>();
         String originalString = item1.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
@@ -2147,18 +2203,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
                     }
 
                     progressBar.setVisibility(View.VISIBLE);
@@ -2260,18 +2334,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
                     }
 
                     progressBar.setVisibility(View.VISIBLE);
@@ -2371,18 +2463,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
                     }
 
                     progressBar.setVisibility(View.VISIBLE);
@@ -2552,18 +2662,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
                     }
 
                     progressBar.setVisibility(View.VISIBLE);
@@ -2685,19 +2813,39 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if(isNetworkAvailable()){
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                        }
                     }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
                     }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                    }
+
+
 
                     progressBar.setVisibility(View.VISIBLE);
                     parentInternetLay.setVisibility(GONE);
