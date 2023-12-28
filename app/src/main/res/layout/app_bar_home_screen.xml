@@ -185,101 +185,66 @@
 
     </RelativeLayout>
 
-    <!--<RelativeLayout
-        android:id="@+id/parentContentRssFeed"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/terminal_lay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
-        android:visibility="gone">
+        android:background="@color/white">
 
-        <RelativeLayout
-            android:id="@+id/childContentRssFeed"
+        <ProgressBar
+            android:id="@+id/terminalProgress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:progress="0"
+            android:max="100"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/terminalLogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:layout_centerInParent="true">
+            android:src="@drawable/neo_logo"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/txtTerminal"
+            android:layout_marginTop="20dp"/>
 
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/lay1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+        <TextView
+            android:id="@+id/txtTerminal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Please choose the type of your request:"
+            android:textColor="@color/ash_gray"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@+id/terminalLogo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="20dp"/>
 
-                &lt;!&ndash; ImageView with 40% width and auto height &ndash;&gt;
-                <ImageView
-                    android:id="@+id/rssImageView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:layout_weight="4"
-                    android:adjustViewBounds="true"
-                    android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/terminalView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="16dp"
+            android:scrollbars="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/txtTerminal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-                &lt;!&ndash; TextView with 60% width &ndash;&gt;
-                <TextView
-                    android:id="@+id/rssTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:layout_weight="6"
-                    android:text=""
-                    android:textColor="@android:color/background_dark"
-                    android:textSize="22dp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-            <ProgressBar
-                android:id="@+id/rssProgrss"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:max="100"
-                android:progress="0" />
-
-            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/lay2"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_below="@+id/rssDescription"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-                &lt;!&ndash; TextView with 60% width &ndash;&gt;
-                <ImageView
-                    android:id="@+id/rssQR"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_margin="10dp"
-                    android:scaleType="fitCenter"
-                    android:visibility="gone" />
-                &lt;!&ndash; ImageView with 40% width and auto height &ndash;&gt;
-                <TextView
-                    android:id="@+id/rssDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="80dp"
-                    android:layout_margin="10dp"
-                    android:gravity="bottom"
-                    android:text="" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/rssDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/lay1"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
-                android:text=""
-                android:visibility="gone" />
-        </RelativeLayout>
 
 
-    </RelativeLayout>-->
 
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -455,7 +420,7 @@
         android:layout_gravity="bottom"
         >
         <TextView
-            android:text=""
+            android:text="ffgg ggfdd nnhh nhjk jkkl"
             android:id="@+id/textBottomOverlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

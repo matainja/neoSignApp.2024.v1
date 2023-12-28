@@ -15,6 +15,98 @@ public class ContentModel {
             laysBgColor="",laysFontSize="",laysFontColor="",
             laysFontFamily="",
             laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
+    String id;
+    String app_id;
+    String main_text_translation;
+    String number_text_translation;
+    String people_before_translation;
+    String wait_time_translation;
+    String show_people_before;
+    String show_waiting_time;
+    String logo;
+
+    public String getLaysName() {
+        return laysName;
+    }
+
+    public void setLaysName(String laysName) {
+        this.laysName = laysName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getApp_id() {
+        return app_id;
+    }
+
+    public void setApp_id(String app_id) {
+        this.app_id = app_id;
+    }
+
+    public String getMain_text_translation() {
+        return main_text_translation;
+    }
+
+    public void setMain_text_translation(String main_text_translation) {
+        this.main_text_translation = main_text_translation;
+    }
+
+    public String getNumber_text_translation() {
+        return number_text_translation;
+    }
+
+    public void setNumber_text_translation(String number_text_translation) {
+        this.number_text_translation = number_text_translation;
+    }
+
+    public String getPeople_before_translation() {
+        return people_before_translation;
+    }
+
+    public void setPeople_before_translation(String people_before_translation) {
+        this.people_before_translation = people_before_translation;
+    }
+
+    public String getWait_time_translation() {
+        return wait_time_translation;
+    }
+
+    public void setWait_time_translation(String wait_time_translation) {
+        this.wait_time_translation = wait_time_translation;
+    }
+
+    public String getShow_people_before() {
+        return show_people_before;
+    }
+
+    public void setShow_people_before(String show_people_before) {
+        this.show_people_before = show_people_before;
+    }
+
+    public String getShow_waiting_time() {
+        return show_waiting_time;
+    }
+
+    public void setShow_waiting_time(String show_waiting_time) {
+        this.show_waiting_time = show_waiting_time;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+
+
 
     public String getLaysId() {
         return laysId;
@@ -306,7 +398,10 @@ public class ContentModel {
                         String laysCID, String laysType, String laysName,
                         String laysheight, String laysBgColor, String laysFontSize,
                         String laysFontColor, String laysFontFamily, String laysContentType,
-                        String laysContent, String laysRssInfo, String laysDeleted) {
+                        String laysContent, String laysRssInfo, String laysDeleted,
+                        String id, String app_id, String main_text_translation, String number_text_translation,
+                        String people_before_translation, String wait_time_translation, String show_people_before,
+                        String show_waiting_time, String logo, String app_queue_departments) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -337,7 +432,18 @@ public class ContentModel {
         this.laysContentType=laysContentType;
         this.laysContent=laysContent;
         this.laysRssInfo=laysRssInfo;
+        this.logo=logo;
+
+        this.id=id;
+        this.app_id=app_id;
+        this.main_text_translation=main_text_translation;
+        this.number_text_translation=number_text_translation;
+        this.people_before_translation=people_before_translation;
+        this.wait_time_translation=wait_time_translation;
+        this.show_people_before=show_people_before;
+        this.show_waiting_time=show_waiting_time;
         this.laysDeleted=laysDeleted;
+        this.app_queue_departments=app_queue_departments;
 
 
 

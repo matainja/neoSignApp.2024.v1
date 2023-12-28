@@ -13,10 +13,13 @@ import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -98,8 +101,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.matainja.bootapplication.Adapter.TerminalAdapter;
 import com.matainja.bootapplication.Model.ContentModel;
 import com.matainja.bootapplication.Model.RSSModel;
+import com.matainja.bootapplication.Model.TerminalModel;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
@@ -180,7 +185,9 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout parent_auto_start,parent_keep_awake,parent_keep_on_top,parent_reload,parent_exit;
     RelativeLayout webView_lay,parentContentRssFeed,childContentRssFeed;
     RelativeLayout parentTopOverlay,parentLeftOverlay,parentRightOverlay,parentBottomOverlay;
+    ConstraintLayout terminal_lay;
     TextView rssTitle,rssDescription,rssDate,textTopOverlay,textLeftOverlay,textRightOverlay,textBottomOverlay;
+    TextView txtTerminal;
     ImageView rssImageView,rssQR;
     WebView myWebView;
     long newDuration=0;
@@ -210,15 +217,18 @@ public class MainActivity extends AppCompatActivity {
     private String folderName="com.matainja";
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
-    ImageView content_image;
+    ImageView content_image,terminalLogo;
     TextureView videoView;
     private MediaPlayer mediaPlayer;
-    ProgressBar progressBar,video_progress,rssProgrss,pairProgress;
+    ProgressBar progressBar,video_progress,rssProgrss,pairProgress,terminalProgress;
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
     private Channel channel;
     private Pusher pusher;
+    private RecyclerView terminalView;
+    private TerminalAdapter terminalAdapter;
+    private List<TerminalModel> terminalList;
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -239,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
         contentLay2=(CoordinatorLayout) findViewById(R.id.contentLay2);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
+        terminal_lay =(ConstraintLayout)findViewById(R.id.terminal_lay);
         parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
         parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
         parentRightOverlay =(RelativeLayout)findViewById(R.id.parentRightOverlay);
@@ -257,13 +268,15 @@ public class MainActivity extends AppCompatActivity {
         rssDescription = findViewById(R.id.rssDescription);
         rssDate = findViewById(R.id.rssDate);
         rssQR = findViewById(R.id.rssQR);
-
+        terminalLogo= findViewById(R.id.terminalLogo);
+        txtTerminal= findViewById(R.id.txtTerminal);
         content_image = findViewById(R.id.content_image);
         videoView = findViewById(R.id.videoView);
         parentContentImage = findViewById(R.id.parentContentImage);
         parentVideoView = findViewById(R.id.parentVideoView);
         webView_lay = findViewById(R.id.webView_lay);
         myWebView=(WebView)findViewById(R.id.webview);
+        terminalProgress=(ProgressBar)findViewById(R.id.terminalProgress);
         pairProgress=(ProgressBar)findViewById(R.id.pairProgress);
         progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
         video_progress=(ProgressBar)findViewById(R.id.video_progress);
@@ -290,6 +303,15 @@ public class MainActivity extends AppCompatActivity {
         parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
         parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
+        terminalView = findViewById(R.id.terminalView);
+        terminalList = generateGridItems();
+        terminalAdapter = new TerminalAdapter(this, terminalList);
+
+        // Use a GridLayoutManager with 2 columns
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        terminalView.setLayoutManager(layoutManager);
+        terminalView.setAdapter(terminalAdapter);
+
 
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -377,6 +399,7 @@ public class MainActivity extends AppCompatActivity {
                                 parentBottomOverlay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
+                                terminal_lay.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
                                 parentContentRssFeed.setVisibility(GONE);
                                 pairProgress.setVisibility(VISIBLE);
@@ -419,6 +442,15 @@ public class MainActivity extends AppCompatActivity {
 
         MyReceiver = new MyReceiver();
         broadcastIntent();
+    }
+
+    private List<TerminalModel> generateGridItems() {
+        List<TerminalModel> items = new ArrayList<>();
+        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
+        // Add more items as needed
+        return items;
     }
 
     @SuppressLint("InvalidWakeLockTag")
@@ -749,6 +781,7 @@ public class MainActivity extends AppCompatActivity {
                                 parentPairing.setVisibility(VISIBLE);
                             }
                             else{
+                                terminal_lay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
@@ -764,6 +797,7 @@ public class MainActivity extends AppCompatActivity {
                                 parentPairing.setVisibility(GONE);
                             }
                             else{
+                                terminal_lay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
@@ -819,6 +853,11 @@ public class MainActivity extends AppCompatActivity {
                                         String app_cd_text= dataObject.getString("app_cd_text");
 
                                         String rssinfo= dataObject.getString("rssinfo");
+                                        String app_queue_departments= dataObject.getString("app_queue_departments");
+                                        Log.e("overlays","app_queue_departments>>>"+app_queue_departments);
+
+
+
 
                                         String laysId="",laysCID="",laysType="",laysName="",laysheight="",
                                                 laysBgColor="",laysFontSize="",laysFontColor="",
@@ -842,11 +881,33 @@ public class MainActivity extends AppCompatActivity {
                                             laysDeleted=overlays.getString("is_deleted");
                                             Log.e("overlays","laysContentType>>>"+laysContentType);
                                         }
+
+                                        String id = "", app_id="", main_text_translation="", number_text_translation="", people_before_translation="",
+                                                wait_time_translation="", show_people_before="", show_waiting_time="", logo="";
+                                        if (dataObject.has("queue_terminal") && !dataObject.isNull("queue_terminal")) {
+                                            JSONObject queue_terminal = dataObject.getJSONObject("queue_terminal");
+                                            Log.e("queue_terminal","queue_terminal>>>"+queue_terminal);
+                                            id= String.valueOf(queue_terminal.getInt("id"));
+                                            app_id=String.valueOf(queue_terminal.getInt("app_id"));
+                                            main_text_translation=queue_terminal.getString("main_text_translation");
+                                            number_text_translation=queue_terminal.getString("number_text_translation");
+                                            people_before_translation=queue_terminal.getString("people_before_translation");
+                                            wait_time_translation=queue_terminal.getString("wait_time_translation");
+                                            show_people_before=String.valueOf(queue_terminal.getInt("show_people_before"));
+                                            show_waiting_time=String.valueOf(queue_terminal.getInt("show_waiting_time"));
+                                            logo=queue_terminal.getString("logo");
+                                            Log.e("logo","logo>>>"+logo);
+                                        }
+
+
+
+
                                         newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
                                                 app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
                                                 app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
                                                 cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
-                                                laysContentType,laysContent,laysRssInfo,laysDeleted
+                                                laysContentType,laysContent,laysRssInfo,laysDeleted,id, app_id, main_text_translation, number_text_translation, people_before_translation,
+                                                wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments
                                         ));
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
@@ -875,6 +936,7 @@ public class MainActivity extends AppCompatActivity {
                                 }*/
                                 }
                                 else{
+                                    terminal_lay.setVisibility(GONE);
                                     parentVideoView.setVisibility(GONE);
                                     parentContentImage.setVisibility(GONE);
                                     webView_lay.setVisibility(GONE);
@@ -1365,6 +1427,7 @@ public class MainActivity extends AppCompatActivity {
         view.setLayoutParams(params);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
@@ -1376,17 +1439,20 @@ public class MainActivity extends AppCompatActivity {
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
         ContentModel item = list.get(contentCurrentIndex);
-        Log.e("newDuration","getLaysContentType()>>>"+item.getLaysContentType());
+        Log.e("newDuration","strech>>>"+strech);
         parentTopOverlay.setVisibility(GONE);
         parentLeftOverlay.setVisibility(GONE);
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
 
         if (item.getType().equals("image")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
-            parentContentImage.setVisibility(VISIBLE);
             webView_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(VISIBLE);
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
 
@@ -1454,30 +1520,14 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
-
-
-           /* if (orientation.equals("90 degrees")) {
-                videoView.setRotation(0);
-                videoView.setRotation(90);
-
-            }
-            else if (orientation.equals("180 degrees")) {
-                videoView.setRotation(0);
-                videoView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                videoView.setRotation(0);
-                videoView.setRotation(270);
-            }
-            else {
-                videoView.setRotation(0);
-            }*/
-
 
             videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
@@ -1516,199 +1566,263 @@ public class MainActivity extends AppCompatActivity {
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-           /* if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }*/
+
             iFrameLay(item.getUrl(),list,duration,item);
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-            /*if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }*/
+
             clockiFrameLay(item.getUrl(),list,item,duration);
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-           /* if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }*/
+
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-           /* if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }*/
+
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-           /* if (orientation.equals("90 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                myWebView.setRotation(0);
-                myWebView.setRotation(270);
-            }
-            else {
-                myWebView.setRotation(0);
-            }*/
+
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
-            /*if (orientation.equals("90 degrees")) {
-                childContentRssFeed.setRotation(0);
-                //childContentRssFeed.setRotation(90);
-                // Rotate screenBody by 90 degrees
-                childContentRssFeed.setRotation(90f);
-            }
-            else if (orientation.equals("180 degrees")) {
-                childContentRssFeed.setRotation(0);
-                childContentRssFeed.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                childContentRssFeed.setRotation(0);
-                childContentRssFeed.setRotation(270);
-            }
-            else {
-                childContentRssFeed.setRotation(0);
 
-            }*/
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
+        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(VISIBLE);
+            terminalLogo.setVisibility(VISIBLE);
+            txtTerminal.setVisibility(VISIBLE);
+            terminalProgress.setVisibility(GONE);
+
+            Glide.with(getApplicationContext())
+                    .load(item.getLogo())
+                    .error(R.drawable.neo_logo)
+                    .into(terminalLogo);
+            txtTerminal.setText(item.getMain_text_translation());
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    terminal_lay.setRotation(90);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setRotation(180);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    terminal_lay.setRotation(270);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                }
+                else {
+                    terminal_lay.setRotation(0);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 180);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 0);
+                }
+
+
+            }
 
 
 
-        /*if (orientation.equals("90 degrees")) {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay2.setRotation(0);
-            contentLay2.setRotation(90);
+            String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
+
+            // Parse the cleaned JSON array string into a JSONArray
+            JSONArray app_queue_departmentsArray = null;
+            try {
+                app_queue_departmentsArray = new JSONArray(cleanedJsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e("overlays","jsonArray>>>"+app_queue_departmentsArray);
+            // Now you can iterate through the elements of the array
+            terminalList.clear();
+            for (int i = 0; i < app_queue_departmentsArray.length(); i++) {
+                // Access each element using jsonArray.getString(i)
+                try {
+                    String departmentName = app_queue_departmentsArray.getString(i);
+                    //List<TerminalModel> items = new ArrayList<>();
+                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName));
+                    Log.e("overlays","terminalList>>>"+terminalList);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // Do something with the departmentName...
+            }
+            terminalAdapter = new TerminalAdapter(this, terminalList);
+            terminalView.setAdapter(terminalAdapter);
+            terminalAdapter.notifyDataSetChanged();
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
         }
-        else if (orientation.equals("180 degrees")) {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay2.setRotation(0);
-            contentLay2.setRotation(180);
 
-        }
-        else if (orientation.equals("270 degrees")) {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay2.setRotation(0);
-            // Rotate the layout
-            contentLay2.setRotation(270f);
 
-        }
-        else {
-            parentTopOverlay.setRotation(0);
-            parentLeftOverlay.setRotation(0);
-            parentRightOverlay.setRotation(0);
-            parentBottomOverlay.setRotation(0);
-            contentLay2.setRotation(0);
 
-        }*/
 
-        if (orientation.equals("90 degrees")) {
-            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
-        }
-        else if (orientation.equals("180 degrees")) {
-            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 180);
-        }
-        else if (orientation.equals("270 degrees")) {
-            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
-        }
-        else {
-            configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 0);
-        }
 
+        if (strech.equals("off")){
+            if (orientation.equals("90 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                contentLay2.setRotation(180);
+                // Save the initial dimensions or layout parameters
+                int initialWidth = contentLay2.getWidth();
+                int initialHeight = contentLay2.getHeight();
+
+// ... (code for scaling)
+
+// Revert to the previous state
+                contentLay2.setScaleX(1); // Set back to the original scale
+                contentLay2.setScaleY(1);
+                contentLay2.getLayoutParams().width = initialWidth;
+                contentLay2.getLayoutParams().height = initialHeight;
+                contentLay2.requestLayout(); // Force a layout update
+
+            }
+            else if (orientation.equals("270 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
+            }
+            else {
+                contentLay2.setRotation(0);
+                // Save the initial dimensions or layout parameters
+                int initialWidth = contentLay2.getWidth();
+                int initialHeight = contentLay2.getHeight();
+
+// ... (code for scaling)
+
+// Revert to the previous state
+                contentLay2.setScaleX(1); // Set back to the original scale
+                contentLay2.setScaleY(1);
+                contentLay2.getLayoutParams().width = initialWidth;
+                contentLay2.getLayoutParams().height = initialHeight;
+                contentLay2.requestLayout(); // Force a layout update
+
+            }
+        }
+        else{
+            if (orientation.equals("90 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+            }
+            else if (orientation.equals("180 degrees")) {
+                contentLay2.setRotation(180);
+                // Save the initial dimensions or layout parameters
+                int initialWidth = contentLay2.getWidth();
+                int initialHeight = contentLay2.getHeight();
+
+// ... (code for scaling)
+
+// Revert to the previous state
+                contentLay2.setScaleX(1); // Set back to the original scale
+                contentLay2.setScaleY(1);
+                contentLay2.getLayoutParams().width = initialWidth;
+                contentLay2.getLayoutParams().height = initialHeight;
+                contentLay2.requestLayout(); // Force a layout update
+            }
+            else if (orientation.equals("270 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
+            }
+            else {
+                contentLay2.setRotation(0);
+                // Save the initial dimensions or layout parameters
+                int initialWidth = contentLay2.getWidth();
+                int initialHeight = contentLay2.getHeight();
+
+// ... (code for scaling)
+
+// Revert to the previous state
+                contentLay2.setScaleX(1); // Set back to the original scale
+                contentLay2.setScaleY(1);
+                contentLay2.getLayoutParams().width = initialWidth;
+                contentLay2.getLayoutParams().height = initialHeight;
+                contentLay2.requestLayout(); // Force a layout update
+            }
+        }
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -1717,6 +1831,28 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
+
+    private void configureTerminalTransform(int width, int height, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        terminal_lay.setRotation(rotationDegrees);
+
+        // Get the dimensions of the VideoView
+        int terminalLayViewWidth = terminal_lay.getWidth();
+        int terminalLayViewHeight = terminal_lay.getHeight();
+
+        // Check for valid dimensions
+        if (terminalLayViewWidth > 0 && terminalLayViewHeight > 0) {
+            // Calculate the scale factors to fill the entire screen
+            float scaleX = (float) terminalLayViewHeight / terminalLayViewWidth;
+            float scaleY = (float) terminalLayViewWidth / terminalLayViewHeight;
+
+            // Apply the scaling to fill the entire screen
+            terminal_lay.setScaleX(scaleX);
+            terminal_lay.setScaleY(scaleY);
+        }
+
+    }
+
     private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         contentLay2.setRotation(rotationDegrees);
@@ -1828,15 +1964,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             videoView.setRotation(90);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             videoView.setRotation(180);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             videoView.setRotation(270);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else {
                             videoView.setRotation(0);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                     }
                     else{
@@ -1903,15 +2047,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             videoView.setRotation(90);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             videoView.setRotation(180);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             videoView.setRotation(270);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                         else {
                             videoView.setRotation(0);
+                            videoView.setScaleX(1);
+                            videoView.setScaleY(1);
                         }
                     }
                     else{
@@ -1980,15 +2132,23 @@ public class MainActivity extends AppCompatActivity {
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
                 parentContentRssFeed.setRotation(90);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
             }
             else if (orientation.equals("180 degrees")) {
                 parentContentRssFeed.setRotation(180);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
             }
             else if (orientation.equals("270 degrees")) {
                 parentContentRssFeed.setRotation(270);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
             }
             else {
                 parentContentRssFeed.setRotation(0);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
             }
         }
         else{
@@ -2206,15 +2366,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else {
                             myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                     }
                     else{
@@ -2337,15 +2505,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else {
                             myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                     }
                     else{
@@ -2466,15 +2642,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else {
                             myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                     }
                     else{
@@ -2665,15 +2849,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else {
                             myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                     }
                     else{
@@ -2816,15 +3008,23 @@ public class MainActivity extends AppCompatActivity {
                     if (strech.equals("off")){
                         if (orientation.equals("90 degrees")) {
                             myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("180 degrees")) {
                             myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else if (orientation.equals("270 degrees")) {
                             myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                         else {
                             myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
                         }
                     }
                     else{
@@ -3483,7 +3683,10 @@ public class MainActivity extends AppCompatActivity {
                                                 parentRightOverlay.setVisibility(GONE);
                                                 parentBottomOverlay.setVisibility(GONE);
                                                 parentVideoView.setVisibility(GONE);
+                                                terminal_lay.setVisibility(GONE);
                                                 parentContentImage.setVisibility(GONE);
+                                                terminalLogo.setVisibility(GONE);
+                                                txtTerminal.setVisibility(GONE);
                                                 webView_lay.setVisibility(GONE);
                                                 parentContentRssFeed.setVisibility(GONE);
                                                 pairProgress.setVisibility(VISIBLE);
@@ -3797,8 +4000,5 @@ public class MainActivity extends AppCompatActivity {
         //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
-
-
-
 
 }
