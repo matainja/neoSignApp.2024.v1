@@ -337,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
         if(isNetworkAvailable()){
             parentInternetLay.setVisibility(GONE);
             initPusher();
-            initPairing(pairCode);
+            //initPairing(pairCode);
            /* // Initialize the Timer
             Timer timer = new Timer();
             // Schedule the TimerTask to make API calls every X milliseconds
@@ -889,6 +889,7 @@ public class MainActivity extends AppCompatActivity {
                                             Log.e("queue_terminal","queue_terminal>>>"+queue_terminal);
                                             id= String.valueOf(queue_terminal.getInt("id"));
                                             app_id=String.valueOf(queue_terminal.getInt("app_id"));
+                                            Log.e("queue_terminal","app_id>>>"+app_id);
                                             main_text_translation=queue_terminal.getString("main_text_translation");
                                             number_text_translation=queue_terminal.getString("number_text_translation");
                                             people_before_translation=queue_terminal.getString("people_before_translation");
@@ -1715,7 +1716,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     String departmentName = app_queue_departmentsArray.getString(i);
                     //List<TerminalModel> items = new ArrayList<>();
-                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName));
+                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName, item.getApp_id()));
                     Log.e("overlays","terminalList>>>"+terminalList);
 
                 } catch (JSONException e) {

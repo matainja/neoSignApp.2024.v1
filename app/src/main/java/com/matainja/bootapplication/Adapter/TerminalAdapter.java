@@ -1,7 +1,9 @@
 package com.matainja.bootapplication.Adapter;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.matainja.bootapplication.Model.TerminalModel;
 import com.matainja.bootapplication.R;
+import com.matainja.bootapplication.activity.TerminalShowActivity;
 
 import java.util.List;
 
@@ -37,7 +40,7 @@ public class TerminalAdapter extends RecyclerView.Adapter<TerminalAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         TerminalModel item = gridItemList.get(position);
 
         holder.imageView.setImageResource(item.getImageResource());
@@ -45,6 +48,17 @@ public class TerminalAdapter extends RecyclerView.Adapter<TerminalAdapter.ViewHo
         holder.textView.setTextColor(Color.parseColor("#000000"));
         holder.textView.setText(item.getItemName());
         holder.terminalCard.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+        holder.terminalCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e("queue_terminal","app_id>>>"+gridItemList.get(position).getAppId());
+                Intent intent = new Intent(context, TerminalShowActivity.class);
+                // You can also pass data to the new activity if needed
+                intent.putExtra("item", gridItemList.get(position).getItemName());
+                intent.putExtra("appId", gridItemList.get(position).getAppId());
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
