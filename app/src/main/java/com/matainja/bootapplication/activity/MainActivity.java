@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
@@ -101,6 +102,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.matainja.bootapplication.Adapter.DisplayAdapter;
 import com.matainja.bootapplication.Adapter.TerminalAdapter;
 import com.matainja.bootapplication.Model.ContentModel;
 import com.matainja.bootapplication.Model.RSSModel;
@@ -230,6 +232,10 @@ public class MainActivity extends AppCompatActivity {
     private TerminalAdapter terminalAdapter;
     private List<TerminalModel> terminalList;
 
+    private RecyclerView display_list;
+    private DisplayAdapter displayAdapter;
+    private List<TerminalModel> displayList;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -307,10 +313,18 @@ public class MainActivity extends AppCompatActivity {
         terminalList = generateGridItems();
         terminalAdapter = new TerminalAdapter(this, terminalList);
 
+        display_list = findViewById(R.id.display_list);
+        displayList = generateDisplayItems();
+        displayAdapter = new DisplayAdapter(this, displayList);
+
         // Use a GridLayoutManager with 2 columns
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         terminalView.setLayoutManager(layoutManager);
         terminalView.setAdapter(terminalAdapter);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        display_list.setLayoutManager(linearLayoutManager);
+        display_list.setAdapter(displayAdapter);
 
 
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
@@ -449,6 +463,17 @@ public class MainActivity extends AppCompatActivity {
         /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
         items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
         items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
+        // Add more items as needed
+        return items;
+    }
+    private List<TerminalModel> generateDisplayItems() {
+        List<TerminalModel> items = new ArrayList<>();
+        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1",""));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2",""));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3",""));
         // Add more items as needed
         return items;
     }
@@ -1429,7 +1454,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private void contentLay(List<ContentModel> list) {
+    private void contentLay(List<ContentModel> list){
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
         orientation=getOrientationDetails.get(ORIENTATION);
