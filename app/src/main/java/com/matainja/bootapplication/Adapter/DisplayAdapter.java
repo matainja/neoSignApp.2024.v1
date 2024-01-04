@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.matainja.bootapplication.Model.DisplayDataModel;
 import com.matainja.bootapplication.Model.TerminalModel;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.activity.TerminalShowActivity;
@@ -23,10 +24,10 @@ import com.matainja.bootapplication.activity.TerminalShowActivity;
 import java.util.List;
 
 public class DisplayAdapter extends RecyclerView.Adapter<DisplayAdapter.ViewHolder>{
-    private List<TerminalModel> gridItemList;
+    private List<DisplayDataModel> gridItemList;
     private Context context;
 
-    public DisplayAdapter(Context context, List<TerminalModel> gridItemList) {
+    public DisplayAdapter(Context context, List<DisplayDataModel> gridItemList) {
         this.context = context;
         this.gridItemList = gridItemList;
     }
@@ -40,23 +41,15 @@ public class DisplayAdapter extends RecyclerView.Adapter<DisplayAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull DisplayAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        TerminalModel item = gridItemList.get(position);
+        DisplayDataModel item = gridItemList.get(position);
 
-        holder.imageView.setImageResource(item.getImageResource());
-        Log.e("Tag","item.getItemName()"+item.getItemName());
         holder.textView.setTextColor(Color.parseColor("#FFFFFF"));
-        holder.textView.setText(item.getItemName());
-        holder.terminalCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("queue_terminal","app_id>>>"+gridItemList.get(position).getAppId());
-                Intent intent = new Intent(context, TerminalShowActivity.class);
-                // You can also pass data to the new activity if needed
-                intent.putExtra("item", gridItemList.get(position).getItemName());
-                intent.putExtra("appId", gridItemList.get(position).getAppId());
-                context.startActivity(intent);
-            }
-        });
+        holder.textView.setText(item.getQueue_id());
+        holder.textView1.setTextColor(Color.parseColor("#FF0000"));
+        holder.textView1.setText(item.getCounter_id());
+        holder.textView2.setTextColor(Color.parseColor("#FF0000"));
+        holder.textView2.setText(">>");
+
     }
 
     @Override
@@ -66,13 +59,15 @@ public class DisplayAdapter extends RecyclerView.Adapter<DisplayAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        TextView textView;
+        TextView textView,textView1,textView2;
         RelativeLayout terminalCard;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
             textView = itemView.findViewById(R.id.textView);
+            textView1 = itemView.findViewById(R.id.textView1);
+            textView2 = itemView.findViewById(R.id.textView2);
             terminalCard= itemView.findViewById(R.id.terminalCard);
         }
     }

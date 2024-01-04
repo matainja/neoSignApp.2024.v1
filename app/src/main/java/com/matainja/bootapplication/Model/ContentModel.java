@@ -24,6 +24,108 @@ public class ContentModel {
     String show_people_before;
     String show_waiting_time;
     String logo;
+    String display_id,display_app_id,history_translation,number_translation,counter_translation,
+            show_time,show_history,show_specific_screen,show_news_channel,screen_id,
+            feed_url,text;
+
+
+    public String getDisplay_id() {
+        return display_id;
+    }
+
+    public void setDisplay_id(String display_id) {
+        this.display_id = display_id;
+    }
+
+    public String getDisplay_app_id() {
+        return display_app_id;
+    }
+
+    public void setDisplay_app_id(String display_app_id) {
+        this.display_app_id = display_app_id;
+    }
+
+    public String getHistory_translation() {
+        return history_translation;
+    }
+
+    public void setHistory_translation(String history_translation) {
+        this.history_translation = history_translation;
+    }
+
+    public String getNumber_translation() {
+        return number_translation;
+    }
+
+    public void setNumber_translation(String number_translation) {
+        this.number_translation = number_translation;
+    }
+
+    public String getCounter_translation() {
+        return counter_translation;
+    }
+
+    public void setCounter_translation(String counter_translation) {
+        this.counter_translation = counter_translation;
+    }
+
+    public String getShow_time() {
+        return show_time;
+    }
+
+    public void setShow_time(String show_time) {
+        this.show_time = show_time;
+    }
+
+    public String getShow_history() {
+        return show_history;
+    }
+
+    public void setShow_history(String show_history) {
+        this.show_history = show_history;
+    }
+
+    public String getShow_specific_screen() {
+        return show_specific_screen;
+    }
+
+    public void setShow_specific_screen(String show_specific_screen) {
+        this.show_specific_screen = show_specific_screen;
+    }
+
+    public String getShow_news_channel() {
+        return show_news_channel;
+    }
+
+    public void setShow_news_channel(String show_news_channel) {
+        this.show_news_channel = show_news_channel;
+    }
+
+    public String getScreen_id() {
+        return screen_id;
+    }
+
+    public void setScreen_id(String screen_id) {
+        this.screen_id = screen_id;
+    }
+
+    public String getFeed_url() {
+        return feed_url;
+    }
+
+    public void setFeed_url(String feed_url) {
+        this.feed_url = feed_url;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+
 
     public String getLaysName() {
         return laysName;
@@ -401,7 +503,11 @@ public class ContentModel {
                         String laysContent, String laysRssInfo, String laysDeleted,
                         String id, String app_id, String main_text_translation, String number_text_translation,
                         String people_before_translation, String wait_time_translation, String show_people_before,
-                        String show_waiting_time, String logo, String app_queue_departments) {
+                        String show_waiting_time, String logo, String app_queue_departments,
+                        String display_id,String display_app_id,String history_translation,
+                        String number_translation,String counter_translation,
+                        String show_time,String show_history,String show_specific_screen,String show_news_channel,String screen_id,
+                        String feed_url,String text) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -445,8 +551,18 @@ public class ContentModel {
         this.laysDeleted=laysDeleted;
         this.app_queue_departments=app_queue_departments;
 
-
-
+        this.display_id=display_id;
+        this.display_app_id=display_app_id;
+        this.history_translation=history_translation;
+        this.number_translation=number_translation;
+        this.counter_translation=counter_translation;
+        this.show_time=show_time;
+        this.show_history=show_history;
+        this.show_specific_screen=show_specific_screen;
+        this.show_news_channel=show_news_channel;
+        this.screen_id=screen_id;
+        this.feed_url=feed_url;
+        this.text=text;
     }
 
     public String getType() {

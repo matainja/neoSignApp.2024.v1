@@ -246,6 +246,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/display_background"
+        android:visibility="gone"
         >
 
         <RelativeLayout
@@ -283,6 +284,7 @@
 
         </RelativeLayout>
         <ImageView
+            android:id="@+id/displayDivider"
             android:layout_width="1dp"
             android:layout_height="fill_parent"
             android:src="@drawable/blur_radius"
@@ -297,95 +299,118 @@
             android:id="@+id/otherView1"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:gravity="center_vertical"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/divider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintWidth_percent="0.5">
-            <TextView
-            android:id="@+id/txtDisplay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="Number"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="normal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_margin="15dp"/>
-
-            <TextView
-                android:id="@+id/txtDisplayId"
-                android:layout_width="wrap_content"
+            app:layout_constraintWidth_percent="0.58">
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtDisplay"
-                android:layout_centerHorizontal="true"
-                android:layout_marginStart="15sp"
-                android:layout_marginTop="15sp"
-                android:layout_marginEnd="15sp"
-                android:layout_marginBottom="15sp"
-                android:text="012"
-                android:textColor="@color/white"
-                android:textSize="40sp"
-                android:textStyle="bold" />
-            <LinearLayout
-                android:id="@+id/displayCounter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@+id/txtDisplayId"
-                android:layout_margin="15dp"
-                >
-
+                android:layout_centerInParent="true">
                 <TextView
-                    android:id="@+id/counter_image1"
+                    android:id="@+id/txtDisplay"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text=">>"
-                    android:textColor="@color/teal_700"
-                    android:textSize="35sp"
-                    android:textStyle="bold"
-                />
-
+                    android:layout_centerHorizontal="true"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="normal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_margin="15dp"/>
                 <TextView
-                    android:id="@+id/txtDisplayCounter"
+                    android:id="@+id/txtDisplayId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtDisplay"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginStart="15sp"
+                    android:layout_marginTop="15sp"
+                    android:layout_marginEnd="15sp"
+                    android:layout_marginBottom="15sp"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+                <LinearLayout
+                    android:id="@+id/displayCounter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="2"
+                    android:orientation="horizontal"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@+id/txtDisplayId"
+                    android:layout_margin="15dp"
+                    >
+
+                    <TextView
+                        android:id="@+id/counter_image1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/teal_700"
+                        android:textSize="35sp"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/txtDisplayCounter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text=""
+                        android:textColor="@color/teal_700"
+                        android:textSize="35sp"
+                        android:layout_marginLeft="10sp"
+                        android:textStyle="bold"
+                        />
+
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/txtDisplaycounterTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/displayCounter"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginStart="15sp"
+                    android:layout_marginTop="15sp"
+                    android:layout_marginEnd="15sp"
+                    android:layout_marginBottom="15sp"
+                    android:text=""
                     android:textColor="@color/teal_700"
                     android:textSize="35sp"
-                    android:layout_marginLeft="10sp"
                     android:textStyle="bold"
                     />
+            </RelativeLayout>
 
-            </LinearLayout>
-            <TextView
-                android:id="@+id/txtDisplaycounterTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/displayCounter"
-                android:layout_centerHorizontal="true"
-                android:layout_marginStart="15sp"
-                android:layout_marginTop="15sp"
-                android:layout_marginEnd="15sp"
-                android:layout_marginBottom="15sp"
-                android:text="Counter"
-                android:textColor="@color/teal_700"
-                android:textSize="35sp"
-                android:textStyle="bold"
-                />
+            <RelativeLayout
+                android:id="@+id/displayOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@color/black"
+                android:visibility="visible"
+                android:layout_alignParentBottom="true"
+                >
+                <TextView
+                    android:text=""
+                    android:id="@+id/textdisplayOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:fadeScrollbars="false"
+                    android:scrollHorizontally="true"
+                    android:layout_centerVertical="true"
+                    />
+
+            </RelativeLayout>
         </RelativeLayout>
 
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
 
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -482,7 +507,6 @@
         </RelativeLayout>
 
     </RelativeLayout>
-
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/contentLay2"

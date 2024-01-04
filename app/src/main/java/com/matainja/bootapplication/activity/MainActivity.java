@@ -105,6 +105,7 @@ import com.google.gson.reflect.TypeToken;
 import com.matainja.bootapplication.Adapter.DisplayAdapter;
 import com.matainja.bootapplication.Adapter.TerminalAdapter;
 import com.matainja.bootapplication.Model.ContentModel;
+import com.matainja.bootapplication.Model.DisplayDataModel;
 import com.matainja.bootapplication.Model.RSSModel;
 import com.matainja.bootapplication.Model.TerminalModel;
 import com.matainja.bootapplication.R;
@@ -199,17 +200,22 @@ public class MainActivity extends AppCompatActivity {
     Runnable myRunnable1;
     Handler handler2;
     Runnable myRunnable2;
+    Handler handler3;
+    Runnable myRunnable3;
     int currentIndex;
     int contentCurrentIndex=0;
     int slideShowCallCount=0;
     int rssContentCurrentIndex=0;
     int rssSlideShowCallCount=0;
     int overlayRssSlideShowCallCount=0;
+    int displayOverlayRssSlideShowCallCount=0;
     int overlaysRssContentCurrentIndex=0;
+    int displayOverlaysRssContentCurrentIndex=0;
     private int currentPage = 0;
     int firstdataCount=0;
     int firstRssFeeddataCount=0;
     int firstRssFeedLaysdataCount=0;
+    int displayFirstRssFeedLaysdataCount=0;
     int count=0;
     String mUrl;
     private static final int FILECHOOSER_RESULTCODE   = 1;
@@ -234,7 +240,11 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView display_list;
     private DisplayAdapter displayAdapter;
-    private List<TerminalModel> displayList;
+    private List<DisplayDataModel> displayList;
+    ConstraintLayout display_lay;
+    RelativeLayout otherView,otherView1,displayOverlay;
+    ImageView displayDivider;
+    TextView txtDisplay,txtDisplayId,counter_image1,txtDisplayCounter,txtDisplaycounterTitle,textdisplayOverlay;
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -249,12 +259,17 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler();
         handler1 = new Handler();
         handler2 = new Handler();
+        handler3 = new Handler();
 
+        displayOverlay=(RelativeLayout) findViewById(R.id.displayOverlay);
+        otherView=(RelativeLayout) findViewById(R.id.otherView);
+        otherView1=(RelativeLayout) findViewById(R.id.otherView1);
         parentInternetLay=(LinearLayout) findViewById(R.id.parentInternetLay);
         contentLay=(CoordinatorLayout) findViewById(R.id.contentLay);
         contentLay2=(CoordinatorLayout) findViewById(R.id.contentLay2);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView =(NavigationView)findViewById(R.id.nav_view);
+        display_lay=(ConstraintLayout)findViewById(R.id.display_lay);
         terminal_lay =(ConstraintLayout)findViewById(R.id.terminal_lay);
         parentTopOverlay =(RelativeLayout)findViewById(R.id.parentTopOverlay);
         parentLeftOverlay =(RelativeLayout)findViewById(R.id.parentLeftOverlay);
@@ -264,6 +279,13 @@ public class MainActivity extends AppCompatActivity {
         textLeftOverlay =(TextView)findViewById(R.id.textLeftOverlay);
         textRightOverlay =(TextView)findViewById(R.id.textRightOverlay);
         textBottomOverlay =(TextView)findViewById(R.id.textBottomOverlay);
+        txtDisplay=(TextView)findViewById(R.id.txtDisplay);
+        txtDisplayId=(TextView)findViewById(R.id.txtDisplayId);
+        counter_image1=(TextView)findViewById(R.id.counter_image1);
+        txtDisplayCounter=(TextView)findViewById(R.id.txtDisplayCounter);
+        txtDisplaycounterTitle=(TextView)findViewById(R.id.txtDisplaycounterTitle);
+        textdisplayOverlay=(TextView)findViewById(R.id.textdisplayOverlay);
+        displayDivider=(ImageView)findViewById(R.id.displayDivider);
 
         parentPairing= findViewById(R.id.parentPairing);
         pairingCode = findViewById(R.id.pairingCode);
@@ -404,9 +426,11 @@ public class MainActivity extends AppCompatActivity {
                                 slideShowCallCount=0;
                                 rssSlideShowCallCount=0;
                                 overlayRssSlideShowCallCount=0;
+                                displayOverlayRssSlideShowCallCount=0;
                                 clearTimeout();
                                 clearTimeout1();
                                 clearTimeout2();
+                                clearTimeout3();
                                 parentTopOverlay.setVisibility(GONE);
                                 parentLeftOverlay.setVisibility(GONE);
                                 parentRightOverlay.setVisibility(GONE);
@@ -466,14 +490,12 @@ public class MainActivity extends AppCompatActivity {
         // Add more items as needed
         return items;
     }
-    private List<TerminalModel> generateDisplayItems() {
-        List<TerminalModel> items = new ArrayList<>();
+    private List<DisplayDataModel> generateDisplayItems() {
+        List<DisplayDataModel> items = new ArrayList<>();
         /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
         items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
         items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1",""));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2",""));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3",""));
+
         // Add more items as needed
         return items;
     }
@@ -924,6 +946,27 @@ public class MainActivity extends AppCompatActivity {
                                             logo=queue_terminal.getString("logo");
                                             Log.e("logo","logo>>>"+logo);
                                         }
+                                        String display_id = "",display_app_id="",history_translation="",number_translation="",counter_translation="",
+                                                show_time="",show_history="",show_specific_screen="",show_news_channel="",screen_id="",
+                                                feed_url="",text=" ";
+                                        if (dataObject.has("queue_display") && !dataObject.isNull("queue_display")) {
+                                            JSONObject queue_display = dataObject.getJSONObject("queue_display");
+                                            Log.e("queue_display","queue_display>>>"+queue_display);
+                                            display_id= String.valueOf(queue_display.getInt("id"));
+                                            display_app_id=String.valueOf(queue_display.getInt("app_id"));
+                                            Log.e("display_app_id","display_app_id>>>"+display_app_id);
+                                            history_translation=queue_display.getString("history_translation");
+                                            number_translation=queue_display.getString("number_translation");
+                                            counter_translation=queue_display.getString("counter_translation");
+                                            show_time=String.valueOf(queue_display.getInt("show_time"));
+                                            show_history=String.valueOf(queue_display.getInt("show_history"));
+                                            show_specific_screen=String.valueOf(queue_display.getInt("show_specific_screen"));
+                                            show_news_channel=String.valueOf(queue_display.getInt("show_news_channel"));
+                                            screen_id=queue_display.getString("screen_id");
+                                            feed_url=queue_display.getString("feed_url");
+                                            text=queue_display.getString("text");
+
+                                        }
 
 
 
@@ -933,7 +976,9 @@ public class MainActivity extends AppCompatActivity {
                                                 app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
                                                 cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
                                                 laysContentType,laysContent,laysRssInfo,laysDeleted,id, app_id, main_text_translation, number_text_translation, people_before_translation,
-                                                wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments
+                                                wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments,display_id,display_app_id,history_translation,number_translation,counter_translation,
+                                                show_time,show_history,show_specific_screen,show_news_channel,screen_id,
+                                                feed_url,text
                                         ));
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
@@ -941,9 +986,11 @@ public class MainActivity extends AppCompatActivity {
                                     clearTimeout();
                                     clearTimeout1();
                                     clearTimeout2();
+                                    clearTimeout3();
                                     contentCurrentIndex=0;
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
+                                    displayOverlayRssSlideShowCallCount=0;
                                     contentLay(newSlideItems);
                                     firstdataCount= newSlideItems.size();
 
@@ -992,6 +1039,90 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+    @SuppressLint("NotifyDataSetChanged")
+    private void initDisplayContentPusher(String display_id, String counter_translation){
+        int displayId = Integer.parseInt(display_id)+1;
+
+        pusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
+            }
+
+            @Override
+            public void onError(String message, String code, Exception e) {
+                Log.i("Pusher", "There was a problem connecting! " +
+                        "\ncode: " + code +
+                        "\nmessage: " + message +
+                        "\nException: " + e);
+            }
+        }, ConnectionState.ALL);
+        Log.e("Tag","QueueAppDisplay>>>"+"QueueAppDisplay."+displayId);
+
+        channel = pusher.subscribe("QueueAppDisplay."+displayId);
+
+        channel.bind("QueueAppDisplay-content", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Log.e("Pusher", "Received event with data from display: " + event.toString());
+
+                        try{
+                            JSONObject jsonObject = new JSONObject(event.getData().toString());
+                            Log.e("Tag","jsonObject>>>"+jsonObject);
+                            displayList.clear();
+                            JSONArray dataArray = jsonObject.getJSONArray("data");
+                            if(dataArray.length()>0){
+                                for(int currentIndex =0; currentIndex<dataArray.length();currentIndex++){
+                                    JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+                                    int id = dataObject.getInt("id");
+                                    String app_id = dataObject.getString("app_id");
+                                    String queue_id = dataObject.getString("queue_id");
+                                    String counter_id = dataObject.getString("counter_id");
+                                    String created_at= dataObject.getString("created_at");
+                                    txtDisplay.setText("Number");
+                                    txtDisplayId.setText(queue_id);
+                                    counter_image1.setText(">>");
+                                    txtDisplayCounter.setText(counter_id);
+                                    if (counter_translation==null || counter_translation.isEmpty()){
+                                        txtDisplaycounterTitle.setText("Counter");
+                                    }
+                                    else{
+                                        txtDisplaycounterTitle.setText(counter_translation);
+                                    }
+
+
+                                    displayList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
+                                    Log.e("created_at","displayList>>>"+displayList);
+                                }
+                                displayAdapter = new DisplayAdapter(MainActivity.this, displayList);
+                                display_list.setAdapter(displayAdapter);
+                                displayAdapter.notifyDataSetChanged();
+
+                            }
+
+                        }catch (JSONException ex){
+                            ex.printStackTrace();
+                            Log.e("Error", "-----Json Array----: "+ex.getMessage());
+                        }
+
+
+                    }
+                });
+
+
+            }
+        });
+
+        displayAdapter = new DisplayAdapter(this, displayList);
+        display_list.setAdapter(displayAdapter);
+        displayAdapter.notifyDataSetChanged();
     }
 
 
@@ -1320,6 +1451,87 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private void displayOverLays(ContentModel item) {
+        overLaysContentModel=item;
+        if (item.getFeed_url().isEmpty() || item.getFeed_url()==null){
+            textdisplayOverlay.setText(item.getText());
+            textAnimation(textdisplayOverlay);
+        }
+        else{
+            Log.e("Tag","testing>>>6");
+            List<RSSModel> displayOverlaysRssList = new ArrayList<>();
+            String overlayContent=item.getFeed_url();
+
+            String apiUrl = "https://app.neosign.tv/api/rss-feed";
+            String apiUrlWithParams="";
+            try {
+                apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(overlayContent, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+
+            StringRequest getRequest = new StringRequest(Request.Method.GET,
+                    apiUrlWithParams,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("TAG","response>>>"+response);
+                            rssProgrss.setVisibility(GONE);
+                            try {
+                                JSONArray jsonArray = new JSONArray(response);
+                                if (jsonArray.length()>0){
+                                    displayOverlaysRssList.clear();
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject dataObject = jsonArray.getJSONObject(i);
+                                        String title = dataObject.getString("title");
+                                        String description = dataObject.getString("description");
+
+                                        String date = dataObject.getString("date");
+                                        String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                        Log.e("TAG","qr_code>>>"+qr_code);
+                                        String photo= dataObject.getString("photo");
+                                        RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                        displayOverlaysRssList.add(rssModel);
+                                    }
+                                }
+                                if (displayOverlayRssSlideShowCallCount==0){
+                                    clearTimeout3();
+                                    displayOverlaysRssContentCurrentIndex=0;
+                                    displayOverlayRssContentLay(displayOverlaysRssList,item);
+                                    displayFirstRssFeedLaysdataCount= displayOverlaysRssList.size();
+                                }
+
+                                int newDataCount=displayOverlaysRssList.size();
+                                if(displayFirstRssFeedLaysdataCount != newDataCount){
+                                    displayOverlayRssSlideShowCallCount=0;
+                                }
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.e("Error", "-----VollyError----: "+error.getMessage());
+                        }
+                    });
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            requestQueue.add(getRequest);
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            );
+
+        }
+    }
     private void textAnimation(TextView textOverlay) {
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         Paint textPaint = textOverlay.getPaint();
@@ -1426,6 +1638,31 @@ public class MainActivity extends AppCompatActivity {
         handler2.postDelayed(myRunnable2, duration);
     }
 
+    private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
+        displayOverlayRssSlideShowCallCount++;
+        long duration = 20000;
+
+        if (overlaysRssList.size()>0){
+            RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
+            String ovelaytext;
+            ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
+            textdisplayOverlay.setText(ovelaytext);
+            textAnimation(textdisplayOverlay);
+        }
+
+        displayOverlaysRssContentCurrentIndex++;
+        if (displayOverlaysRssContentCurrentIndex >= overlaysRssList.size()) {
+            displayOverlaysRssContentCurrentIndex = 0;
+        }
+        myRunnable3 = new Runnable() {
+            @Override
+            public void run() {
+                displayOverlayRssContentLay(overlaysRssList, contentModel);
+            }
+        };
+        handler3.postDelayed(myRunnable3, duration);
+    }
+
     private void setWidthPercentage(RelativeLayout view, int percentage) {
         // Get the screen width in pixels
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -1478,6 +1715,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             parentContentImage.setVisibility(VISIBLE);
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
@@ -1552,6 +1790,7 @@ public class MainActivity extends AppCompatActivity {
             webView_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
 
@@ -1598,6 +1837,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
             iFrameLay(item.getUrl(),list,duration,item);
@@ -1611,6 +1851,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
             clockiFrameLay(item.getUrl(),list,item,duration);
@@ -1623,6 +1864,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
             countDowniFrameLay(item.getUrl(),list,item,duration);
@@ -1635,6 +1877,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
             webUriiFrameLay(item.getUrl(),list,item,duration);
@@ -1647,6 +1890,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
             vimeoiFrameLay(item.getUrl(),list,item,duration);
@@ -1658,6 +1902,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
@@ -1670,10 +1915,12 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
+            terminalProgress.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             terminal_lay.setVisibility(VISIBLE);
             terminalLogo.setVisibility(VISIBLE);
             txtTerminal.setVisibility(VISIBLE);
-            terminalProgress.setVisibility(GONE);
+
 
             Glide.with(getApplicationContext())
                     .load(item.getLogo())
@@ -1766,89 +2013,38 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
+        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(VISIBLE);
+            initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
 
-
-
-
-
-        if (strech.equals("off")){
-            if (orientation.equals("90 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+            if(item.getShow_news_channel().equals("2")){
+                displayOverlay.setVisibility(VISIBLE);
+            }else{
+                displayOverlay.setVisibility(GONE);
             }
-            else if (orientation.equals("180 degrees")) {
-                contentLay2.setRotation(180);
-                // Save the initial dimensions or layout parameters
-                int initialWidth = contentLay2.getWidth();
-                int initialHeight = contentLay2.getHeight();
 
-// ... (code for scaling)
-
-// Revert to the previous state
-                contentLay2.setScaleX(1); // Set back to the original scale
-                contentLay2.setScaleY(1);
-                contentLay2.getLayoutParams().width = initialWidth;
-                contentLay2.getLayoutParams().height = initialHeight;
-                contentLay2.requestLayout(); // Force a layout update
-
-            }
-            else if (orientation.equals("270 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
-            }
-            else {
-                contentLay2.setRotation(0);
-                // Save the initial dimensions or layout parameters
-                int initialWidth = contentLay2.getWidth();
-                int initialHeight = contentLay2.getHeight();
-
-// ... (code for scaling)
-
-// Revert to the previous state
-                contentLay2.setScaleX(1); // Set back to the original scale
-                contentLay2.setScaleY(1);
-                contentLay2.getLayoutParams().width = initialWidth;
-                contentLay2.getLayoutParams().height = initialHeight;
-                contentLay2.requestLayout(); // Force a layout update
-
-            }
+            displayOverLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
         }
-        else{
-            if (orientation.equals("90 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
-            }
-            else if (orientation.equals("180 degrees")) {
-                contentLay2.setRotation(180);
-                // Save the initial dimensions or layout parameters
-                int initialWidth = contentLay2.getWidth();
-                int initialHeight = contentLay2.getHeight();
 
-// ... (code for scaling)
 
-// Revert to the previous state
-                contentLay2.setScaleX(1); // Set back to the original scale
-                contentLay2.setScaleY(1);
-                contentLay2.getLayoutParams().width = initialWidth;
-                contentLay2.getLayoutParams().height = initialHeight;
-                contentLay2.requestLayout(); // Force a layout update
-            }
-            else if (orientation.equals("270 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
-            }
-            else {
-                contentLay2.setRotation(0);
-                // Save the initial dimensions or layout parameters
-                int initialWidth = contentLay2.getWidth();
-                int initialHeight = contentLay2.getHeight();
-
-// ... (code for scaling)
-
-// Revert to the previous state
-                contentLay2.setScaleX(1); // Set back to the original scale
-                contentLay2.setScaleY(1);
-                contentLay2.getLayoutParams().width = initialWidth;
-                contentLay2.getLayoutParams().height = initialHeight;
-                contentLay2.requestLayout(); // Force a layout update
-            }
-        }
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -3704,6 +3900,7 @@ public class MainActivity extends AppCompatActivity {
                                                 clearTimeout();
                                                 clearTimeout1();
                                                 clearTimeout2();
+                                                clearTimeout3();
                                                 parentTopOverlay.setVisibility(GONE);
                                                 parentLeftOverlay.setVisibility(GONE);
                                                 parentRightOverlay.setVisibility(GONE);
@@ -3912,6 +4109,9 @@ public class MainActivity extends AppCompatActivity {
     public void clearTimeout2() {
         handler2.removeCallbacks(myRunnable2);
     }
+    public void clearTimeout3() {
+        handler3.removeCallbacks(myRunnable3);
+    }
     private class Browser extends WebChromeClient {
         private static final String TAG = "WebVIEW-Home";
         // For Android 5.0
@@ -4023,6 +4223,7 @@ public class MainActivity extends AppCompatActivity {
         clearTimeout();
         clearTimeout1();
         clearTimeout2();
+        clearTimeout3();
         //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
