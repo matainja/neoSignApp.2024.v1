@@ -68,6 +68,8 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -133,6 +135,7 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -202,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
     Runnable myRunnable2;
     Handler handler3;
     Runnable myRunnable3;
+    Handler handler4;
     int currentIndex;
     int contentCurrentIndex=0;
     int slideShowCallCount=0;
@@ -244,7 +248,8 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout display_lay;
     RelativeLayout otherView,otherView1,displayOverlay;
     ImageView displayDivider;
-    TextView txtDisplay,txtDisplayId,counter_image1,txtDisplayCounter,txtDisplaycounterTitle,textdisplayOverlay;
+    TextView txtDisplay,txtDisplayId,counter_image1,txtDisplayCounter,txtDisplaycounterTitle,textdisplayOverlay,txtDate,txtTime;
+    int screenWidth,screenHeight,displayLayWidth,displayLayHeight;
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -260,7 +265,10 @@ public class MainActivity extends AppCompatActivity {
         handler1 = new Handler();
         handler2 = new Handler();
         handler3 = new Handler();
+        handler4 = new Handler();
 
+        txtDate =(TextView)findViewById(R.id.txtDate);
+        txtTime =(TextView)findViewById(R.id.txtTime);
         displayOverlay=(RelativeLayout) findViewById(R.id.displayOverlay);
         otherView=(RelativeLayout) findViewById(R.id.otherView);
         otherView1=(RelativeLayout) findViewById(R.id.otherView1);
@@ -1042,8 +1050,12 @@ public class MainActivity extends AppCompatActivity {
     }
     @SuppressLint("NotifyDataSetChanged")
     private void initDisplayContentPusher(String display_id, String counter_translation){
-        int displayId = Integer.parseInt(display_id)+1;
+        displayAdapter = new DisplayAdapter(this, displayList);
+        display_list.setAdapter(displayAdapter);
+        displayAdapter.notifyDataSetChanged();
 
+
+        int displayId = Integer.parseInt(display_id)+1;
         pusher.connect(new ConnectionEventListener() {
             @Override
             public void onConnectionStateChange(ConnectionStateChange change) {
@@ -1060,6 +1072,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, ConnectionState.ALL);
         Log.e("Tag","QueueAppDisplay>>>"+"QueueAppDisplay."+displayId);
+        pusher.unsubscribe("QueueAppDisplay."+displayId);
 
         channel = pusher.subscribe("QueueAppDisplay."+displayId);
 
@@ -1072,38 +1085,69 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.e("Pusher", "Received event with data from display: " + event.toString());
-
+                        txtDisplay.setVisibility(VISIBLE);
+                        txtDisplayId.setVisibility(VISIBLE);
+                        counter_image1.setVisibility(VISIBLE);
+                        txtDisplayCounter.setVisibility(VISIBLE);
+                        txtDisplaycounterTitle.setVisibility(VISIBLE);
                         try{
                             JSONObject jsonObject = new JSONObject(event.getData().toString());
                             Log.e("Tag","jsonObject>>>"+jsonObject);
                             displayList.clear();
+                            List<DisplayDataModel> displayNewList = new ArrayList<>();
                             JSONArray dataArray = jsonObject.getJSONArray("data");
                             if(dataArray.length()>0){
                                 for(int currentIndex =0; currentIndex<dataArray.length();currentIndex++){
                                     JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+
                                     int id = dataObject.getInt("id");
                                     String app_id = dataObject.getString("app_id");
                                     String queue_id = dataObject.getString("queue_id");
                                     String counter_id = dataObject.getString("counter_id");
                                     String created_at= dataObject.getString("created_at");
-                                    txtDisplay.setText("Number");
-                                    txtDisplayId.setText(queue_id);
-                                    counter_image1.setText(">>");
-                                    txtDisplayCounter.setText(counter_id);
-                                    if (counter_translation==null || counter_translation.isEmpty()){
-                                        txtDisplaycounterTitle.setText("Counter");
+                                    if(currentIndex==0){
+                                        txtDisplay.setText("Number");
+                                        txtDisplayId.setText(queue_id);
+                                        counter_image1.setText(">>");
+                                        txtDisplayCounter.setText(counter_id);
+                                        if (counter_translation==null || counter_translation.isEmpty()){
+                                            txtDisplaycounterTitle.setText("Counter");
+                                        }
+                                        else{
+                                            txtDisplaycounterTitle.setText(counter_translation);
+                                        }
                                     }
-                                    else{
-                                        txtDisplaycounterTitle.setText(counter_translation);
-                                    }
+
 
 
                                     displayList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
+                                    displayNewList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
+
+
                                     Log.e("created_at","displayList>>>"+displayList);
                                 }
-                                displayAdapter = new DisplayAdapter(MainActivity.this, displayList);
+                                if (!displayNewList.isEmpty()) {
+                                    // Remove the element at the first index (index 0)
+                                    displayNewList.remove(0);
+                                }
+                                displayAdapter = new DisplayAdapter(MainActivity.this, displayNewList);
                                 display_list.setAdapter(displayAdapter);
                                 displayAdapter.notifyDataSetChanged();
+
+                                playSound();
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        txtDisplay.setVisibility(GONE);
+                                        txtDisplayId.setVisibility(GONE);
+                                        counter_image1.setVisibility(GONE);
+                                        txtDisplayCounter.setVisibility(GONE);
+                                        txtDisplaycounterTitle.setVisibility(GONE);
+                                        displayAdapter = new DisplayAdapter(MainActivity.this, displayList);
+                                        display_list.setAdapter(displayAdapter);
+                                        displayAdapter.notifyDataSetChanged();
+                                    }
+                                }, 30000);
 
                             }
 
@@ -1120,11 +1164,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        displayAdapter = new DisplayAdapter(this, displayList);
-        display_list.setAdapter(displayAdapter);
-        displayAdapter.notifyDataSetChanged();
+
     }
 
+    private void playSound() {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.beep);
+        if (mediaPlayer != null) {
+            mediaPlayer.start();
+        }
+    }
 
 
     private void initPairing(String pairCode){
@@ -1638,6 +1686,7 @@ public class MainActivity extends AppCompatActivity {
         handler2.postDelayed(myRunnable2, duration);
     }
 
+    @SuppressLint("DefaultLocale")
     private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         displayOverlayRssSlideShowCallCount++;
         long duration = 20000;
@@ -1645,7 +1694,10 @@ public class MainActivity extends AppCompatActivity {
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
             String ovelaytext;
-            ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
+            //ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
+            ovelaytext = String.format("%s  %.2f  %s  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
+
+
             textdisplayOverlay.setText(ovelaytext);
             textAnimation(textdisplayOverlay);
         }
@@ -1688,6 +1740,31 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         params.height = desiredHeight;
         view.setLayoutParams(params);
+    }
+
+
+    public static int getScreenWidth(Context context) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        if (windowManager != null) {
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            return displayMetrics.widthPixels;
+        } else {
+            return 0;
+        }
+    }
+
+    public static int getScreenHeight(Context context) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        if (windowManager != null) {
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            return displayMetrics.heightPixels;
+        } else {
+            return 0;
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -1907,6 +1984,14 @@ public class MainActivity extends AppCompatActivity {
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
 
+            ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;
+
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1920,7 +2005,13 @@ public class MainActivity extends AppCompatActivity {
             terminal_lay.setVisibility(VISIBLE);
             terminalLogo.setVisibility(VISIBLE);
             txtTerminal.setVisibility(VISIBLE);
-
+            ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;
 
             Glide.with(getApplicationContext())
                     .load(item.getLogo())
@@ -1930,25 +2021,51 @@ public class MainActivity extends AppCompatActivity {
 
             if (strech.equals("off")){
                 if (orientation.equals("90 degrees")) {
-                    terminal_lay.setRotation(90);
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
+                    // Set rotation without scaling
+                    terminal_lay.setRotation(90);
+
+
+                    if(displayLayHeight>displayLayWidth){
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    }else{
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                    }
 
                 }
                 else if (orientation.equals("180 degrees")) {
-                    terminal_lay.setRotation(180);
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
                 }
                 else if (orientation.equals("270 degrees")) {
-                    terminal_lay.setRotation(270);
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
+                    // Set rotation without scaling
+                    terminal_lay.setRotation(270);
+
+
+                    if(displayLayHeight>displayLayWidth){
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    }else{
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                    }
                 }
                 else {
-                    terminal_lay.setRotation(0);
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
                 }
             }
             else{
@@ -1957,13 +2074,19 @@ public class MainActivity extends AppCompatActivity {
                     configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
                 }
                 else if (orientation.equals("180 degrees")) {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 180);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
                 }
                 else if (orientation.equals("270 degrees")) {
                     configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
                 }
                 else {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 0);
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
                 }
 
 
@@ -2022,6 +2145,86 @@ public class MainActivity extends AppCompatActivity {
             webView_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             display_lay.setVisibility(VISIBLE);
+            clearTimeout4();
+            updateTime();
+            handler4.postDelayed(timeUpdater, 1000);
+
+            ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    // Set rotation without scaling
+                    display_lay.setRotation(90);
+
+
+                    if(displayLayHeight>displayLayWidth){
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    }else{
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2, 20, (displayLayWidth-displayLayHeight)/2);
+                    }
+
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    display_lay.setRotation(270);
+                    if(displayLayHeight>displayLayWidth){
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    }else{
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                    }
+
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+                }
+
+
+            }
+
             initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
 
             if(item.getShow_news_channel().equals("2")){
@@ -2053,7 +2256,61 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
+    private Runnable timeUpdater = new Runnable() {
+        @Override
+        public void run() {
+            // Update the TextView with the current system time
+            updateTime();
 
+            // Schedule the next update after 1 second
+            handler4.postDelayed(this, 1000);
+        }
+    };
+    private void updateTime() {
+        // Get the current system time
+        long currentTimeMillis = System.currentTimeMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss a", Locale.getDefault());
+        String formattedTime = sdf.format(new Date(currentTimeMillis));
+
+        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+
+        // Format the date and time
+        String formattedDateTime = sdf1.format(new Date(currentTimeMillis));
+
+        // Set the formatted time to the TextView
+        txtTime.setText(formattedTime);
+        txtDate.setText(formattedDateTime);
+    }
+    private void configureDisplayTransform(int width, int height, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        display_lay.setRotation(rotationDegrees);
+
+        display_lay.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                // Remove the listener to avoid multiple callbacks
+                display_lay.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                // Get the dimensions of the VideoView after rotation
+                int terminalLayViewWidth = display_lay.getWidth();
+                int terminalLayViewHeight = display_lay.getHeight();
+
+                // Check for valid dimensions
+                if (terminalLayViewWidth > 0 && terminalLayViewHeight > 0) {
+                    // Calculate the scale factors to fill the entire screen
+                    float scaleX = (float) terminalLayViewHeight / terminalLayViewWidth;
+                    float scaleY = (float) terminalLayViewWidth / terminalLayViewHeight;
+
+                    // Apply the scaling to fill the entire screen
+                    display_lay.setScaleX(scaleX);
+                    display_lay.setScaleY(scaleY);
+                }
+
+                // Return true to continue with the drawing
+                return true;
+            }
+        });
+    }
     private void configureTerminalTransform(int width, int height, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         terminal_lay.setRotation(rotationDegrees);
@@ -2353,24 +2610,48 @@ public class MainActivity extends AppCompatActivity {
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
-                parentContentRssFeed.setRotation(90);
                 parentContentRssFeed.setScaleX(1);
                 parentContentRssFeed.setScaleY(1);
+                // Set rotation without scaling
+                parentContentRssFeed.setRotation(90);
+
+
+                if(displayLayHeight>displayLayWidth){
+                    ViewGroup.MarginLayoutParams params =
+                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                }else{
+                    ViewGroup.MarginLayoutParams params =
+                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                }
             }
             else if (orientation.equals("180 degrees")) {
-                parentContentRssFeed.setRotation(180);
                 parentContentRssFeed.setScaleX(1);
                 parentContentRssFeed.setScaleY(1);
+                parentContentRssFeed.setRotation(180);
+
             }
             else if (orientation.equals("270 degrees")) {
-                parentContentRssFeed.setRotation(270);
                 parentContentRssFeed.setScaleX(1);
                 parentContentRssFeed.setScaleY(1);
+                parentContentRssFeed.setRotation(270);
+                if(displayLayHeight>displayLayWidth){
+                    ViewGroup.MarginLayoutParams params =
+                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                }else{
+                    ViewGroup.MarginLayoutParams params =
+                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                }
+
             }
             else {
-                parentContentRssFeed.setRotation(0);
                 parentContentRssFeed.setScaleX(1);
                 parentContentRssFeed.setScaleY(1);
+                parentContentRssFeed.setRotation(0);
+
             }
         }
         else{
@@ -2379,13 +2660,18 @@ public class MainActivity extends AppCompatActivity {
                 configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
             }
             else if (orientation.equals("180 degrees")) {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 180);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
+                parentContentRssFeed.setRotation(180);
             }
             else if (orientation.equals("270 degrees")) {
                 configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
             }
             else {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 0);
+                parentContentRssFeed.setScaleX(1);
+                parentContentRssFeed.setScaleY(1);
+                parentContentRssFeed.setRotation(0);
+
             }
 
 
@@ -4111,6 +4397,9 @@ public class MainActivity extends AppCompatActivity {
     }
     public void clearTimeout3() {
         handler3.removeCallbacks(myRunnable3);
+    }
+    public void clearTimeout4() {
+        handler4.removeCallbacks(timeUpdater);
     }
     private class Browser extends WebChromeClient {
         private static final String TAG = "WebVIEW-Home";
