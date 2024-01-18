@@ -2030,11 +2030,11 @@ public class MainActivity extends AppCompatActivity {
                     if(displayLayHeight>displayLayWidth){
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                     }else{
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                     }
 
                 }
@@ -2054,11 +2054,11 @@ public class MainActivity extends AppCompatActivity {
                     if(displayLayHeight>displayLayWidth){
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                     }else{
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                     }
                 }
                 else {
@@ -2168,11 +2168,11 @@ public class MainActivity extends AppCompatActivity {
                     if(displayLayHeight>displayLayWidth){
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                     }else{
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2, 20, (displayLayWidth-displayLayHeight)/2);
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                     }
 
 
@@ -2188,11 +2188,11 @@ public class MainActivity extends AppCompatActivity {
                     if(displayLayHeight>displayLayWidth){
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                     }else{
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                     }
 
                 }
@@ -2619,11 +2619,11 @@ public class MainActivity extends AppCompatActivity {
                 if(displayLayHeight>displayLayWidth){
                     ViewGroup.MarginLayoutParams params =
                             (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                 }else{
                     ViewGroup.MarginLayoutParams params =
                             (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                 }
             }
             else if (orientation.equals("180 degrees")) {
@@ -2639,11 +2639,11 @@ public class MainActivity extends AppCompatActivity {
                 if(displayLayHeight>displayLayWidth){
                     ViewGroup.MarginLayoutParams params =
                             (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 10, 20, (displayLayHeight-displayLayWidth)/2 - 10);
+                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
                 }else{
                     ViewGroup.MarginLayoutParams params =
                             (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 10);
+                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
                 }
 
             }

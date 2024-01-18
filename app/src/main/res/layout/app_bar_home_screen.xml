@@ -248,7 +248,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        android:visibility="visible">
+        android:visibility="gone">
 
 
         <ProgressBar
@@ -758,7 +758,10 @@
                     android:layout_margin="10dp"
                     android:layout_weight="4"
                     android:adjustViewBounds="true"
+                    android:background="@drawable/round_outline"
+                    android:clipToOutline="true"
                     android:visibility="gone" />
+
 
                 <!-- TextView with 60% width -->
                 <TextView
@@ -817,6 +820,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/lay1"
                 android:layout_marginLeft="10dp"
+                android:textColor="@android:color/background_dark"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
                 android:text=""
