@@ -245,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView display_list;
     private DisplayAdapter displayAdapter;
     private List<DisplayDataModel> displayList;
+    List<DisplayDataModel> displayNewList = new ArrayList<>();
     ConstraintLayout display_lay;
     RelativeLayout otherView,otherView1,displayOverlay;
     ImageView displayDivider;
@@ -1050,9 +1051,9 @@ public class MainActivity extends AppCompatActivity {
     }
     @SuppressLint("NotifyDataSetChanged")
     private void initDisplayContentPusher(String display_id, String counter_translation){
-        displayAdapter = new DisplayAdapter(this, displayList);
+       /* displayAdapter = new DisplayAdapter(this, displayList);
         display_list.setAdapter(displayAdapter);
-        displayAdapter.notifyDataSetChanged();
+        displayAdapter.notifyDataSetChanged();*/
 
 
         int displayId = Integer.parseInt(display_id)+1;
@@ -1091,10 +1092,15 @@ public class MainActivity extends AppCompatActivity {
                         txtDisplayCounter.setVisibility(VISIBLE);
                         txtDisplaycounterTitle.setVisibility(VISIBLE);
                         try{
+                            txtDisplay.setText("");
+                            txtDisplayId.setText("");
+                            counter_image1.setText("");
+                            txtDisplayCounter.setText("");
+                            txtDisplaycounterTitle.setText("");
                             JSONObject jsonObject = new JSONObject(event.getData().toString());
                             Log.e("Tag","jsonObject>>>"+jsonObject);
                             displayList.clear();
-                            List<DisplayDataModel> displayNewList = new ArrayList<>();
+                            displayNewList.clear();
                             JSONArray dataArray = jsonObject.getJSONArray("data");
                             if(dataArray.length()>0){
                                 for(int currentIndex =0; currentIndex<dataArray.length();currentIndex++){
@@ -1124,16 +1130,18 @@ public class MainActivity extends AppCompatActivity {
                                     displayNewList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
 
 
-                                    Log.e("created_at","displayList>>>"+displayList);
+
                                 }
                                 if (!displayNewList.isEmpty()) {
                                     // Remove the element at the first index (index 0)
                                     displayNewList.remove(0);
+                                    Log.e("created_at","displayNewList>>>"+displayNewList);
+
                                 }
+
                                 displayAdapter = new DisplayAdapter(MainActivity.this, displayNewList);
                                 display_list.setAdapter(displayAdapter);
                                 displayAdapter.notifyDataSetChanged();
-
                                 playSound();
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
