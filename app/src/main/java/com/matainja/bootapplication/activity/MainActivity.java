@@ -848,7 +848,8 @@ public class MainActivity extends AppCompatActivity {
                                 parentBottomOverlay.setVisibility(GONE);
                                 parentPairing.setVisibility(VISIBLE);
                             }
-                        }else{
+                        }
+                        else{
                             if (pairingStatus && Objects.requireNonNull(list).size()>0){
                                 parentPairing.setVisibility(GONE);
                             }
@@ -1001,21 +1002,7 @@ public class MainActivity extends AppCompatActivity {
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
                                     contentLay(newSlideItems);
-                                    firstdataCount= newSlideItems.size();
 
-                               /* if (slideShowCallCount==0){
-                                    clearTimeout();
-                                    contentCurrentIndex=0;
-                                    contentLay(newSlideItems);
-                                    firstdataCount= newSlideItems.size();
-                                }
-                                int newDataCount=newSlideItems.size();
-                                if(firstdataCount != newDataCount){
-                                    Log.e("time>>","Time>>");
-                                    slideItems.clear();
-                                    slideItems.addAll(newSlideItems);
-                                    slideShowCallCount=0;
-                                }*/
                                 }
                                 else{
                                     terminal_lay.setVisibility(GONE);
@@ -3491,6 +3478,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void iFrameLay(String newurl, List<ContentModel> list, long duration, ContentModel item) {
+        myWebView.clearCache(true);
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         String customCSS = "iframe { border: none; }";
@@ -3508,6 +3496,7 @@ public class MainActivity extends AppCompatActivity {
             myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
         webSettings.setDomStorageEnabled(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
         // Other webview options
         myWebView.getSettings().setLoadWithOverviewMode(true);
         //Other webview settings
@@ -3624,7 +3613,7 @@ public class MainActivity extends AppCompatActivity {
                     startIndex += 2; // Move past the "v="
                     int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
                     if (endIndex == -1) {
-                        endIndex = myYouTubeVideoUrl.length();
+                         endIndex = myYouTubeVideoUrl.length();
                     }
                     videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
                 }
@@ -3632,6 +3621,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Create the embedded YouTube link
             String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
+            Log.e("Tag","youtubeUrl>>>"+embeddedLink);
             myWebView.loadUrl(embeddedLink);
             //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + embeddedLink + " ></iframe>";
             //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
