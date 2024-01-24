@@ -251,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView displayDivider;
     TextView txtDisplay,txtDisplayId,counter_image1,txtDisplayCounter,txtDisplaycounterTitle,textdisplayOverlay,txtDate,txtTime;
     int screenWidth,screenHeight,displayLayWidth,displayLayHeight;
+    ArrayList<String> overLaysIds = new ArrayList<>();
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -936,6 +937,7 @@ public class MainActivity extends AppCompatActivity {
                                             laysContent=overlays.getString("content");
                                             laysRssInfo=overlays.getString("rssinfo");
                                             laysDeleted=overlays.getString("is_deleted");
+
                                             Log.e("overlays","laysContentType>>>"+laysContentType);
                                         }
 
@@ -1199,299 +1201,657 @@ public class MainActivity extends AppCompatActivity {
 
     private void overLays(ContentModel item) {
         overLaysContentModel=item;
-        if (item.getLaysContentType().equals("RSS feed")){
-            if(item.getLaysType().equals("Right")){
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
-                parentRightOverlay.setBackground(gradientDrawable);
 
-                textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-
-                setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(VISIBLE);
-            }
-            else if(item.getLaysType().equals("Left")){
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
-                parentLeftOverlay.setBackground(gradientDrawable);
-                textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                parentTopOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(VISIBLE);
-            }
-            else if(item.getLaysType().equals("Top")){
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                parentTopOverlay.setBackground(gradientDrawable);
-                textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                parentLeftOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentTopOverlay.setVisibility(VISIBLE);
-            }
-            else if(item.getLaysType().equals("Bottom")){
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                parentBottomOverlay.setBackground(gradientDrawable);
-                textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(VISIBLE);
-            }
-
-
-            Log.e("Tag","testing>>>6");
-            List<RSSModel> overlaysRssList = new ArrayList<>();
-            String overlayContent=item.getLaysContent();
-            String newString = overlayContent.replace("https://app.neosign.tv/", "");
-
-            String apiUrl = "https://app.neosign.tv/api/rss-feed";
-            String apiUrlWithParams="";
-            try {
-                apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
-
-            StringRequest getRequest = new StringRequest(Request.Method.GET,
-                    apiUrlWithParams,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.e("TAG","response>>>"+response);
-                            rssProgrss.setVisibility(GONE);
-                            try {
-                                JSONArray jsonArray = new JSONArray(response);
-                                if (jsonArray.length()>0){
-                                    overlaysRssList.clear();
-                                    for(int i=0;i<jsonArray.length();i++){
-                                        JSONObject dataObject = jsonArray.getJSONObject(i);
-                                        String title = dataObject.getString("title");
-                                        String description = dataObject.getString("description");
-
-                                        String date = dataObject.getString("date");
-                                        String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                        Log.e("TAG","qr_code>>>"+qr_code);
-                                        String photo= dataObject.getString("photo");
-                                        RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                        overlaysRssList.add(rssModel);
-                                    }
-                                }
-                                if (overlayRssSlideShowCallCount==0){
-                                    clearTimeout2();
-                                    overlaysRssContentCurrentIndex=0;
-                                    overlayRssContentLay(overlaysRssList,item);
-                                    firstRssFeedLaysdataCount= overlaysRssList.size();
-                                }
-
-                            int newDataCount=overlaysRssList.size();
-                            if(firstRssFeedLaysdataCount != newDataCount){
-                                overlayRssSlideShowCallCount=0;
-                            }
-
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                            Log.e("Error", "-----VollyError----: "+error.getMessage());
-                        }
-                    });
-            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-            requestQueue.add(getRequest);
-            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-            );
-
-
-        }
-        else if (item.getLaysContentType().equals("Written text")){
-            Log.e("Tag","testing>>>6");
-            if(item.getLaysType().equals("Right")){
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(VISIBLE);
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
-                parentRightOverlay.setBackground(gradientDrawable);
-
-                textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-
-                setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                textRightOverlay.setText(item.getLaysContent());
-
-
-                textAnimation(textRightOverlay);
-
-            }
-            else if(item.getLaysType().equals("Left")){
-                parentTopOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(VISIBLE);
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
-                parentLeftOverlay.setBackground(gradientDrawable);
-
-                textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-
-                setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>8");
-                textLeftOverlay.setText(item.getLaysContent());
-
-                textAnimation(textLeftOverlay);
-            }
-            else if(item.getLaysType().equals("Top")){
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentTopOverlay.setVisibility(VISIBLE);
-
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                parentTopOverlay.setBackground(gradientDrawable);
-
-                textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>9");
-                textTopOverlay.setText(item.getLaysContent());
-
-                textAnimation(textTopOverlay);
-            }
-            else if(item.getLaysType().equals("Bottom")){
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(VISIBLE);
-                Log.e("Tag","Color>>>"+item.getLaysBgColor());
-                Log.e("Tag","Color>>>"+item.getLaysFontColor());
-
-                String colorCode = item.getLaysBgColor();
-                String solid = colorCode.substring(0, 7);
-                String alphaStr = colorCode.substring(colorCode.length() - 2);
-                // Convert the alpha component to an integer
-                int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                // Convert the solid color to an integer
-                int solidColor = Color.parseColor(solid);
-                // Apply alpha to the solid color
-                int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                GradientDrawable gradientDrawable = new GradientDrawable();
-                gradientDrawable.setColor(finalColor);
-                parentBottomOverlay.setBackground(gradientDrawable);
-
-                textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                Log.e("Tag","testing>>>10");
-
-                textBottomOverlay.setText(item.getLaysContent());
-
-                textAnimation(textBottomOverlay);
-
-            }
-        }
+        if(item.getLaysId().equals("") || item.getLaysId()==null){}
         else{
-            parentTopOverlay.setVisibility(GONE);
-            parentLeftOverlay.setVisibility(GONE);
-            parentRightOverlay.setVisibility(GONE);
-            parentBottomOverlay.setVisibility(GONE);
+            overLaysIds.add(item.getLaysId());
         }
+        Log.e("overlays","overLaysIds>>>"+overLaysIds);
+        if (overLaysIds.size() == 10) {
+            // Use subList to get the sublist from index 5 to the end
+            overLaysIds.subList(0, 5).clear();
+        }
+
+        if(overLaysIds.size()==1){
+            if (item.getLaysContentType().equals("RSS feed")){
+                if(item.getLaysType().equals("Right")){
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                    parentRightOverlay.setBackground(gradientDrawable);
+
+                    textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                    setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                    setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(VISIBLE);
+                }
+                else if(item.getLaysType().equals("Left")){
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                    parentLeftOverlay.setBackground(gradientDrawable);
+                    textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                    setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                    setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                    parentTopOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(VISIBLE);
+                }
+                else if(item.getLaysType().equals("Top")){
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    parentTopOverlay.setBackground(gradientDrawable);
+                    textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                    setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentTopOverlay.setVisibility(VISIBLE);
+                }
+                else if(item.getLaysType().equals("Bottom")){
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    parentBottomOverlay.setBackground(gradientDrawable);
+                    textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                    setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(VISIBLE);
+                }
+
+
+                Log.e("Tag","testing>>>6");
+                List<RSSModel> overlaysRssList = new ArrayList<>();
+                String overlayContent=item.getLaysContent();
+                String newString = overlayContent.replace("https://app.neosign.tv/", "");
+
+                String apiUrl = "https://app.neosign.tv/api/rss-feed";
+                String apiUrlWithParams="";
+                try {
+                    apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+
+                StringRequest getRequest = new StringRequest(Request.Method.GET,
+                        apiUrlWithParams,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.e("TAG","response>>>"+response);
+                                rssProgrss.setVisibility(GONE);
+                                try {
+                                    JSONArray jsonArray = new JSONArray(response);
+                                    if (jsonArray.length()>0){
+                                        overlaysRssList.clear();
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject dataObject = jsonArray.getJSONObject(i);
+                                            String title = dataObject.getString("title");
+                                            String description = dataObject.getString("description");
+
+                                            String date = dataObject.getString("date");
+                                            String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                            Log.e("TAG","qr_code>>>"+qr_code);
+                                            String photo= dataObject.getString("photo");
+                                            RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                            overlaysRssList.add(rssModel);
+                                        }
+                                    }
+                                    if (overlayRssSlideShowCallCount==0){
+                                        clearTimeout2();
+                                        overlaysRssContentCurrentIndex=0;
+                                        overlayRssContentLay(overlaysRssList,item);
+                                        firstRssFeedLaysdataCount= overlaysRssList.size();
+                                    }
+
+                                    int newDataCount=overlaysRssList.size();
+                                    if(firstRssFeedLaysdataCount != newDataCount){
+                                        overlayRssSlideShowCallCount=0;
+                                    }
+
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                error.printStackTrace();
+                                Log.e("Error", "-----VollyError----: "+error.getMessage());
+                            }
+                        });
+                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                requestQueue.add(getRequest);
+                getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                );
+
+
+            }
+            else if (item.getLaysContentType().equals("Written text")){
+                Log.e("Tag","testing>>>6");
+                if(item.getLaysType().equals("Right")){
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(VISIBLE);
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                    parentRightOverlay.setBackground(gradientDrawable);
+
+                    textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                    setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                    setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                    textRightOverlay.setText(item.getLaysContent());
+
+
+                    textAnimation(textRightOverlay);
+
+                }
+                else if(item.getLaysType().equals("Left")){
+                    parentTopOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(VISIBLE);
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                    parentLeftOverlay.setBackground(gradientDrawable);
+
+                    textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                    setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                    setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                    Log.e("Tag","testing>>>8");
+                    textLeftOverlay.setText(item.getLaysContent());
+
+                    textAnimation(textLeftOverlay);
+                }
+                else if(item.getLaysType().equals("Top")){
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentTopOverlay.setVisibility(VISIBLE);
+
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    parentTopOverlay.setBackground(gradientDrawable);
+
+                    textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                    setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                    Log.e("Tag","testing>>>9");
+                    textTopOverlay.setText(item.getLaysContent());
+                    textAnimation(textTopOverlay);
+                }
+                else if(item.getLaysType().equals("Bottom")){
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(VISIBLE);
+                    Log.e("Tag","Color>>>"+item.getLaysBgColor());
+                    Log.e("Tag","Color>>>"+item.getLaysFontColor());
+
+                    String colorCode = item.getLaysBgColor();
+                    String solid = colorCode.substring(0, 7);
+                    String alphaStr = colorCode.substring(colorCode.length() - 2);
+                    // Convert the alpha component to an integer
+                    int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                    // Convert the solid color to an integer
+                    int solidColor = Color.parseColor(solid);
+                    // Apply alpha to the solid color
+                    int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                    GradientDrawable gradientDrawable = new GradientDrawable();
+                    gradientDrawable.setColor(finalColor);
+                    parentBottomOverlay.setBackground(gradientDrawable);
+
+                    textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                    textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                    setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                    Log.e("Tag","testing>>>10");
+
+                    textBottomOverlay.setText(item.getLaysContent());
+
+                    textAnimation(textBottomOverlay);
+
+                }
+            }
+        }
+        else if(overLaysIds.size()>1){
+             String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
+             if(secondToLastValue.equals(item.getLaysId())){
+                 if (item.getLaysContentType().equals("RSS feed")){
+                     if(item.getLaysType().equals("Right")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Left")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Top")){
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentTopOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Bottom")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(VISIBLE);
+                     }
+
+                 }
+                 else if (item.getLaysContentType().equals("Written text")){
+                     Log.e("Tag","testing>>>6");
+                     if(item.getLaysType().equals("Right")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Left")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Top")){
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentTopOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Bottom")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(VISIBLE);
+                     }
+                 }
+             }
+             else{
+                 if (item.getLaysContentType().equals("RSS feed")){
+                     if(item.getLaysType().equals("Right")){
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                         parentRightOverlay.setBackground(gradientDrawable);
+
+                         textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Left")){
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                         parentLeftOverlay.setBackground(gradientDrawable);
+                         textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                         setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                         setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                         parentTopOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Top")){
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         parentTopOverlay.setBackground(gradientDrawable);
+                         textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                         setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentTopOverlay.setVisibility(VISIBLE);
+                     }
+                     else if(item.getLaysType().equals("Bottom")){
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         parentBottomOverlay.setBackground(gradientDrawable);
+                         textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                         setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(VISIBLE);
+                     }
+
+
+                     Log.e("Tag","testing>>>6");
+                     List<RSSModel> overlaysRssList = new ArrayList<>();
+                     String overlayContent=item.getLaysContent();
+                     String newString = overlayContent.replace("https://app.neosign.tv/", "");
+
+                     String apiUrl = "https://app.neosign.tv/api/rss-feed";
+                     String apiUrlWithParams="";
+                     try {
+                         apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
+                     } catch (UnsupportedEncodingException e) {
+                         e.printStackTrace();
+                     }
+                     Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+
+                     StringRequest getRequest = new StringRequest(Request.Method.GET,
+                             apiUrlWithParams,
+                             new Response.Listener<String>() {
+                                 @Override
+                                 public void onResponse(String response) {
+                                     Log.e("TAG","response>>>"+response);
+                                     rssProgrss.setVisibility(GONE);
+                                     try {
+                                         JSONArray jsonArray = new JSONArray(response);
+                                         if (jsonArray.length()>0){
+                                             overlaysRssList.clear();
+                                             for(int i=0;i<jsonArray.length();i++){
+                                                 JSONObject dataObject = jsonArray.getJSONObject(i);
+                                                 String title = dataObject.getString("title");
+                                                 String description = dataObject.getString("description");
+
+                                                 String date = dataObject.getString("date");
+                                                 String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                                 Log.e("TAG","qr_code>>>"+qr_code);
+                                                 String photo= dataObject.getString("photo");
+                                                 RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                                 overlaysRssList.add(rssModel);
+                                             }
+                                         }
+                                         if (overlayRssSlideShowCallCount==0){
+                                             clearTimeout2();
+                                             overlaysRssContentCurrentIndex=0;
+                                             overlayRssContentLay(overlaysRssList,item);
+                                             firstRssFeedLaysdataCount= overlaysRssList.size();
+                                         }
+
+                                         int newDataCount=overlaysRssList.size();
+                                         if(firstRssFeedLaysdataCount != newDataCount){
+                                             overlayRssSlideShowCallCount=0;
+                                         }
+
+
+                                     } catch (JSONException e) {
+                                         e.printStackTrace();
+                                     }
+
+
+                                 }
+                             },
+                             new Response.ErrorListener() {
+                                 @Override
+                                 public void onErrorResponse(VolleyError error) {
+                                     error.printStackTrace();
+                                     Log.e("Error", "-----VollyError----: "+error.getMessage());
+                                 }
+                             });
+                     RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                     requestQueue.add(getRequest);
+                     getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                     );
+
+
+                 }
+                 else if (item.getLaysContentType().equals("Written text")){
+                     Log.e("Tag","testing>>>6");
+                     if(item.getLaysType().equals("Right")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(VISIBLE);
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                         parentRightOverlay.setBackground(gradientDrawable);
+
+                         textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                         textRightOverlay.setText(item.getLaysContent());
+
+
+                         textAnimation(textRightOverlay);
+
+                     }
+                     else if(item.getLaysType().equals("Left")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(VISIBLE);
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                         parentLeftOverlay.setBackground(gradientDrawable);
+
+                         textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                         setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                         setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                         Log.e("Tag","testing>>>8");
+                         textLeftOverlay.setText(item.getLaysContent());
+
+                         textAnimation(textLeftOverlay);
+                     }
+                     else if(item.getLaysType().equals("Top")){
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(GONE);
+                         parentTopOverlay.setVisibility(VISIBLE);
+
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         parentTopOverlay.setBackground(gradientDrawable);
+
+                         textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                         setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                         Log.e("Tag","testing>>>9");
+                         textTopOverlay.setText(item.getLaysContent());
+
+                         textAnimation(textTopOverlay);
+                     }
+                     else if(item.getLaysType().equals("Bottom")){
+                         parentTopOverlay.setVisibility(GONE);
+                         parentLeftOverlay.setVisibility(GONE);
+                         parentRightOverlay.setVisibility(GONE);
+                         parentBottomOverlay.setVisibility(VISIBLE);
+                         Log.e("Tag","Color>>>"+item.getLaysBgColor());
+                         Log.e("Tag","Color>>>"+item.getLaysFontColor());
+
+                         String colorCode = item.getLaysBgColor();
+                         String solid = colorCode.substring(0, 7);
+                         String alphaStr = colorCode.substring(colorCode.length() - 2);
+                         // Convert the alpha component to an integer
+                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                         // Convert the solid color to an integer
+                         int solidColor = Color.parseColor(solid);
+                         // Apply alpha to the solid color
+                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                         GradientDrawable gradientDrawable = new GradientDrawable();
+                         gradientDrawable.setColor(finalColor);
+                         parentBottomOverlay.setBackground(gradientDrawable);
+
+                         textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                         textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                         setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                         Log.e("Tag","testing>>>10");
+
+                         textBottomOverlay.setText(item.getLaysContent());
+
+                         textAnimation(textBottomOverlay);
+
+                     }
+                 }
+             }
+        }
+
+
+
+
 
     }
 
