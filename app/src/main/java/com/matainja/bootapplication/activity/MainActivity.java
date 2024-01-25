@@ -383,13 +383,9 @@ public class MainActivity extends AppCompatActivity {
         if(isNetworkAvailable()){
             parentInternetLay.setVisibility(GONE);
             initPusher();
-            //initPairing(pairCode);
-           /* // Initialize the Timer
-            Timer timer = new Timer();
-            // Schedule the TimerTask to make API calls every X milliseconds
-            long delay = 0;  // Initial delay before the first API call
-            long period = 3000;  // Repeat the API call every 5 seconds (adjust as needed)
-            timer.schedule(new MyTask(), delay, period);*/
+            slideShowCallCount=0;
+            initPairing(pairCode);
+
         }
         else{
             parentInternetLay.setVisibility(VISIBLE);
@@ -441,6 +437,7 @@ public class MainActivity extends AppCompatActivity {
                                 clearTimeout1();
                                 clearTimeout2();
                                 clearTimeout3();
+                                overLaysIds.clear();
                                 parentTopOverlay.setVisibility(GONE);
                                 parentLeftOverlay.setVisibility(GONE);
                                 parentRightOverlay.setVisibility(GONE);
@@ -490,24 +487,6 @@ public class MainActivity extends AppCompatActivity {
 
         MyReceiver = new MyReceiver();
         broadcastIntent();
-    }
-
-    private List<TerminalModel> generateGridItems() {
-        List<TerminalModel> items = new ArrayList<>();
-        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
-        // Add more items as needed
-        return items;
-    }
-    private List<DisplayDataModel> generateDisplayItems() {
-        List<DisplayDataModel> items = new ArrayList<>();
-        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
-
-        // Add more items as needed
-        return items;
     }
 
     @SuppressLint("InvalidWakeLockTag")
@@ -785,12 +764,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
-
     private void initPusher() {
 
         PusherOptions options = new PusherOptions();
@@ -1163,15 +1139,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
     private void playSound() {
         MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.beep);
         if (mediaPlayer != null) {
             mediaPlayer.start();
         }
     }
-
-
     private void initPairing(String pairCode){
         Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
         StringRequest getRequest = new StringRequest(Request.Method.GET,
@@ -1198,8 +1171,56 @@ public class MainActivity extends AppCompatActivity {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         );
     }
-
     private void overLays(ContentModel item) {
+        ViewGroup.MarginLayoutParams params1 =
+                (ViewGroup.MarginLayoutParams)contentLay2.getLayoutParams();
+        params1.setMargins(0, 0, 0, 0);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        displayLayWidth = displayMetrics.widthPixels;
+        displayLayHeight = displayMetrics.heightPixels;
+
+        if (strech.equals("off")){
+            if (orientation.equals("90 degrees")) {
+                contentLay2.setRotation(90);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
+            }
+            else if (orientation.equals("180 degrees")) {
+                contentLay2.setRotation(180);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
+            }
+            else if (orientation.equals("270 degrees")) {
+                contentLay2.setRotation(270);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
+            }
+            else {
+                contentLay2.setRotation(0);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
+            }
+        }
+        else{
+            // Handle size changes if needed
+            if (orientation.equals("90 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+
+            }
+            else if (orientation.equals("180 degrees")) {
+                configureOverlay180Transform(contentLay2.getWidth(), contentLay2.getHeight(), 180);
+            }
+            else if (orientation.equals("270 degrees")) {
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
+            }
+            else {
+                configureOverlay180Transform(contentLay2.getWidth(), contentLay2.getHeight(), 0);
+            }
+
+
+        }
+
         overLaysContentModel=item;
 
         if(item.getLaysId().equals("") || item.getLaysId()==null){}
@@ -1849,12 +1870,7 @@ public class MainActivity extends AppCompatActivity {
              }
         }
 
-
-
-
-
     }
-
     private void displayOverLays(ContentModel item) {
         overLaysContentModel=item;
         if (item.getFeed_url().isEmpty() || item.getFeed_url()==null){
@@ -1955,15 +1971,25 @@ public class MainActivity extends AppCompatActivity {
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(20000); // Adjust the duration as needed
+            marqueeAnimation.setDuration(25000); // Adjust the duration as needed
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
         }else{
+            TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 1f,
+                    Animation.RELATIVE_TO_SELF, -1f,
+                    Animation.RELATIVE_TO_SELF, 0f,
+                    Animation.RELATIVE_TO_SELF, 0f);
+
+            // Set the animation properties
+            marqueeAnimation.setInterpolator(new LinearInterpolator());
+            marqueeAnimation.setRepeatMode(Animation.RESTART);
+            // Start the animation
+            textOverlay.startAnimation(marqueeAnimation);
             textOverlay.setHorizontallyScrolling(true);
             textOverlay.setSelected(true);
         }
     }
-
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
         long duration = 20000;
@@ -2009,7 +2035,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(contentModel.getLaysType().equals("Top")){
 
-                Log.e("Tag","testingTop>>>9");
+                Log.e("Tag","testingTop>>>9"+ovelaytext);
                 textTopOverlay.setText(ovelaytext);
                 textAnimation(textTopOverlay);
 
@@ -2040,7 +2066,6 @@ public class MainActivity extends AppCompatActivity {
         };
         handler2.postDelayed(myRunnable2, duration);
     }
-
     @SuppressLint("DefaultLocale")
     private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         displayOverlayRssSlideShowCallCount++;
@@ -2069,7 +2094,6 @@ public class MainActivity extends AppCompatActivity {
         };
         handler3.postDelayed(myRunnable3, duration);
     }
-
     private void setWidthPercentage(RelativeLayout view, int percentage) {
         // Get the screen width in pixels
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -2096,32 +2120,6 @@ public class MainActivity extends AppCompatActivity {
         params.height = desiredHeight;
         view.setLayoutParams(params);
     }
-
-
-    public static int getScreenWidth(Context context) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-
-        if (windowManager != null) {
-            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            return displayMetrics.widthPixels;
-        } else {
-            return 0;
-        }
-    }
-
-    public static int getScreenHeight(Context context) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-
-        if (windowManager != null) {
-            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            return displayMetrics.heightPixels;
-        } else {
-            return 0;
-        }
-    }
-
     @SuppressLint("NotifyDataSetChanged")
     private void contentLay(List<ContentModel> list){
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
@@ -2519,7 +2517,6 @@ public class MainActivity extends AppCompatActivity {
                     // Set rotation without scaling
                     display_lay.setRotation(90);
 
-
                     if(displayLayHeight>displayLayWidth){
                         ViewGroup.MarginLayoutParams params =
                                 (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
@@ -2686,25 +2683,31 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         contentLay2.setRotation(rotationDegrees);
 
-        // Get the dimensions of the VideoView
-        int contentLay2Width = contentLay2.getWidth();
-        int contentLay2Height = contentLay2.getHeight();
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
+        float scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
 
-        // Check for valid dimensions
-        if (contentLay2Width > 0 && contentLay2Height > 0) {
-            // Calculate the scale factors to fill the entire screen
-            float scaleX = (float) contentLay2Height / contentLay2Width;
-            float scaleY = (float) contentLay2Width / contentLay2Height;
+        // Apply the scaling to fill the entire screen
+        contentLay2.setScaleX(scaleX);
+        contentLay2.setScaleY(scaleY);
 
-            // Apply the scaling to fill the entire screen
-            contentLay2.setScaleX(scaleX);
-            contentLay2.setScaleY(scaleY);
-        }
+    }
+    private void configureOverlay180Transform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        contentLay2.setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) contentLay2.getWidth() / contentLay2.getHeight();
+        float scaleY = (float) contentLay2.getHeight() / contentLay2.getHeight();
+        //float scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
+        //float scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
+        // Apply the scaling to fill the entire screen
+        contentLay2.setScaleX(scaleX);
+        contentLay2.setScaleY(scaleY);
 
     }
     private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
@@ -2954,14 +2957,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
-    private Bitmap rotateBitmap(Bitmap originalBitmap, float degrees) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degrees);
-
-        return Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), matrix, true);
-    }
-
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
@@ -3142,7 +3137,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
     }
-
     private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
         rssImageView.setVisibility(VISIBLE);
         rssTitle.setVisibility(VISIBLE);
@@ -3191,7 +3185,6 @@ public class MainActivity extends AppCompatActivity {
         };
         handler1.postDelayed(myRunnable1, duration);
     }
-
     private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         String originalString = item.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
@@ -3329,7 +3322,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private void webUriiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         String originalString = item.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
@@ -3470,7 +3462,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     private void countDowniFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -3657,7 +3648,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private String convertTimeFormat(String cdtime) {
         // Splitting the original time into hours and minutes
         String[] timeParts = cdtime.split(":");
@@ -3677,7 +3667,6 @@ public class MainActivity extends AppCompatActivity {
 
         return formattedTime;
     }
-
     private void clockiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -3836,7 +3825,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private void iFrameLay(String newurl, List<ContentModel> list, long duration, ContentModel item) {
         myWebView.clearCache(true);
         WebSettings webSettings = myWebView.getSettings();
@@ -3994,7 +3982,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -4114,6 +4101,23 @@ public class MainActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         }
+    }
+    private List<TerminalModel> generateGridItems() {
+        List<TerminalModel> items = new ArrayList<>();
+        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
+        // Add more items as needed
+        return items;
+    }
+    private List<DisplayDataModel> generateDisplayItems() {
+        List<DisplayDataModel> items = new ArrayList<>();
+        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
+        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
+
+        // Add more items as needed
+        return items;
     }
 
     @Override
@@ -4545,6 +4549,7 @@ public class MainActivity extends AppCompatActivity {
                                                 clearTimeout1();
                                                 clearTimeout2();
                                                 clearTimeout3();
+                                                overLaysIds.clear();
                                                 parentTopOverlay.setVisibility(GONE);
                                                 parentLeftOverlay.setVisibility(GONE);
                                                 parentRightOverlay.setVisibility(GONE);
@@ -4713,7 +4718,7 @@ public class MainActivity extends AppCompatActivity {
                 status="No internet is available";
                 showSnack();
             }else{
-
+                slideShowCallCount=0;
                 initPairing(pairCode);
             }
 
@@ -4729,20 +4734,6 @@ public class MainActivity extends AppCompatActivity {
         View sbView = snackbar.getView();
         sbView.setBackgroundColor(color);
         snackbar.show();
-    }
-
-    // TimerTask to be executed
-    class MyTask extends TimerTask {
-        @Override
-        public void run() {
-            // This code will run every 5 seconds
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    initPairing(pairCode);
-                }
-            });
-        }
     }
     public void clearTimeout() {
         handler.removeCallbacks(myRunnable);
