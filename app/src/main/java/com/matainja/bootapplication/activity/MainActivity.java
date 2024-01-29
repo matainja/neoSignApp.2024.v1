@@ -149,6 +149,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     CoordinatorLayout contentLay;
     CoordinatorLayout contentLay2;
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
