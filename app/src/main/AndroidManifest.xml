@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.BootApplication"
-        tools:targetApi="s">
+        >
 
         <activity
             android:name=".activity.TerminalShowActivity"

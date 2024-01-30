@@ -51,7 +51,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
@@ -69,7 +68,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -135,14 +133,12 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
-import java.util.TimerTask;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
@@ -1182,9 +1178,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
-                contentLay2.setRotation(90);
-                contentLay2.setScaleX(1);
-                contentLay2.setScaleY(1);
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90,item);
+
             }
             else if (orientation.equals("180 degrees")) {
                 contentLay2.setRotation(180);
@@ -1192,9 +1187,7 @@ public class MainActivity extends AppCompatActivity {
                 contentLay2.setScaleY(1);
             }
             else if (orientation.equals("270 degrees")) {
-                contentLay2.setRotation(270);
-                contentLay2.setScaleX(1);
-                contentLay2.setScaleY(1);
+                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270,item);
             }
             else {
                 contentLay2.setRotation(0);
@@ -1205,20 +1198,22 @@ public class MainActivity extends AppCompatActivity {
         else{
             // Handle size changes if needed
             if (orientation.equals("90 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
+                configureOverlayStretchTransform(contentLay2.getWidth(), contentLay2.getHeight(), 90);
 
             }
             else if (orientation.equals("180 degrees")) {
-                configureOverlay180Transform(contentLay2.getWidth(), contentLay2.getHeight(), 180);
+                contentLay2.setRotation(180);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
             }
             else if (orientation.equals("270 degrees")) {
-                configureOverlayTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
+                configureOverlayStretchTransform(contentLay2.getWidth(), contentLay2.getHeight(), 270);
             }
             else {
-                configureOverlay180Transform(contentLay2.getWidth(), contentLay2.getHeight(), 0);
+                contentLay2.setRotation(0);
+                contentLay2.setScaleX(1);
+                contentLay2.setScaleY(1);
             }
-
-
         }
 
         overLaysContentModel=item;
@@ -2337,13 +2332,13 @@ public class MainActivity extends AppCompatActivity {
             rssProgrss.setVisibility(VISIBLE);
             String rssFeedUrl = item.getUrl();
 
-            ViewGroup.MarginLayoutParams params1 =
+            /*ViewGroup.MarginLayoutParams params1 =
                     (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
             params1.setMargins(0, 0, 0, 0);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
 
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
@@ -2358,37 +2353,18 @@ public class MainActivity extends AppCompatActivity {
             terminal_lay.setVisibility(VISIBLE);
             terminalLogo.setVisibility(VISIBLE);
             txtTerminal.setVisibility(VISIBLE);
-            ViewGroup.MarginLayoutParams params1 =
+            /*ViewGroup.MarginLayoutParams params1 =
                     (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
             params1.setMargins(0, 0, 0, 0);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
 
-            Glide.with(getApplicationContext())
-                    .load(item.getLogo())
-                    .error(R.drawable.neo_logo)
-                    .into(terminalLogo);
-            txtTerminal.setText(item.getMain_text_translation());
 
             if (strech.equals("off")){
                 if (orientation.equals("90 degrees")) {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    // Set rotation without scaling
-                    terminal_lay.setRotation(90);
-
-
-                    if(displayLayHeight>displayLayWidth){
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                    }else{
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                    }
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
 
                 }
                 else if (orientation.equals("180 degrees")) {
@@ -2398,21 +2374,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 else if (orientation.equals("270 degrees")) {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    // Set rotation without scaling
-                    terminal_lay.setRotation(270);
-
-
-                    if(displayLayHeight>displayLayWidth){
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                    }else{
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                    }
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
                 }
                 else {
                     terminal_lay.setScaleX(1);
@@ -2444,6 +2406,15 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
+
+            Glide.with(getApplicationContext())
+                    .load(item.getLogo())
+                    .transform(new RotateTransformation(0))
+                    .error(R.drawable.neo_logo)
+                    .into(terminalLogo);
+
+
+            txtTerminal.setText(item.getMain_text_translation());
 
 
 
@@ -2502,31 +2473,17 @@ public class MainActivity extends AppCompatActivity {
             updateTime();
             handler4.postDelayed(timeUpdater, 1000);
 
-            ViewGroup.MarginLayoutParams params1 =
+           /* ViewGroup.MarginLayoutParams params1 =
                     (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
             params1.setMargins(0, 0, 0, 0);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
 
             if (strech.equals("off")){
                 if (orientation.equals("90 degrees")) {
-                    display_lay.setScaleX(1);
-                    display_lay.setScaleY(1);
-                    // Set rotation without scaling
-                    display_lay.setRotation(90);
-
-                    if(displayLayHeight>displayLayWidth){
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                    }else{
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                    }
-
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
 
                 }
                 else if (orientation.equals("180 degrees")) {
@@ -2536,16 +2493,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 else if (orientation.equals("270 degrees")) {
-                    display_lay.setRotation(270);
-                    if(displayLayHeight>displayLayWidth){
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                    }else{
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-                        params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 10, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                    }
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
 
                 }
                 else {
@@ -2634,7 +2582,7 @@ public class MainActivity extends AppCompatActivity {
         txtDate.setText(formattedDateTime);
     }
     private void configureDisplayTransform(int width, int height, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
+        /*// Rotate the VideoView by 90 degrees
         display_lay.setRotation(rotationDegrees);
 
         display_lay.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -2661,10 +2609,27 @@ public class MainActivity extends AppCompatActivity {
                 // Return true to continue with the drawing
                 return true;
             }
-        });
+        });*/
+        display_lay.setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (display_lay.getWidth() > display_lay.getHeight()) {
+            // Landscape orientation
+            scaleX = (float) display_lay.getHeight() / display_lay.getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) display_lay.getWidth() / display_lay.getHeight();
+        }
+
+// Apply the scaling to fill the entire screen without stretching
+        display_lay.setScaleX(scaleX);
+        display_lay.setScaleY(scaleY);
     }
     private void configureTerminalTransform(int width, int height, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
+       /* // Rotate the VideoView by 90 degrees
         terminal_lay.setRotation(rotationDegrees);
 
         // Get the dimensions of the VideoView
@@ -2680,10 +2645,50 @@ public class MainActivity extends AppCompatActivity {
             // Apply the scaling to fill the entire screen
             terminal_lay.setScaleX(scaleX);
             terminal_lay.setScaleY(scaleY);
+        }*/
+
+        terminal_lay.setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (terminal_lay.getWidth() > terminal_lay.getHeight()) {
+            // Landscape orientation
+            scaleX = (float) terminal_lay.getHeight() / terminal_lay.getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) terminal_lay.getWidth() / terminal_lay.getHeight();
         }
 
+// Apply the scaling to fill the entire screen without stretching
+        terminal_lay.setScaleX(scaleX);
+        terminal_lay.setScaleY(scaleY);
+
     }
-    private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+    private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees, ContentModel item) {
+
+        contentLay2.setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (contentLay2.getWidth() > contentLay2.getHeight()) {
+            // Landscape orientation
+            scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
+        }
+
+// Apply the scaling to fill the entire screen without stretching
+        contentLay2.setScaleX(scaleX);
+        contentLay2.setScaleY(scaleY);
+
+
+    }
+    private void configureOverlayStretchTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         contentLay2.setRotation(rotationDegrees);
 
@@ -2691,20 +2696,6 @@ public class MainActivity extends AppCompatActivity {
         float scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
         float scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
 
-        // Apply the scaling to fill the entire screen
-        contentLay2.setScaleX(scaleX);
-        contentLay2.setScaleY(scaleY);
-
-    }
-    private void configureOverlay180Transform(int viewWidth, int viewHeight, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
-        contentLay2.setRotation(rotationDegrees);
-
-        // Calculate the scale factors to fill the entire screen
-        float scaleX = (float) contentLay2.getWidth() / contentLay2.getHeight();
-        float scaleY = (float) contentLay2.getHeight() / contentLay2.getHeight();
-        //float scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
-        //float scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
         // Apply the scaling to fill the entire screen
         contentLay2.setScaleX(scaleX);
         contentLay2.setScaleY(scaleY);
@@ -2723,7 +2714,7 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setScaleY(scaleY);
     }
     private void configureRSSFeedTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
+        /*// Rotate the VideoView by 90 degrees
         parentContentRssFeed.setRotation(rotationDegrees);
 
         // Get the dimensions of the VideoView
@@ -2739,7 +2730,25 @@ public class MainActivity extends AppCompatActivity {
             // Apply the scaling to fill the entire screen
             parentContentRssFeed.setScaleX(scaleX);
             parentContentRssFeed.setScaleY(scaleY);
+        }*/
+
+        parentContentRssFeed.setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (parentContentRssFeed.getWidth() > parentContentRssFeed.getHeight()) {
+            // Landscape orientation
+            scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
         }
+
+// Apply the scaling to fill the entire screen without stretching
+        parentContentRssFeed.setScaleX(scaleX);
+        parentContentRssFeed.setScaleY(scaleY);
 
 
     }
@@ -2960,21 +2969,7 @@ public class MainActivity extends AppCompatActivity {
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                // Set rotation without scaling
-                parentContentRssFeed.setRotation(90);
-
-
-                if(displayLayHeight>displayLayWidth){
-                    ViewGroup.MarginLayoutParams params =
-                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                }else{
-                    ViewGroup.MarginLayoutParams params =
-                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                }
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
             }
             else if (orientation.equals("180 degrees")) {
                 parentContentRssFeed.setScaleX(1);
@@ -2983,18 +2978,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
             else if (orientation.equals("270 degrees")) {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                parentContentRssFeed.setRotation(270);
-                if(displayLayHeight>displayLayWidth){
-                    ViewGroup.MarginLayoutParams params =
-                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayHeight-displayLayWidth)/2 - 20, 20, (displayLayHeight-displayLayWidth)/2 - 20);
-                }else{
-                    ViewGroup.MarginLayoutParams params =
-                            (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-                    params.setMargins(20, (displayLayWidth-displayLayHeight)/2 - 20, 20, (displayLayWidth-displayLayHeight)/2 - 20);
-                }
+                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
 
             }
             else {
