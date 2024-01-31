@@ -10,17 +10,7 @@ import static com.matainja.bootapplication.session.SessionManagement.PAIRING_COD
 import static com.matainja.bootapplication.session.SessionManagement.PAIRING_STATUS;
 import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -67,7 +57,6 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -85,6 +74,18 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -95,9 +96,18 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
-
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
+
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
@@ -145,6 +155,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     CoordinatorLayout contentLay;
     CoordinatorLayout contentLay2;
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoStartSwitch;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -248,6 +259,9 @@ public class MainActivity extends AppCompatActivity {
     TextView txtDisplay,txtDisplayId,counter_image1,txtDisplayCounter,txtDisplaycounterTitle,textdisplayOverlay,txtDate,txtTime;
     int screenWidth,screenHeight,displayLayWidth,displayLayHeight;
     ArrayList<String> overLaysIds = new ArrayList<>();
+
+    private PlayerView playerView;
+    private SimpleExoPlayer player;
 
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
@@ -2116,7 +2130,7 @@ public class MainActivity extends AppCompatActivity {
         view.setLayoutParams(params);
     }
     @SuppressLint("NotifyDataSetChanged")
-    private void contentLay(List<ContentModel> list){
+    private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
         orientation=getOrientationDetails.get(ORIENTATION);
@@ -2219,7 +2233,32 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
 
-            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            playerView = findViewById(R.id.playerView);
+// Initialize ExoPlayer instance
+            player = new SimpleExoPlayer.Builder(this).build();
+
+            // Create a MediaItem representing the video
+            MediaItem mediaItem = new MediaItem.Builder()
+                    .setUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4")
+                    .setMimeType(MimeTypes.APPLICATION_MP4)
+                    .build();
+
+            // Create a MediaSource using ProgressiveMediaSource.Factory
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
+            MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(mediaItem);
+
+            // Assign the media source to the player and start preparing
+            player.setMediaSource(mediaSource);
+            player.setPlayWhenReady(true); // Start playback when ready
+            player.seekTo(0, 0L); // Seek to the beginning
+            player.prepare(); // Transition player to the prepared state
+
+            // Attach the player to the PlayerView
+            playerView.setPlayer(player);
+
+
+           /* videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
             if(videoView.getSurfaceTexture()!=null){
@@ -2251,7 +2290,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 }
-            });
+            });*/
 
 
         }

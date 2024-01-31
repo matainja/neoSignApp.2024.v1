@@ -135,6 +135,27 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/parentVlcVideoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="visible">
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/playerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ProgressBar
+            android:id="@+id/video_progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:max="100"
+            android:progress="0" />
+    </RelativeLayout>
+
+
+    <RelativeLayout
         android:id="@+id/parentContentImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
