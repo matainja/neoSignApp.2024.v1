@@ -100,6 +100,7 @@ import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView navigationView;
     private MainActivity.MyReceiver MyReceiver=null;
-    RelativeLayout parentPairing,parentVideoView,parentContentImage;
+    RelativeLayout parentPairing,parentVideoView,parentContentImage,parentVlcVideoView;
     private static final String Videos_URL = "https://app.neosign.tv/storage/app/public/content/147/videos/BXS0VN61JxLgDjtWbhqMgEb9nCEobaKDRdL1J1YI.mp4";
     ProgressBar progress_bar;
     private ProgressDialog progressDialog;
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView content_image,terminalLogo;
     TextureView videoView;
     private MediaPlayer mediaPlayer;
-    ProgressBar progressBar,video_progress,rssProgrss,pairProgress,terminalProgress;
+    ProgressBar progressBar,video_progress,rssProgrss,pairProgress,terminalProgress,video_progress1;
     List<ContentModel> slideItems = new ArrayList<>();
     List<ContentModel> newSlideItems = new ArrayList<>();
     ContentModel overLaysContentModel;
@@ -320,14 +321,17 @@ public class MainActivity extends AppCompatActivity {
         txtTerminal= findViewById(R.id.txtTerminal);
         content_image = findViewById(R.id.content_image);
         videoView = findViewById(R.id.videoView);
+        playerView = findViewById(R.id.playerView);
         parentContentImage = findViewById(R.id.parentContentImage);
         parentVideoView = findViewById(R.id.parentVideoView);
+        parentVlcVideoView = findViewById(R.id.parentVlcVideoView);
         webView_lay = findViewById(R.id.webView_lay);
         myWebView=(WebView)findViewById(R.id.webview);
         terminalProgress=(ProgressBar)findViewById(R.id.terminalProgress);
         pairProgress=(ProgressBar)findViewById(R.id.pairProgress);
         progressBar=(ProgressBar)findViewById(R.id.progress_Bar);
         video_progress=(ProgressBar)findViewById(R.id.video_progress);
+        video_progress1=(ProgressBar)findViewById(R.id.video_progress1);
         rssProgrss=(ProgressBar)findViewById(R.id.rssProgrss);
         View header = navigationView.getHeaderView(0);
         rootView1 = (Switch)header.findViewById(R.id.autoStartSwitch);
@@ -453,6 +457,7 @@ public class MainActivity extends AppCompatActivity {
                                 parentRightOverlay.setVisibility(GONE);
                                 parentBottomOverlay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
+                                parentVlcVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 terminal_lay.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
@@ -826,6 +831,7 @@ public class MainActivity extends AppCompatActivity {
                             else{
                                 terminal_lay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
+                                parentVlcVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
                                 parentContentRssFeed.setVisibility(GONE);
@@ -843,6 +849,7 @@ public class MainActivity extends AppCompatActivity {
                             else{
                                 terminal_lay.setVisibility(GONE);
                                 parentVideoView.setVisibility(GONE);
+                                parentVlcVideoView.setVisibility(GONE);
                                 parentContentImage.setVisibility(GONE);
                                 webView_lay.setVisibility(GONE);
                                 parentContentRssFeed.setVisibility(GONE);
@@ -995,6 +1002,7 @@ public class MainActivity extends AppCompatActivity {
                                 else{
                                     terminal_lay.setVisibility(GONE);
                                     parentVideoView.setVisibility(GONE);
+                                    parentVlcVideoView.setVisibility(GONE);
                                     parentContentImage.setVisibility(GONE);
                                     webView_lay.setVisibility(GONE);
                                     parentContentRssFeed.setVisibility(GONE);
@@ -2152,6 +2160,7 @@ public class MainActivity extends AppCompatActivity {
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             display_lay.setVisibility(GONE);
@@ -2230,35 +2239,131 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            video_progress.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(VISIBLE);
+            video_progress1.setVisibility(VISIBLE);
+
+            Log.e("Tag","videoView>>>1");
+
+            // Initialize ExoPlayer instance
+            player = new SimpleExoPlayer.Builder(this).build();
+
+            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
+                player.stop(); // Stop the player
+                player.release(); // Release the player
+                player = null; // Set player to null
+            }
+
+            try {
+                // Create a MediaItem representing the video
+                MediaItem mediaItem = new MediaItem.Builder()
+                        .setUri(item.getUrl())
+                        .setMimeType(MimeTypes.APPLICATION_MP4)
+                        .build();
+
+                // Create a MediaSource using ProgressiveMediaSource.Factory
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
+                MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+
+                // Assign the media source to the player and start preparing
+                player.setMediaSource(mediaSource);
+                player.setVolume(0f); // Mute the player
+                player.seekTo(0, 0L); // Seek to the beginning
+                player.prepare(); // Transition player to the prepared state
+
+                // Attach player listener
+                player.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                        if (playbackState == Player.STATE_READY && playWhenReady) {
+                            if (strech.equals("off")){
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                            }
+                            else{
+                                // Handle size changes if needed
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+
+                            }
+                            overLays(item);
+                            video_progress1.setVisibility(GONE);
+                            playerView.setVisibility(VISIBLE);
+
+                            myRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.e("Tag","videoView>>>5");
+                                    playerView.setVisibility(GONE);
+                                    videoView.setVisibility(GONE);
+                                    parentTopOverlay.setVisibility(GONE);
+                                    parentLeftOverlay.setVisibility(GONE);
+                                    parentRightOverlay.setVisibility(GONE);
+                                    parentBottomOverlay.setVisibility(GONE);
+                                    releasePlayer();
+                                    contentLay(list);
+
+                                }
+                            };
+                            handler.postDelayed(myRunnable, duration);
+                        }
+                    }
+                });
+
+                // Start playback
+                player.setPlayWhenReady(true);
+
+                // Attach the player to the PlayerView
+                playerView.setPlayer(player);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
+        }
+        /*else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
 
-            playerView = findViewById(R.id.playerView);
-// Initialize ExoPlayer instance
-            player = new SimpleExoPlayer.Builder(this).build();
-
-            // Create a MediaItem representing the video
-            MediaItem mediaItem = new MediaItem.Builder()
-                    .setUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4")
-                    .setMimeType(MimeTypes.APPLICATION_MP4)
-                    .build();
-
-            // Create a MediaSource using ProgressiveMediaSource.Factory
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
-            MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(mediaItem);
-
-            // Assign the media source to the player and start preparing
-            player.setMediaSource(mediaSource);
-            player.setPlayWhenReady(true); // Start playback when ready
-            player.seekTo(0, 0L); // Seek to the beginning
-            player.prepare(); // Transition player to the prepared state
-
-            // Attach the player to the PlayerView
-            playerView.setPlayer(player);
-
-
-           /* videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
             if(videoView.getSurfaceTexture()!=null){
@@ -2290,16 +2395,17 @@ public class MainActivity extends AppCompatActivity {
 
 
                 }
-            });*/
+            });
 
 
-        }
+        }*/
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
@@ -2315,6 +2421,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
@@ -2328,6 +2435,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
@@ -2341,6 +2449,7 @@ public class MainActivity extends AppCompatActivity {
             parentContentImage.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
 
@@ -2353,6 +2462,7 @@ public class MainActivity extends AppCompatActivity {
             terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
@@ -2365,6 +2475,7 @@ public class MainActivity extends AppCompatActivity {
             terminal_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(VISIBLE);
@@ -2385,6 +2496,7 @@ public class MainActivity extends AppCompatActivity {
         else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
             parentContentImage.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             terminalProgress.setVisibility(GONE);
@@ -2504,6 +2616,7 @@ public class MainActivity extends AppCompatActivity {
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
             parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
@@ -2595,6 +2708,8 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
+
+
     private Runnable timeUpdater = new Runnable() {
         @Override
         public void run() {
@@ -2802,6 +2917,47 @@ public class MainActivity extends AppCompatActivity {
         // Apply the scaling to fill the entire screen
         videoView.setScaleX(scaleX);
         videoView.setScaleY(scaleY);
+    }
+    private void configureExoPlayerVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+
+
+        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (playerView.getVideoSurfaceView().getWidth() > playerView.getVideoSurfaceView().getHeight()) {
+            // Landscape orientation
+            scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
+        }
+
+// Apply the scaling to fill the entire screen without stretching
+        playerView.getVideoSurfaceView().setScaleX(scaleX);
+        playerView.getVideoSurfaceView().setScaleY(scaleY);
+    }
+    private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
+        float scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
+
+        // Apply the scaling to fill the entire screen
+        playerView.getVideoSurfaceView().setScaleX(scaleX);
+        playerView.getVideoSurfaceView().setScaleY(scaleY);
+
+    }
+    private void releasePlayer() {
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+        }
     }
     public class RotateTransformation extends BitmapTransformation {
         private static final String ID = "com.example.RotateTransformation";
@@ -4578,6 +4734,7 @@ public class MainActivity extends AppCompatActivity {
                                                 parentRightOverlay.setVisibility(GONE);
                                                 parentBottomOverlay.setVisibility(GONE);
                                                 parentVideoView.setVisibility(GONE);
+                                                parentVlcVideoView.setVisibility(GONE);
                                                 terminal_lay.setVisibility(GONE);
                                                 parentContentImage.setVisibility(GONE);
                                                 terminalLogo.setVisibility(GONE);
