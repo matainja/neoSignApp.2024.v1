@@ -96,6 +96,8 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
@@ -3328,10 +3330,12 @@ public class MainActivity extends AppCompatActivity {
         if (rsslist.size()>0){
             RSSModel item = rsslist.get(rssContentCurrentIndex);
             if (item.getPhoto() != null) {
+                RequestOptions requestOptions = RequestOptions.bitmapTransform(new RoundedCorners(30)); // Set the corner radius as desired
                 Glide.with(getApplicationContext())
                         .load(item.getPhoto())
                         .transform(new RotateTransformation(0))
                         .error(R.drawable.neo_logo)
+                        .apply(requestOptions)
                         .into(rssImageView);
             }
 

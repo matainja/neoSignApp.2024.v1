@@ -31,6 +31,9 @@ import com.matainja.bootapplication.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 public class TerminalShowActivity extends AppCompatActivity {
     String itemName, appId;
     ProgressBar terminalProgress;
@@ -75,8 +78,16 @@ public class TerminalShowActivity extends AppCompatActivity {
         terminalCard.setVisibility(View.GONE);
         queueTitle.setVisibility(View.GONE);
         terminalCard.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+        String url="";
+        try {
+            String encodedDeptName = URLEncoder.encode(itemName, "UTF-8");
+            url= "https://app.neosign.tv/api/addinqueue"+"?"+"appid="+appId+"&"+"deptname="+encodedDeptName;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
         StringRequest getRequest = new StringRequest(Request.Method.GET,
-                "https://app.neosign.tv/api/addinqueue"+"?"+"appid="+appId+"&"+"deptname="+itemName,
+                url,
                 new Response.Listener<String>() {
                     @SuppressLint("SetTextI18n")
                     @Override

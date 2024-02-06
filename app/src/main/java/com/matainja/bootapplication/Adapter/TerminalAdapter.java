@@ -43,7 +43,7 @@ public class TerminalAdapter extends RecyclerView.Adapter<TerminalAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         TerminalModel item = gridItemList.get(position);
 
-        holder.imageView.setImageResource(item.getImageResource());
+        //holder.imageView.setImageResource(item.getImageResource());
         Log.e("Tag","item.getItemName()"+item.getItemName());
         holder.textView.setTextColor(Color.parseColor("#000000"));
         holder.textView.setText(item.getItemName());

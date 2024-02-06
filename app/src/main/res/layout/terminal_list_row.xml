@@ -15,7 +15,6 @@
         android:layout_height="100dp"
         android:scaleType="centerCrop"
         android:visibility="gone"
-        android:src="@drawable/ic_launcher_foreground"
         android:layout_gravity="center_horizontal"/>
 
     <TextView

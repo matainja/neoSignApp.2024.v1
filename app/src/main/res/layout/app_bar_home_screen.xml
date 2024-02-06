@@ -522,7 +522,7 @@
                     android:layout_weight="4"
                     android:adjustViewBounds="true"
                     android:background="@drawable/round_outline"
-                    android:clipToOutline="true"
+                    android:clipToOutline="false"
                     android:visibility="gone" />
 
 
