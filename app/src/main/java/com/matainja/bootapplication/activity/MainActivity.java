@@ -45,6 +45,7 @@ import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
@@ -1995,14 +1996,15 @@ public class MainActivity extends AppCompatActivity {
             textOverlay.startAnimation(marqueeAnimation);
         }else{
             TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 1f,
                     Animation.RELATIVE_TO_SELF, -1f,
+                    Animation.RELATIVE_TO_SELF, 1f,
                     Animation.RELATIVE_TO_SELF, 0f,
                     Animation.RELATIVE_TO_SELF, 0f);
 
             // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatMode(Animation.RESTART);
+            marqueeAnimation.setRepeatCount(Animation.INFINITE);
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
             textOverlay.setHorizontallyScrolling(true);
@@ -2020,6 +2022,7 @@ public class MainActivity extends AppCompatActivity {
                 String rssinfo = contentModel.getLaysRssInfo();
                 String[] rssinfoArray = rssinfo.split(",");
                 List<String> rssinfoList = Arrays.asList(rssinfoArray);
+                Log.e("Tag","date>>>>"+item.getDate());
 
                 ovelaytext=item.getDate();
 
@@ -2032,30 +2035,30 @@ public class MainActivity extends AppCompatActivity {
 
                     // Set text style for a specific part of the string (e.g., bold)
                     spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    ovelaytext=String.format(ovelaytext, 18f)+ "  " +spannableString;
+                    ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
                 }
                 if (rssinfoList.contains("2")) {
                     ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
                 }
 
             }else{
-                ovelaytext=String.format(item.getDate(), 18f) + "  " + String.format(item.getTitle(), 20f,true) +  "  " + String.format(item.getDescription(), 20f);
+                ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
             }
             if(contentModel.getLaysType().equals("Right")){
                 Log.e("Tag","testingRight>>>9");
-                textRightOverlay.setText(ovelaytext);
+                textRightOverlay.setText(Html.fromHtml(ovelaytext));
                 textAnimation(textRightOverlay);
             }
             else if(contentModel.getLaysType().equals("Left")){
                 Log.e("Tag","testingLeft>>>9");
-                textLeftOverlay.setText(ovelaytext);
+                textLeftOverlay.setText(Html.fromHtml(ovelaytext));
                 textAnimation(textLeftOverlay);
 
             }
             else if(contentModel.getLaysType().equals("Top")){
 
                 Log.e("Tag","testingTop>>>9"+ovelaytext);
-                textTopOverlay.setText(ovelaytext);
+                textTopOverlay.setText(Html.fromHtml(ovelaytext));
                 textAnimation(textTopOverlay);
 
             }
@@ -2063,20 +2066,20 @@ public class MainActivity extends AppCompatActivity {
 
 
                 Log.e("Tag","testingBottom>>>9");
-                textBottomOverlay.setText(ovelaytext);
+                textBottomOverlay.setText(Html.fromHtml(ovelaytext));
                 textAnimation(textBottomOverlay);
             }
 
 
 
-
+            overlaysRssContentCurrentIndex++;
+            if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
+                overlaysRssContentCurrentIndex = 0;
+            }
 
 
         }
-        overlaysRssContentCurrentIndex++;
-        if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
-            overlaysRssContentCurrentIndex = 0;
-        }
+
         myRunnable2 = new Runnable() {
             @Override
             public void run() {
