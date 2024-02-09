@@ -29,7 +29,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.PictureDrawable;
@@ -46,10 +45,6 @@ import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -59,6 +54,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.webkit.ValueCallback;
@@ -111,7 +107,6 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
@@ -1254,6 +1249,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(overLaysIds.size()==1){
+            Log.e("overlays","overLaysIds>>>1"+overLaysIds);
             if (item.getLaysContentType().equals("RSS feed")){
                 if(item.getLaysType().equals("Right")){
                     String colorCode = item.getLaysBgColor();
@@ -1450,7 +1446,7 @@ public class MainActivity extends AppCompatActivity {
                     textRightOverlay.setText(item.getLaysContent());
 
 
-                    textAnimation(textRightOverlay);
+                    textAnimation(textRightOverlay, item.getLaysContent());
 
                 }
                 else if(item.getLaysType().equals("Left")){
@@ -1480,7 +1476,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("Tag","testing>>>8");
                     textLeftOverlay.setText(item.getLaysContent());
 
-                    textAnimation(textLeftOverlay);
+                    textAnimation(textLeftOverlay, item.getLaysContent());
                 }
                 else if(item.getLaysType().equals("Top")){
                     parentLeftOverlay.setVisibility(GONE);
@@ -1506,7 +1502,7 @@ public class MainActivity extends AppCompatActivity {
                     setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
                     Log.e("Tag","testing>>>9");
                     textTopOverlay.setText(item.getLaysContent());
-                    textAnimation(textTopOverlay);
+                    textAnimation(textTopOverlay, item.getLaysContent());
                 }
                 else if(item.getLaysType().equals("Bottom")){
                     parentTopOverlay.setVisibility(GONE);
@@ -1536,14 +1532,17 @@ public class MainActivity extends AppCompatActivity {
 
                     textBottomOverlay.setText(item.getLaysContent());
 
-                    textAnimation(textBottomOverlay);
+                    textAnimation(textBottomOverlay, item.getLaysContent());
 
                 }
             }
         }
         else if(overLaysIds.size()>1){
+
              String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
+            Log.e("overlays","overLaysIds>>>2"+secondToLastValue+item.getLaysId());
              if(secondToLastValue.equals(item.getLaysId())){
+                 Log.e("overlays","overLaysIds>>>3"+overLaysIds);
                  if (item.getLaysContentType().equals("RSS feed")){
                      if(item.getLaysType().equals("Right")){
                          parentTopOverlay.setVisibility(GONE);
@@ -1600,6 +1599,7 @@ public class MainActivity extends AppCompatActivity {
                  }
              }
              else{
+                 Log.e("overlays","overLaysIds>>>4"+overLaysIds);
                  if (item.getLaysContentType().equals("RSS feed")){
                      if(item.getLaysType().equals("Right")){
                          String colorCode = item.getLaysBgColor();
@@ -1796,7 +1796,7 @@ public class MainActivity extends AppCompatActivity {
                          textRightOverlay.setText(item.getLaysContent());
 
 
-                         textAnimation(textRightOverlay);
+                         textAnimation(textRightOverlay, item.getLaysContent());
 
                      }
                      else if(item.getLaysType().equals("Left")){
@@ -1826,7 +1826,7 @@ public class MainActivity extends AppCompatActivity {
                          Log.e("Tag","testing>>>8");
                          textLeftOverlay.setText(item.getLaysContent());
 
-                         textAnimation(textLeftOverlay);
+                         textAnimation(textLeftOverlay, item.getLaysContent());
                      }
                      else if(item.getLaysType().equals("Top")){
                          parentLeftOverlay.setVisibility(GONE);
@@ -1853,7 +1853,7 @@ public class MainActivity extends AppCompatActivity {
                          Log.e("Tag","testing>>>9");
                          textTopOverlay.setText(item.getLaysContent());
 
-                         textAnimation(textTopOverlay);
+                         textAnimation(textTopOverlay, item.getLaysContent());
                      }
                      else if(item.getLaysType().equals("Bottom")){
                          parentTopOverlay.setVisibility(GONE);
@@ -1883,7 +1883,7 @@ public class MainActivity extends AppCompatActivity {
 
                          textBottomOverlay.setText(item.getLaysContent());
 
-                         textAnimation(textBottomOverlay);
+                         textAnimation(textBottomOverlay, item.getLaysContent());
 
                      }
                  }
@@ -1895,7 +1895,7 @@ public class MainActivity extends AppCompatActivity {
         overLaysContentModel=item;
         if (item.getFeed_url().isEmpty() || item.getFeed_url()==null){
             textdisplayOverlay.setText(item.getText());
-            textAnimation(textdisplayOverlay);
+            textAnimation(textdisplayOverlay, item.getLaysContent());
         }
         else{
             Log.e("Tag","testing>>>6");
@@ -1971,7 +1971,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    private void textAnimation(TextView textOverlay) {
+    private void textAnimation(TextView textOverlay, String laysContent) {
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         Paint textPaint = textOverlay.getPaint();
         // Get the text content of the TextView
@@ -1979,6 +1979,8 @@ public class MainActivity extends AppCompatActivity {
         // Calculate the width of the text based on the text size and content
         int width = (int) Math.ceil(textPaint.measureText(text.toString()));
         Log.e("screenWidth>>",""+screenWidth+" "+width);
+        Log.e("textLength>>",""+text.length());
+
         if (width <= screenWidth) {
             // Create a translation animation to make it scroll horizontally
             TranslateAnimation marqueeAnimation = new TranslateAnimation(
@@ -1991,29 +1993,90 @@ public class MainActivity extends AppCompatActivity {
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(25000); // Adjust the duration as needed
+            marqueeAnimation.setDuration(20000); // Adjust the duration as needed
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
         }else{
-            TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, -1f,
+           /* TranslateAnimation marqueeAnimation = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 1f,
+                    Animation.RELATIVE_TO_SELF, -1f,
+                    Animation.RELATIVE_TO_SELF, 0f,
+                    Animation.RELATIVE_TO_SELF, 0f);
+            marqueeAnimation.setInterpolator(new LinearInterpolator());
+            marqueeAnimation.setRepeatMode(Animation.RESTART);
+            textOverlay.setHorizontallyScrolling(true);
+            textOverlay.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+            textOverlay.setSelected(true);
+            textOverlay.setFocusable(true);
+            textOverlay.setFocusableInTouchMode(true);
+            textOverlay.startAnimation(marqueeAnimation);*/
+            long duration = 0;
+            if(text.length()<=500){
+                duration = 25000;
+            }
+            else if(text.length()>500 && text.length()<=1000){
+                duration = 50000;
+            }
+            else if(text.length()>1000){
+                duration = 60000;
+            }
+            /*else{
+
+                duration = calculateDuration(laysContent);
+            }*/
+            // Create a translation animation to make it scroll horizontally
+            TranslateAnimation marqueeAnimation = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 1f,
+                    Animation.RELATIVE_TO_SELF, -1f,
                     Animation.RELATIVE_TO_SELF, 0f,
                     Animation.RELATIVE_TO_SELF, 0f);
 
             // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
-            marqueeAnimation.setRepeatMode(Animation.RESTART);
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
-            // Start the animation
-            textOverlay.startAnimation(marqueeAnimation);
+            marqueeAnimation.setRepeatMode(Animation.RESTART);
+            marqueeAnimation.setDuration(duration); // Adjust the duration as needed
+
+            marqueeAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // Animation started
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    // Animation ended, restart it
+                    textOverlay.startAnimation(marqueeAnimation);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // Animation repeated
+                }
+            });
+
             textOverlay.setHorizontallyScrolling(true);
             textOverlay.setSelected(true);
+            // Start the animation
+            textOverlay.startAnimation(marqueeAnimation);
+
+
         }
+    }
+    public long calculateDuration(String text) {
+        // Set a fixed scrolling speed (characters per second)
+        int scrollingSpeed = 10; // Adjust as needed
+        // Calculate duration based on scrolling speed and text length
+        int textLength = text.length();
+        Log.e("Tag","textLength>>>"+textLength);
+        long duration = (long) ((float) textLength / scrollingSpeed*1500);
+        return duration;
+
+
     }
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
-        long duration = 20000;
+        long duration = 120000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
@@ -2028,38 +2091,46 @@ public class MainActivity extends AppCompatActivity {
 
                 if (rssinfoList.contains("1")) {
                     String text = item.getTitle();
-                    SpannableString spannableString = new SpannableString(text);
+                    /*SpannableString spannableString = new SpannableString(text);
                     // Set text size for a specific part of the string
                     float relativeSize = 22f; // Change this value to adjust the size
                     spannableString.setSpan(new RelativeSizeSpan(relativeSize), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                     // Set text style for a specific part of the string (e.g., bold)
-                    spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
+                    spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);*/
+                    //ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
+                    ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
                 }
                 if (rssinfoList.contains("2")) {
-                    ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
+                    //ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
+                    ovelaytext = String.format("%s  %s", ovelaytext, item.getDescription());
                 }
-
+                Log.e("Tag","ovelaytext>>>>"+ovelaytext.length());
+                Log.e("Tag","ovelaytext>>>>"+ovelaytext);
             }else{
-                ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
+                //ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
+                ovelaytext = String.format("%s  <b>%s</b>  %s",
+                        item.getDate(),
+                        item.getTitle(),
+                        item.getDescription());
+
             }
             if(contentModel.getLaysType().equals("Right")){
                 Log.e("Tag","testingRight>>>9");
                 textRightOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textRightOverlay);
+                textAnimation(textRightOverlay, ovelaytext);
             }
             else if(contentModel.getLaysType().equals("Left")){
                 Log.e("Tag","testingLeft>>>9");
                 textLeftOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textLeftOverlay);
+                textAnimation(textLeftOverlay, ovelaytext);
 
             }
             else if(contentModel.getLaysType().equals("Top")){
 
                 Log.e("Tag","testingTop>>>9"+ovelaytext);
                 textTopOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textTopOverlay);
+                textAnimation(textTopOverlay, ovelaytext);
 
             }
             else if(contentModel.getLaysType().equals("Bottom")){
@@ -2067,7 +2138,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("Tag","testingBottom>>>9");
                 textBottomOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textBottomOverlay);
+                textAnimation(textBottomOverlay, ovelaytext);
             }
 
 
@@ -2091,17 +2162,17 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("DefaultLocale")
     private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         displayOverlayRssSlideShowCallCount++;
-        long duration = 20000;
+        long duration = 240000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
             String ovelaytext;
             //ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
-            ovelaytext = String.format("%s  %.2f  %s  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
+            ovelaytext = String.format("%s  %.2f  <b>%s</b>  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
 
 
-            textdisplayOverlay.setText(ovelaytext);
-            textAnimation(textdisplayOverlay);
+            textdisplayOverlay.setText(Html.fromHtml(ovelaytext));
+            textAnimation(textdisplayOverlay, ovelaytext);
         }
 
         displayOverlaysRssContentCurrentIndex++;
