@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Sorry! poor internet connection."
+            android:text="Sorry! Poor internet connection."
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
 
@@ -477,12 +477,12 @@
                         android:id="@+id/textdisplayOverlay"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxLines="1"
                         android:ellipsize="marquee"
                         android:marqueeRepeatLimit="marquee_forever"
                         android:fadeScrollbars="false"
                         android:scrollHorizontally="true"
-                        android:layout_centerVertical="true" />
+                        android:layout_centerVertical="true"
+                        android:singleLine="true" />
                 </RelativeLayout>
 
             </LinearLayout>
@@ -607,7 +607,7 @@
             android:background="@color/rss_back"
             android:visibility="gone"
             >
-            <HorizontalScrollView
+           <!-- <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -620,15 +620,23 @@
                     android:id="@+id/textTopOverlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
                     android:ellipsize="marquee"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
-                    android:layout_centerVertical="true"
-                    />
+                    android:singleLine="true" />
 
-            </HorizontalScrollView>
-
+            </HorizontalScrollView>-->
+            <TextView
+                android:text=""
+                android:id="@+id/textTopOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:fadeScrollbars="false"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                android:singleLine="true"/>
 
 
         </RelativeLayout>
@@ -640,7 +648,7 @@
             android:layout_gravity="center_vertical|start"
             android:visibility="gone"
             >
-            <HorizontalScrollView
+           <!-- <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -653,14 +661,23 @@
                     android:id="@+id/textLeftOverlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
                     android:ellipsize="marquee"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
-                    android:layout_centerVertical="true"
-                    />
+                    android:singleLine="true" />
 
-            </HorizontalScrollView>
+            </HorizontalScrollView>-->
+            <TextView
+                android:text=""
+                android:id="@+id/textLeftOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:fadeScrollbars="false"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                android:singleLine="true"/>
 
         </RelativeLayout>
         <RelativeLayout
@@ -671,7 +688,7 @@
             android:visibility="gone"
             android:layout_gravity="center_vertical|end"
             >
-            <HorizontalScrollView
+            <!--<HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -684,17 +701,23 @@
                     android:id="@+id/textRightOverlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
                     android:ellipsize="marquee"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
-                    android:layout_gravity="center_vertical"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    />
+                    android:singleLine="true" />
 
-            </HorizontalScrollView>
-
+            </HorizontalScrollView>-->
+            <TextView
+                android:text=""
+                android:id="@+id/textRightOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:fadeScrollbars="false"
+                android:scrollHorizontally="true"
+                android:layout_centerVertical="true"
+                android:singleLine="true" />
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/parentBottomOverlay"
@@ -704,7 +727,7 @@
             android:visibility="gone"
             android:layout_gravity="bottom"
             >
-            <HorizontalScrollView
+           <!-- <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -717,32 +740,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:layout_gravity="center_vertical"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
                     android:ellipsize="marquee"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"/>
+                   />
 
-            </HorizontalScrollView>
-            <!--<TextView
-                android:text="ffgg ggfdd nnhh nhjk jkkl"
+            </HorizontalScrollView>-->
+            <TextView
+                android:text=""
                 android:id="@+id/textBottomOverlay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
                 android:ellipsize="marquee"
+                android:fadingEdge = "horizontal"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:fadeScrollbars="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:scrollHorizontally="true"
                 android:layout_centerVertical="true"
-                />-->
+                android:singleLine="true" />
 
         </RelativeLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

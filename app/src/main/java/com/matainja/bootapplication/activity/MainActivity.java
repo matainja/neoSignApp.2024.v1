@@ -53,6 +53,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -262,6 +263,9 @@ public class MainActivity extends AppCompatActivity {
     private PlayerView playerView;
     private SimpleExoPlayer player;
 
+    TranslateAnimation marqueeAnimation;
+    private int currentTextAnimationPosition = 0;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -353,6 +357,16 @@ public class MainActivity extends AppCompatActivity {
         parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
         parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
+
+
+        marqueeAnimation = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 1f,
+                Animation.RELATIVE_TO_PARENT, -1f,
+                Animation.RELATIVE_TO_PARENT, 0f,
+                Animation.RELATIVE_TO_PARENT, 0f);
+
+
+
         terminalView = findViewById(R.id.terminalView);
         terminalList = generateGridItems();
         terminalAdapter = new TerminalAdapter(this, terminalList);
@@ -392,9 +406,9 @@ public class MainActivity extends AppCompatActivity {
             pairingCode.setText(pairCode);
 
         }
+        initPusher();
         if(isNetworkAvailable()){
             parentInternetLay.setVisibility(GONE);
-            initPusher();
             slideShowCallCount=0;
             initPairing(pairCode);
 
@@ -403,6 +417,51 @@ public class MainActivity extends AppCompatActivity {
             parentInternetLay.setVisibility(VISIBLE);
             showSnack();
         }
+
+        /*Handler handlerReload = new Handler();
+        handlerReload.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(newSlideItems.size()<1){
+                    slideShowCallCount=0;
+                    rssSlideShowCallCount=0;
+                    overlayRssSlideShowCallCount=0;
+                    displayOverlayRssSlideShowCallCount=0;
+                    clearTimeout();
+                    clearTimeout1();
+                    clearTimeout2();
+                    clearTimeout3();
+                    overLaysIds.clear();
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentVideoView.setVisibility(GONE);
+                    parentVlcVideoView.setVisibility(GONE);
+                    parentContentImage.setVisibility(GONE);
+                    terminal_lay.setVisibility(GONE);
+                    webView_lay.setVisibility(GONE);
+                    parentContentRssFeed.setVisibility(GONE);
+                    pairProgress.setVisibility(VISIBLE);
+
+                    if(isNetworkAvailable()){
+                        parentInternetLay.setVisibility(GONE);
+                        slideShowCallCount=0;
+                        initPairing(pairCode);
+                    }
+                    else{
+                        parentInternetLay.setVisibility(VISIBLE);
+                        showSnack();
+                    }
+
+                }
+
+
+            }
+        }, 15000);*/
+
+
+
 
         parent_exit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -781,7 +840,6 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
     private void initPusher() {
-
         PusherOptions options = new PusherOptions();
         options.setCluster("ap2");
         pusher = new Pusher("f5c1c68ffe43d214dfe1", options);
@@ -813,6 +871,15 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void run() {
+                        terminal_lay.setVisibility(GONE);
+                        parentVideoView.setVisibility(GONE);
+                        parentVlcVideoView.setVisibility(GONE);
+                        parentContentRssFeed.setVisibility(GONE);
+                        webView_lay.setVisibility(GONE);
+                        display_lay.setVisibility(GONE);
+                        content_image.setImageBitmap(null);
+                        content_image.destroyDrawingCache();
+                        parentContentImage.setVisibility(GONE);
 
                         Log.e("Pusher", "Received event with data: " + event.toString());
                         HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
@@ -986,7 +1053,7 @@ public class MainActivity extends AppCompatActivity {
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
 
-                                    clearTimeout();
+                                   /* clearTimeout();
                                     clearTimeout1();
                                     clearTimeout2();
                                     clearTimeout3();
@@ -994,7 +1061,7 @@ public class MainActivity extends AppCompatActivity {
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
-                                    contentLay(newSlideItems);
+                                    contentLay(newSlideItems);*/
 
                                 }
                                 else{
@@ -1029,6 +1096,23 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        List<ContentModel> contentList = new ArrayList<>();
+        HashMap<String, String> getItemDetails = new HashMap<String, String>();
+        getItemDetails = sessionManagement.getContentItemDetails();
+        contentList=new Gson().fromJson(getItemDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+
+        clearTimeout();
+        clearTimeout1();
+        clearTimeout2();
+        clearTimeout3();
+        contentCurrentIndex=0;
+        rssSlideShowCallCount=0;
+        overlayRssSlideShowCallCount=0;
+        displayOverlayRssSlideShowCallCount=0;
+        contentLay(contentList);
+
+
     }
     @SuppressLint("NotifyDataSetChanged")
     private void initDisplayContentPusher(String display_id, String counter_translation){
@@ -1249,7 +1333,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(overLaysIds.size()==1){
-            Log.e("overlays","overLaysIds>>>1"+overLaysIds);
             if (item.getLaysContentType().equals("RSS feed")){
                 if(item.getLaysType().equals("Right")){
                     String colorCode = item.getLaysBgColor();
@@ -1540,9 +1623,7 @@ public class MainActivity extends AppCompatActivity {
         else if(overLaysIds.size()>1){
 
              String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
-            Log.e("overlays","overLaysIds>>>2"+secondToLastValue+item.getLaysId());
              if(secondToLastValue.equals(item.getLaysId())){
-                 Log.e("overlays","overLaysIds>>>3"+overLaysIds);
                  if (item.getLaysContentType().equals("RSS feed")){
                      if(item.getLaysType().equals("Right")){
                          parentTopOverlay.setVisibility(GONE);
@@ -1591,15 +1672,17 @@ public class MainActivity extends AppCompatActivity {
                          parentTopOverlay.setVisibility(VISIBLE);
                      }
                      else if(item.getLaysType().equals("Bottom")){
+                         Log.e("Tag","testing>>>66");
                          parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(VISIBLE);
+
                      }
                  }
              }
              else{
-                 Log.e("overlays","overLaysIds>>>4"+overLaysIds);
+
                  if (item.getLaysContentType().equals("RSS feed")){
                      if(item.getLaysType().equals("Right")){
                          String colorCode = item.getLaysBgColor();
@@ -1693,7 +1776,7 @@ public class MainActivity extends AppCompatActivity {
                      }
 
 
-                     Log.e("Tag","testing>>>6");
+                     Log.e("Tag","testing>>>7");
                      List<RSSModel> overlaysRssList = new ArrayList<>();
                      String overlayContent=item.getLaysContent();
                      String newString = overlayContent.replace("https://app.neosign.tv/", "");
@@ -1768,7 +1851,7 @@ public class MainActivity extends AppCompatActivity {
 
                  }
                  else if (item.getLaysContentType().equals("Written text")){
-                     Log.e("Tag","testing>>>6");
+                     Log.e("Tag","testing>>>77");
                      if(item.getLaysType().equals("Right")){
                          parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
@@ -1983,34 +2066,27 @@ public class MainActivity extends AppCompatActivity {
 
         if (width <= screenWidth) {
             // Create a translation animation to make it scroll horizontally
-            TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 1f,
-                    Animation.RELATIVE_TO_SELF, -1f,
-                    Animation.RELATIVE_TO_SELF, 0f,
-                    Animation.RELATIVE_TO_SELF, 0f);
+
 
             // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(20000); // Adjust the duration as needed
+            marqueeAnimation.setDuration(10000); // Adjust the duration as needed
             // Start the animation
             textOverlay.startAnimation(marqueeAnimation);
-        }else{
-           /* TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 1f,
-                    Animation.RELATIVE_TO_SELF, -1f,
-                    Animation.RELATIVE_TO_SELF, 0f,
-                    Animation.RELATIVE_TO_SELF, 0f);
+        }
+        else{
+            // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatMode(Animation.RESTART);
+            marqueeAnimation.setStartOffset(currentTextAnimationPosition);
             textOverlay.setHorizontallyScrolling(true);
-            textOverlay.setEllipsize(TextUtils.TruncateAt.MARQUEE);
             textOverlay.setSelected(true);
-            textOverlay.setFocusable(true);
-            textOverlay.setFocusableInTouchMode(true);
-            textOverlay.startAnimation(marqueeAnimation);*/
-            long duration = 0;
+            marqueeAnimation.setDuration(0);
+            textOverlay.startAnimation(marqueeAnimation);
+
+           /* long duration = 0;
             if(text.length()<=500){
                 duration = 25000;
             }
@@ -2020,10 +2096,10 @@ public class MainActivity extends AppCompatActivity {
             else if(text.length()>1000){
                 duration = 60000;
             }
-            /*else{
+            *//*else{
 
                 duration = calculateDuration(laysContent);
-            }*/
+            }*//*
             // Create a translation animation to make it scroll horizontally
             TranslateAnimation marqueeAnimation = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 1f,
@@ -2058,11 +2134,12 @@ public class MainActivity extends AppCompatActivity {
             textOverlay.setHorizontallyScrolling(true);
             textOverlay.setSelected(true);
             // Start the animation
-            textOverlay.startAnimation(marqueeAnimation);
-
-
+            textOverlay.startAnimation(marqueeAnimation);*/
         }
+
+
     }
+
     public long calculateDuration(String text) {
         // Set a fixed scrolling speed (characters per second)
         int scrollingSpeed = 10; // Adjust as needed
@@ -2076,7 +2153,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
-        long duration = 120000;
+        long duration = 15000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
@@ -2107,7 +2184,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.e("Tag","ovelaytext>>>>"+ovelaytext.length());
                 Log.e("Tag","ovelaytext>>>>"+ovelaytext);
-            }else{
+            }
+            else{
                 //ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
                 ovelaytext = String.format("%s  <b>%s</b>  %s",
                         item.getDate(),
@@ -2157,6 +2235,7 @@ public class MainActivity extends AppCompatActivity {
                 overlayRssContentLay(overlaysRssList, contentModel);
             }
         };
+        clearTimeout2();
         handler2.postDelayed(myRunnable2, duration);
     }
     @SuppressLint("DefaultLocale")
@@ -2185,6 +2264,7 @@ public class MainActivity extends AppCompatActivity {
                 displayOverlayRssContentLay(overlaysRssList, contentModel);
             }
         };
+        clearTimeout3();
         handler3.postDelayed(myRunnable3, duration);
     }
     private void setWidthPercentage(RelativeLayout view, int percentage) {
@@ -2240,9 +2320,10 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             webView_lay.setVisibility(GONE);
             display_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(VISIBLE);
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
+            parentContentImage.setVisibility(VISIBLE);
+
 
 
             if (orientation.equals("90 degrees")) {
@@ -2305,6 +2386,7 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
+            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
@@ -2411,6 +2493,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             };
+                            clearTimeout();
                             handler.postDelayed(myRunnable, duration);
                         }
                     }
@@ -2685,6 +2768,7 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
+            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
@@ -2772,6 +2856,7 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
+            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
 
@@ -3339,6 +3424,7 @@ public class MainActivity extends AppCompatActivity {
                                 contentLay(list);
                             }
                         };
+                        clearTimeout();
                         handler.postDelayed(myRunnable, duration);
                         try {
                             JSONArray jsonArray = new JSONArray(response);
@@ -3440,6 +3526,7 @@ public class MainActivity extends AppCompatActivity {
                 rssContentLay(rsslist, item1);
             }
         };
+        clearTimeout1();
         handler1.postDelayed(myRunnable1, duration);
     }
     private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
@@ -3546,6 +3633,7 @@ public class MainActivity extends AppCompatActivity {
                             contentLay(list);
                         }
                     };
+                    clearTimeout();
                     handler.postDelayed(myRunnable, duration);
                 }
                 else{
@@ -3685,6 +3773,7 @@ public class MainActivity extends AppCompatActivity {
                             contentLay(list);
                         }
                     };
+                    clearTimeout();
                     handler.postDelayed(myRunnable, duration);
                 }
                 else{
@@ -3821,6 +3910,7 @@ public class MainActivity extends AppCompatActivity {
                             contentLay(list);
                         }
                     };
+                    clearTimeout();
                     handler.postDelayed(myRunnable, duration);
                 }
                 else{
@@ -4026,6 +4116,7 @@ public class MainActivity extends AppCompatActivity {
                             contentLay(list);
                         }
                     };
+                    clearTimeout();
                     handler.postDelayed(myRunnable, duration);
                 }
                 else{
@@ -4188,6 +4279,7 @@ public class MainActivity extends AppCompatActivity {
                             contentLay(list);
                         }
                     };
+                    clearTimeout();
                     handler.postDelayed(myRunnable, duration);
                 }
                 else{
@@ -5008,6 +5100,7 @@ public class MainActivity extends AppCompatActivity {
     public void clearTimeout4() {
         handler4.removeCallbacks(timeUpdater);
     }
+
     private class Browser extends WebChromeClient {
         private static final String TAG = "WebVIEW-Home";
         // For Android 5.0
@@ -5120,6 +5213,7 @@ public class MainActivity extends AppCompatActivity {
         clearTimeout1();
         clearTimeout2();
         clearTimeout3();
+        clearTimeout4();
         //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
