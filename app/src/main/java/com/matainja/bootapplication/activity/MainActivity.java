@@ -407,60 +407,9 @@ public class MainActivity extends AppCompatActivity {
 
         }
         initPusher();
-        if(isNetworkAvailable()){
-            parentInternetLay.setVisibility(GONE);
-            slideShowCallCount=0;
-            initPairing(pairCode);
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            showSnack();
-        }
-
-        /*Handler handlerReload = new Handler();
-        handlerReload.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(newSlideItems.size()<1){
-                    slideShowCallCount=0;
-                    rssSlideShowCallCount=0;
-                    overlayRssSlideShowCallCount=0;
-                    displayOverlayRssSlideShowCallCount=0;
-                    clearTimeout();
-                    clearTimeout1();
-                    clearTimeout2();
-                    clearTimeout3();
-                    overLaysIds.clear();
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    parentVideoView.setVisibility(GONE);
-                    parentVlcVideoView.setVisibility(GONE);
-                    parentContentImage.setVisibility(GONE);
-                    terminal_lay.setVisibility(GONE);
-                    webView_lay.setVisibility(GONE);
-                    parentContentRssFeed.setVisibility(GONE);
-                    pairProgress.setVisibility(VISIBLE);
-
-                    if(isNetworkAvailable()){
-                        parentInternetLay.setVisibility(GONE);
-                        slideShowCallCount=0;
-                        initPairing(pairCode);
-                    }
-                    else{
-                        parentInternetLay.setVisibility(VISIBLE);
-                        showSnack();
-                    }
-
-                }
-
-
-            }
-        }, 15000);*/
-
-
+        parentInternetLay.setVisibility(GONE);
+        slideShowCallCount=0;
+        initPairing(pairCode);
 
 
         parent_exit.setOnClickListener(new View.OnClickListener() {
@@ -508,6 +457,7 @@ public class MainActivity extends AppCompatActivity {
                                 clearTimeout1();
                                 clearTimeout2();
                                 clearTimeout3();
+                                clearTimeout4();
                                 overLaysIds.clear();
                                 parentTopOverlay.setVisibility(GONE);
                                 parentLeftOverlay.setVisibility(GONE);
@@ -534,15 +484,12 @@ public class MainActivity extends AppCompatActivity {
                                     //videoView.setZOrderOnTop(false);
                                     drawer.closeDrawer(GravityCompat.START);
                                 }
-                                if(isNetworkAvailable()){
-                                    parentInternetLay.setVisibility(GONE);
-                                    slideShowCallCount=0;
-                                    initPairing(pairCode);
-                                }
-                                else{
-                                    parentInternetLay.setVisibility(VISIBLE);
-                                    showSnack();
-                                }
+
+
+                                parentInternetLay.setVisibility(GONE);
+                                slideShowCallCount=0;
+                                initPairing(pairCode);
+
 
                             }
                         })
@@ -849,6 +796,7 @@ public class MainActivity extends AppCompatActivity {
             public void onConnectionStateChange(ConnectionStateChange change) {
                 Log.i("Pusher", "State changed from " + change.getPreviousState() +
                         " to " + change.getCurrentState());
+
             }
 
             @Override
@@ -1053,15 +1001,16 @@ public class MainActivity extends AppCompatActivity {
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
 
-                                   /* clearTimeout();
+                                    clearTimeout();
                                     clearTimeout1();
                                     clearTimeout2();
                                     clearTimeout3();
+                                    clearTimeout4();
                                     contentCurrentIndex=0;
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
-                                    contentLay(newSlideItems);*/
+                                    contentLay(newSlideItems);
 
                                 }
                                 else{
@@ -1097,20 +1046,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        List<ContentModel> contentList = new ArrayList<>();
-        HashMap<String, String> getItemDetails = new HashMap<String, String>();
-        getItemDetails = sessionManagement.getContentItemDetails();
-        contentList=new Gson().fromJson(getItemDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
 
-        clearTimeout();
-        clearTimeout1();
-        clearTimeout2();
-        clearTimeout3();
-        contentCurrentIndex=0;
-        rssSlideShowCallCount=0;
-        overlayRssSlideShowCallCount=0;
-        displayOverlayRssSlideShowCallCount=0;
-        contentLay(contentList);
 
 
     }
@@ -1246,30 +1182,97 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void initPairing(String pairCode){
-        Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
-        StringRequest getRequest = new StringRequest(Request.Method.GET,
-                "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.e("TAG","response>>>"+response);
+        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+        getcontentDetails = sessionManagement.getContentItemDetails();
+        List<ContentModel> list = new ArrayList<>();
+        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+        if(list==null){
+            if (pairingStatus){
+                parentPairing.setVisibility(VISIBLE);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+        else{
+            if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                parentPairing.setVisibility(GONE);
+                clearTimeout();
+                clearTimeout1();
+                clearTimeout2();
+                clearTimeout3();
+                clearTimeout4();
+                contentCurrentIndex=0;
+                rssSlideShowCallCount=0;
+                overlayRssSlideShowCallCount=0;
+                displayOverlayRssSlideShowCallCount=0;
+                contentLay(list);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
 
 
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        Log.e("Error", "-----VollyError----: "+error.getMessage());
-                    }
-                });
-        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-        requestQueue.add(getRequest);
-        getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
+
+
+
+
+
+
+        if(isNetworkAvailable()){
+            Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
+            StringRequest getRequest = new StringRequest(Request.Method.GET,
+                    "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("TAG","response>>>"+response);
+
+
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.e("Error", "-----VollyError----: "+error.getMessage());
+                        }
+                    });
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            requestQueue.add(getRequest);
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            );
+        }
+        else{
+            //parentInternetLay.setVisibility(VISIBLE);
+            showSnack();
+        }
+
+
+
     }
     private void overLays(ContentModel item) {
         ViewGroup.MarginLayoutParams params1 =
@@ -2264,7 +2267,6 @@ public class MainActivity extends AppCompatActivity {
                 displayOverlayRssContentLay(overlaysRssList, contentModel);
             }
         };
-        clearTimeout3();
         handler3.postDelayed(myRunnable3, duration);
     }
     private void setWidthPercentage(RelativeLayout view, int percentage) {
@@ -2305,12 +2307,11 @@ public class MainActivity extends AppCompatActivity {
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
         ContentModel item = list.get(contentCurrentIndex);
-        Log.e("newDuration","strech>>>"+strech);
         parentTopOverlay.setVisibility(GONE);
         parentLeftOverlay.setVisibility(GONE);
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
-
+        Log.e("newDuration","newDuration>>>"+item.getDuration());
         if (item.getType().equals("image")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
@@ -2383,10 +2384,10 @@ public class MainActivity extends AppCompatActivity {
                     parentLeftOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
+
                     contentLay(list);
                 }
             };
-            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
@@ -2402,7 +2403,8 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(VISIBLE);
             video_progress1.setVisibility(VISIBLE);
 
-            Log.e("Tag","videoView>>>1");
+            Log.e("Tag","videoView>>>1"+item.getUrl());
+
 
             // Initialize ExoPlayer instance
             player = new SimpleExoPlayer.Builder(this).build();
@@ -2419,6 +2421,10 @@ public class MainActivity extends AppCompatActivity {
                         .setUri(item.getUrl())
                         .setMimeType(MimeTypes.APPLICATION_MP4)
                         .build();
+                /*MediaItem mediaItem = new MediaItem.Builder()
+                        .setUri(Uri.parse(videoFilePath))
+                        .setMimeType(MimeTypes.APPLICATION_MP4)
+                        .build();*/
 
                 // Create a MediaSource using ProgressiveMediaSource.Factory
                 DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
@@ -2478,23 +2484,7 @@ public class MainActivity extends AppCompatActivity {
                             video_progress1.setVisibility(GONE);
                             playerView.setVisibility(VISIBLE);
 
-                            myRunnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    Log.e("Tag","videoView>>>5");
-                                    playerView.setVisibility(GONE);
-                                    videoView.setVisibility(GONE);
-                                    parentTopOverlay.setVisibility(GONE);
-                                    parentLeftOverlay.setVisibility(GONE);
-                                    parentRightOverlay.setVisibility(GONE);
-                                    parentBottomOverlay.setVisibility(GONE);
-                                    releasePlayer();
-                                    contentLay(list);
 
-                                }
-                            };
-                            clearTimeout();
-                            handler.postDelayed(myRunnable, duration);
                         }
                     }
                 });
@@ -2504,6 +2494,24 @@ public class MainActivity extends AppCompatActivity {
 
                 // Attach the player to the PlayerView
                 playerView.setPlayer(player);
+
+                myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("Tag","videoView>>>5");
+                        playerView.setVisibility(GONE);
+                        videoView.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+
+                        releasePlayer();
+                        contentLay(list);
+
+                    }
+                };
+                handler.postDelayed(myRunnable, duration);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -2567,6 +2575,7 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+
             webView_lay.setVisibility(VISIBLE);
 
             iFrameLay(item.getUrl(),list,duration,item);
@@ -2582,6 +2591,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+
             webView_lay.setVisibility(VISIBLE);
 
             clockiFrameLay(item.getUrl(),list,item,duration);
@@ -2596,6 +2606,7 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+
             webView_lay.setVisibility(VISIBLE);
 
             countDowniFrameLay(item.getUrl(),list,item,duration);
@@ -2624,6 +2635,7 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+
             webView_lay.setVisibility(VISIBLE);
 
             vimeoiFrameLay(item.getUrl(),list,item,duration);
@@ -2768,7 +2780,6 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
-            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
@@ -2856,7 +2867,6 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
-            clearTimeout();
             handler.postDelayed(myRunnable, duration);
         }
 
@@ -2897,86 +2907,39 @@ public class MainActivity extends AppCompatActivity {
         txtDate.setText(formattedDateTime);
     }
     private void configureDisplayTransform(int width, int height, int rotationDegrees) {
-        /*// Rotate the VideoView by 90 degrees
+
         display_lay.setRotation(rotationDegrees);
 
-        display_lay.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                // Remove the listener to avoid multiple callbacks
-                display_lay.getViewTreeObserver().removeOnPreDrawListener(this);
-
-                // Get the dimensions of the VideoView after rotation
-                int terminalLayViewWidth = display_lay.getWidth();
-                int terminalLayViewHeight = display_lay.getHeight();
-
-                // Check for valid dimensions
-                if (terminalLayViewWidth > 0 && terminalLayViewHeight > 0) {
-                    // Calculate the scale factors to fill the entire screen
-                    float scaleX = (float) terminalLayViewHeight / terminalLayViewWidth;
-                    float scaleY = (float) terminalLayViewWidth / terminalLayViewHeight;
-
-                    // Apply the scaling to fill the entire screen
-                    display_lay.setScaleX(scaleX);
-                    display_lay.setScaleY(scaleY);
-                }
-
-                // Return true to continue with the drawing
-                return true;
-            }
-        });*/
-        display_lay.setRotation(rotationDegrees);
-
-// Calculate the scale factors to fill the entire screen without stretching
+        // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
 
-        if (display_lay.getWidth() > display_lay.getHeight()) {
-            // Landscape orientation
-            scaleX = (float) display_lay.getHeight() / display_lay.getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) display_lay.getWidth() / display_lay.getHeight();
+        if (display_lay.getWidth() > 0 && display_lay.getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) display_lay.getWidth() / display_lay.getHeight();
+            } else {
+                scaleX = (float) display_lay.getHeight() / display_lay.getWidth();
+            }
         }
 
-// Apply the scaling to fill the entire screen without stretching
+        // Apply the scaling to fill the entire screen without stretching
         display_lay.setScaleX(scaleX);
         display_lay.setScaleY(scaleY);
     }
     private void configureTerminalTransform(int width, int height, int rotationDegrees) {
-       /* // Rotate the VideoView by 90 degrees
         terminal_lay.setRotation(rotationDegrees);
-
-        // Get the dimensions of the VideoView
-        int terminalLayViewWidth = terminal_lay.getWidth();
-        int terminalLayViewHeight = terminal_lay.getHeight();
-
-        // Check for valid dimensions
-        if (terminalLayViewWidth > 0 && terminalLayViewHeight > 0) {
-            // Calculate the scale factors to fill the entire screen
-            float scaleX = (float) terminalLayViewHeight / terminalLayViewWidth;
-            float scaleY = (float) terminalLayViewWidth / terminalLayViewHeight;
-
-            // Apply the scaling to fill the entire screen
-            terminal_lay.setScaleX(scaleX);
-            terminal_lay.setScaleY(scaleY);
-        }*/
-
-        terminal_lay.setRotation(rotationDegrees);
-
-// Calculate the scale factors to fill the entire screen without stretching
+        // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
 
-        if (terminal_lay.getWidth() > terminal_lay.getHeight()) {
-            // Landscape orientation
-            scaleX = (float) terminal_lay.getHeight() / terminal_lay.getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) terminal_lay.getWidth() / terminal_lay.getHeight();
+        if (terminal_lay.getWidth() > 0 && terminal_lay.getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) terminal_lay.getWidth() / terminal_lay.getHeight();
+            } else {
+                scaleX = (float) terminal_lay.getHeight() / terminal_lay.getWidth();
+            }
         }
-
-// Apply the scaling to fill the entire screen without stretching
+        // Apply the scaling to fill the entire screen without stretching
         terminal_lay.setScaleX(scaleX);
         terminal_lay.setScaleY(scaleY);
 
@@ -2989,17 +2952,97 @@ public class MainActivity extends AppCompatActivity {
         float scaleX = 1.0f;
         float scaleY = 1.0f;
 
-        if (contentLay2.getWidth() > contentLay2.getHeight()) {
+        if (contentLay2.getWidth() > 0 && contentLay2.getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
+            } else {
+                scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
+            }
+        }
+
+        /*if (contentLay2.getWidth() > contentLay2.getHeight()) {
             // Landscape orientation
             scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
         } else {
             // Portrait orientation
             scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
-        }
+        }*/
 
 // Apply the scaling to fill the entire screen without stretching
         contentLay2.setScaleX(scaleX);
         contentLay2.setScaleY(scaleY);
+
+
+    }
+    private void configureVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        videoView.setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen
+        float scaleX = (float) videoView.getHeight() / videoView.getWidth();
+        float scaleY = (float) videoView.getWidth() / videoView.getHeight();
+
+        // Apply the scaling to fill the entire screen
+        videoView.setScaleX(scaleX);
+        videoView.setScaleY(scaleY);
+    }
+    private void configureExoPlayerVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+
+
+        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
+
+// Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (playerView.getVideoSurfaceView().getWidth() > 0 && playerView.getVideoSurfaceView().getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
+            } else {
+                scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
+            }
+        }
+
+       /* if (playerView.getVideoSurfaceView().getWidth() > playerView.getVideoSurfaceView().getHeight()) {
+            // Landscape orientation
+            scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
+        }*/
+
+// Apply the scaling to fill the entire screen without stretching
+        playerView.getVideoSurfaceView().setScaleX(scaleX);
+        playerView.getVideoSurfaceView().setScaleY(scaleY);
+    }
+    private void configureRSSFeedTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+
+
+        parentContentRssFeed.setRotation(rotationDegrees);
+
+        // Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (parentContentRssFeed.getWidth() > 0 && parentContentRssFeed.getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
+            } else {
+                scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
+            }
+        }
+
+       /* if (parentContentRssFeed.getWidth() > parentContentRssFeed.getHeight()) {
+            // Landscape orientation
+            scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
+        } else {
+            // Portrait orientation
+            scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
+        }*/
+
+        // Apply the scaling to fill the entire screen without stretching
+        parentContentRssFeed.setScaleX(scaleX);
+        parentContentRssFeed.setScaleY(scaleY);
 
 
     }
@@ -3028,78 +3071,7 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setScaleX(scaleX);
         myWebView.setScaleY(scaleY);
     }
-    private void configureRSSFeedTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-        /*// Rotate the VideoView by 90 degrees
-        parentContentRssFeed.setRotation(rotationDegrees);
 
-        // Get the dimensions of the VideoView
-        int childContentRssFeedViewWidth = parentContentRssFeed.getWidth();
-        int childContentRssFeedViewHeight = parentContentRssFeed.getHeight();
-
-        // Check for valid dimensions
-        if (childContentRssFeedViewWidth > 0 && childContentRssFeedViewHeight > 0) {
-            // Calculate the scale factors to fill the entire screen
-            float scaleX = (float) childContentRssFeedViewHeight / childContentRssFeedViewWidth;
-            float scaleY = (float) childContentRssFeedViewWidth / childContentRssFeedViewHeight;
-
-            // Apply the scaling to fill the entire screen
-            parentContentRssFeed.setScaleX(scaleX);
-            parentContentRssFeed.setScaleY(scaleY);
-        }*/
-
-        parentContentRssFeed.setRotation(rotationDegrees);
-
-// Calculate the scale factors to fill the entire screen without stretching
-        float scaleX = 1.0f;
-        float scaleY = 1.0f;
-
-        if (parentContentRssFeed.getWidth() > parentContentRssFeed.getHeight()) {
-            // Landscape orientation
-            scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
-        }
-
-// Apply the scaling to fill the entire screen without stretching
-        parentContentRssFeed.setScaleX(scaleX);
-        parentContentRssFeed.setScaleY(scaleY);
-
-
-    }
-    private void configureVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
-        videoView.setRotation(rotationDegrees);
-
-        // Calculate the scale factors to fill the entire screen
-        float scaleX = (float) videoView.getHeight() / videoView.getWidth();
-        float scaleY = (float) videoView.getWidth() / videoView.getHeight();
-
-        // Apply the scaling to fill the entire screen
-        videoView.setScaleX(scaleX);
-        videoView.setScaleY(scaleY);
-    }
-    private void configureExoPlayerVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-
-
-        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
-
-// Calculate the scale factors to fill the entire screen without stretching
-        float scaleX = 1.0f;
-        float scaleY = 1.0f;
-
-        if (playerView.getVideoSurfaceView().getWidth() > playerView.getVideoSurfaceView().getHeight()) {
-            // Landscape orientation
-            scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
-        }
-
-// Apply the scaling to fill the entire screen without stretching
-        playerView.getVideoSurfaceView().setScaleX(scaleX);
-        playerView.getVideoSurfaceView().setScaleY(scaleY);
-    }
     private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         playerView.getVideoSurfaceView().setRotation(rotationDegrees);
@@ -3113,6 +3085,7 @@ public class MainActivity extends AppCompatActivity {
         playerView.getVideoSurfaceView().setScaleY(scaleY);
 
     }
+
     private void releasePlayer() {
         if (player != null) {
             player.stop();
@@ -3322,6 +3295,1317 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
+        rssImageView.setVisibility(VISIBLE);
+        rssTitle.setVisibility(VISIBLE);
+        rssDescription.setVisibility(VISIBLE);
+        rssDate.setVisibility(VISIBLE);
+        rssQR.setVisibility(VISIBLE);
+        myWebView.setVisibility(VISIBLE);
+        rssSlideShowCallCount++;
+        long duration = 10000;
+        if (rsslist.size()>0){
+            RSSModel item = rsslist.get(rssContentCurrentIndex);
+            if (item.getPhoto() != null) {
+                RequestOptions requestOptions = RequestOptions.bitmapTransform(new RoundedCorners(30)); // Set the corner radius as desired
+                Glide.with(getApplicationContext())
+                        .load(item.getPhoto())
+                        .transform(new RotateTransformation(0))
+                        .error(R.drawable.neo_logo)
+                        .apply(requestOptions)
+                        .into(rssImageView);
+            }
+
+            rssTitle.setText(item.getTitle());
+            rssDescription.setText(item.getDescription());
+            rssDate.setText(item.getDate());
+            try {
+                // Load the SVG data from the string
+                String svgData = "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"80\" height=\"80\" viewBox=\"0 0 80 80\"><rect x=\"0\" y=\"0\" width=\"80\" height=\"80\" fill=\"#FFFFFF\"></rect><g transform=\"scale(1.951)\"><g transform=\"translate(0,0)\"><path fill-rule=\"evenodd\" d=\"M10 0L10 2L11 2L11 3L10 3L10 5L11 5L11 4L13 4L13 5L12 5L12 8L10 8L10 7L11 7L11 6L10 6L10 7L9 7L9 6L8 6L8 7L9 7L9 8L10 8L10 9L9 9L9 10L8 10L8 8L5 8L5 9L3 9L3 10L1 10L1 11L3 11L3 12L4 12L4 15L7 15L7 14L9 14L9 13L11 13L11 12L12 12L12 13L13 13L13 14L11 14L11 16L10 16L10 15L8 15L8 16L9 16L9 18L8 18L8 19L7 19L7 18L5 18L5 19L3 19L3 18L2 18L2 19L3 19L3 21L5 21L5 22L4 22L4 23L3 23L3 22L2 22L2 23L1 23L1 26L0 26L0 33L1 33L1 31L2 31L2 33L3 33L3 32L4 32L4 31L5 31L5 30L4 30L4 28L5 28L5 27L7 27L7 28L6 28L6 29L7 29L7 30L6 30L6 31L7 31L7 30L8 30L8 32L9 32L9 33L8 33L8 36L9 36L9 37L10 37L10 35L11 35L11 34L12 34L12 33L13 33L13 37L12 37L12 38L13 38L13 37L14 37L14 35L15 35L15 38L14 38L14 40L13 40L13 39L12 39L12 41L14 41L14 40L15 40L15 39L16 39L16 40L17 40L17 41L18 41L18 40L17 40L17 38L21 38L21 39L23 39L23 38L24 38L24 40L22 40L22 41L28 41L28 40L29 40L29 41L31 41L31 40L29 40L29 33L32 33L32 34L30 34L30 36L31 36L31 37L30 37L30 39L31 39L31 38L32 38L32 39L33 39L33 41L34 41L34 40L35 40L35 41L36 41L36 39L37 39L37 41L39 41L39 39L40 39L40 40L41 40L41 38L39 38L39 39L38 39L38 38L36 38L36 39L35 39L35 38L34 38L34 37L38 37L38 36L37 36L37 32L38 32L38 33L40 33L40 31L41 31L41 28L40 28L40 26L41 26L41 25L40 25L40 24L39 24L39 25L40 25L40 26L37 26L37 25L38 25L38 22L37 22L37 21L39 21L39 22L40 22L40 21L41 21L41 20L40 20L40 19L41 19L41 17L39 17L39 14L41 14L41 11L39 11L39 14L38 14L38 13L36 13L36 10L40 10L40 9L38 9L38 8L36 8L36 9L35 9L35 10L34 10L34 11L31 11L31 12L34 12L34 15L33 15L33 13L31 13L31 14L30 14L30 13L29 13L29 12L28 12L28 10L30 10L30 8L29 8L29 6L30 6L30 7L31 7L31 10L33 10L33 9L32 9L32 7L33 7L33 6L32 6L32 7L31 7L31 5L33 5L33 2L31 2L31 0L30 0L30 2L31 2L31 3L29 3L29 2L28 2L28 9L27 9L27 10L26 10L26 8L27 8L27 6L26 6L26 5L25 5L25 4L27 4L27 2L26 2L26 3L23 3L23 1L22 1L22 2L19 2L19 4L18 4L18 3L15 3L15 2L14 2L14 3L12 3L12 2L13 2L13 1L15 1L15 0ZM18 0L18 1L19 1L19 0ZM25 0L25 1L26 1L26 0ZM28 0L28 1L29 1L29 0ZM8 3L8 5L9 5L9 3ZM14 3L14 4L15 4L15 5L13 5L13 8L14 8L14 9L10 9L10 10L9 10L9 12L7 12L7 11L8 11L8 10L7 10L7 9L6 9L6 10L3 10L3 11L5 11L5 13L6 13L6 14L7 14L7 13L9 13L9 12L10 12L10 10L11 10L11 11L12 11L12 10L13 10L13 13L15 13L15 12L16 12L16 11L15 11L15 12L14 12L14 9L16 9L16 10L17 10L17 8L19 8L19 9L20 9L20 10L19 10L19 11L17 11L17 13L16 13L16 14L17 14L17 15L14 15L14 14L13 14L13 15L12 15L12 16L15 16L15 17L12 17L12 19L11 19L11 18L10 18L10 19L9 19L9 20L7 20L7 19L6 19L6 20L7 20L7 21L6 21L6 22L5 22L5 23L4 23L4 24L2 24L2 28L1 28L1 29L2 29L2 30L3 30L3 26L4 26L4 27L5 27L5 26L4 26L4 24L7 24L7 23L9 23L9 22L10 22L10 24L12 24L12 23L13 23L13 25L12 25L12 26L10 26L10 25L6 25L6 26L7 26L7 27L9 27L9 28L8 28L8 30L9 30L9 29L10 29L10 27L12 27L12 26L13 26L13 29L11 29L11 31L9 31L9 32L10 32L10 33L9 33L9 35L10 35L10 33L11 33L11 31L12 31L12 32L14 32L14 31L12 31L12 30L13 30L13 29L14 29L14 30L15 30L15 29L17 29L17 30L16 30L16 34L18 34L18 33L17 33L17 32L20 32L20 34L19 34L19 35L20 35L20 36L21 36L21 37L23 37L23 36L22 36L22 35L25 35L25 37L24 37L24 38L25 38L25 40L28 40L28 39L26 39L26 38L27 38L27 37L28 37L28 35L27 35L27 34L26 34L26 33L27 33L27 32L28 32L28 31L25 31L25 30L27 30L27 29L24 29L24 28L27 28L27 26L25 26L25 25L26 25L26 24L28 24L28 29L29 29L29 32L32 32L32 31L33 31L33 30L32 30L32 31L30 31L30 30L31 30L31 27L32 27L32 29L37 29L37 30L36 30L36 31L35 31L35 32L36 32L36 31L38 31L38 32L39 32L39 31L40 31L40 28L39 28L39 29L37 29L37 28L38 28L38 27L37 27L37 26L36 26L36 28L35 28L35 26L34 26L34 24L36 24L36 25L37 25L37 23L35 23L35 22L36 22L36 21L37 21L37 20L33 20L33 19L35 19L35 18L34 18L34 17L37 17L37 18L39 18L39 19L38 19L38 20L39 20L39 21L40 21L40 20L39 20L39 19L40 19L40 18L39 18L39 17L37 17L37 15L38 15L38 14L37 14L37 15L36 15L36 16L33 16L33 15L32 15L32 14L31 14L31 17L33 17L33 19L31 19L31 20L30 20L30 18L29 18L29 17L28 17L28 16L30 16L30 15L27 15L27 16L26 16L26 15L25 15L25 14L26 14L26 13L27 13L27 12L26 12L26 10L22 10L22 8L26 8L26 6L25 6L25 5L23 5L23 3L22 3L22 4L20 4L20 5L19 5L19 7L18 7L18 5L17 5L17 8L16 8L16 4L15 4L15 3ZM29 4L29 5L30 5L30 4ZM21 5L21 6L20 6L20 7L19 7L19 8L21 8L21 6L22 6L22 7L23 7L23 6L22 6L22 5ZM14 6L14 8L15 8L15 6ZM24 6L24 7L25 7L25 6ZM0 8L0 9L2 9L2 8ZM6 10L6 11L7 11L7 10ZM21 10L21 11L22 11L22 13L23 13L23 14L24 14L24 13L25 13L25 11L24 11L24 13L23 13L23 11L22 11L22 10ZM19 11L19 12L20 12L20 11ZM34 11L34 12L35 12L35 11ZM37 11L37 12L38 12L38 11ZM0 12L0 15L3 15L3 14L2 14L2 13L1 13L1 12ZM6 12L6 13L7 13L7 12ZM17 13L17 14L20 14L20 15L22 15L22 14L21 14L21 13ZM28 13L28 14L29 14L29 13ZM40 15L40 16L41 16L41 15ZM2 16L2 17L3 17L3 16ZM6 16L6 17L7 17L7 16ZM17 16L17 17L15 17L15 19L16 19L16 20L13 20L13 19L14 19L14 18L13 18L13 19L12 19L12 20L13 20L13 21L12 21L12 22L13 22L13 23L14 23L14 22L15 22L15 23L18 23L18 24L19 24L19 25L18 25L18 26L22 26L22 29L23 29L23 31L22 31L22 30L21 30L21 29L20 29L20 28L19 28L19 31L20 31L20 30L21 30L21 31L22 31L22 32L23 32L23 33L22 33L22 34L21 34L21 35L22 35L22 34L24 34L24 33L26 33L26 32L24 32L24 29L23 29L23 26L24 26L24 24L23 24L23 23L22 23L22 24L23 24L23 26L22 26L22 25L21 25L21 24L20 24L20 23L21 23L21 21L19 21L19 22L18 22L18 20L17 20L17 18L18 18L18 16ZM19 16L19 19L20 19L20 18L21 18L21 19L22 19L22 22L24 22L24 23L28 23L28 24L29 24L29 23L30 23L30 22L32 22L32 25L30 25L30 27L31 27L31 26L33 26L33 28L34 28L34 26L33 26L33 24L34 24L34 21L33 21L33 22L32 22L32 20L31 20L31 21L30 21L30 20L29 20L29 19L28 19L28 17L26 17L26 16L24 16L24 17L23 17L23 16L22 16L22 17L21 17L21 16ZM0 17L0 18L1 18L1 17ZM24 17L24 19L25 19L25 20L27 20L27 18L26 18L26 17ZM22 18L22 19L23 19L23 18ZM10 19L10 20L9 20L9 21L11 21L11 19ZM16 20L16 22L17 22L17 20ZM23 20L23 21L24 21L24 22L27 22L27 21L24 21L24 20ZM28 20L28 22L29 22L29 20ZM0 21L0 22L1 22L1 21ZM13 21L13 22L14 22L14 21ZM6 22L6 23L7 23L7 22ZM19 22L19 23L20 23L20 22ZM14 25L14 27L16 27L16 28L17 28L17 29L18 29L18 28L17 28L17 27L16 27L16 26L17 26L17 25ZM29 28L29 29L30 29L30 28ZM17 30L17 31L18 31L18 30ZM5 32L5 33L7 33L7 32ZM14 33L14 34L15 34L15 33ZM33 33L33 36L36 36L36 33ZM25 34L25 35L26 35L26 36L27 36L27 35L26 35L26 34ZM34 34L34 35L35 35L35 34ZM38 34L38 35L39 35L39 37L40 37L40 36L41 36L41 35L39 35L39 34ZM16 35L16 36L17 36L17 37L19 37L19 36L18 36L18 35ZM31 35L31 36L32 36L32 35ZM25 37L25 38L26 38L26 37ZM32 37L32 38L33 38L33 37ZM9 38L9 39L8 39L8 41L10 41L10 40L9 40L9 39L10 39L10 38ZM19 39L19 40L20 40L20 39ZM0 0L0 7L7 7L7 0ZM1 1L1 6L6 6L6 1ZM2 2L2 5L5 5L5 2ZM34 0L34 7L41 7L41 0ZM35 1L35 6L40 6L40 1ZM36 2L36 5L39 5L39 2ZM0 34L0 41L7 41L7 34ZM1 35L1 40L6 40L6 35ZM2 36L2 39L5 39L5 36Z\" fill=\"#000000\"></path></g></g></svg>"; // Replace with your actual resource name
+                Log.e("QRData","svgData"+item.getQr());
+                SVG svg = SVG.getFromString(item.getQr());
+
+                // Set the SVG to the ImageView
+                rssQR.setLayerType(ImageView.LAYER_TYPE_SOFTWARE, null);
+                rssQR.setImageDrawable(new PictureDrawable(svg.renderToPicture()));
+            } catch (SVGParseException e) {
+                e.printStackTrace();
+            }
+
+        }
+        rssContentCurrentIndex++;
+        if (rssContentCurrentIndex >= rsslist.size()) {
+            rssContentCurrentIndex = 0;
+        }
+        myRunnable1 = new Runnable() {
+            @Override
+            public void run() {
+                rssContentLay(rsslist, item1);
+            }
+        };
+        handler1.postDelayed(myRunnable1, duration);
+    }
+
+
+
+    private String convertTimeFormat(String cdtime) {
+        // Splitting the original time into hours and minutes
+        String[] timeParts = cdtime.split(":");
+        int hours = Integer.parseInt(timeParts[0]);
+        int minutes = Integer.parseInt(timeParts[1]);
+
+        // Creating a new Date object with the current date
+        Date currentDate = new Date();
+
+        // Setting the hours and minutes of the Date object
+        currentDate.setHours(hours);
+        currentDate.setMinutes(minutes);
+
+        // Formatting the date in the desired format
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd:HH:mm:ss", Locale.getDefault());
+        String formattedTime = sdf.format(currentDate);
+
+        return formattedTime;
+    }
+
+    private void iFrameLay(String newurl, List<ContentModel> list, long duration, ContentModel item) {
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT < 18) {
+                    myWebView.clearView();
+                } else {
+                    myWebView.loadUrl("about:blank");
+                }
+                myWebView.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                contentLay(list);
+            }
+        };
+        handler.postDelayed(myRunnable, duration);
+        myWebView.clearCache(true);
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        String customCSS = "iframe { border: none; }";
+        String javascript = "javascript:(function() {" +
+                "var parent = document.getElementsByTagName('head').item(0);" +
+                "var style = document.createElement('style');" +
+                "style.type = 'text/css';" +
+                "style.innerHTML = '" + customCSS + "';" +
+                "parent.appendChild(style);" +
+                "})()";
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                if (strech.equals("off")){
+                    if (orientation.equals("90 degrees")) {
+                        myWebView.setRotation(90);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        myWebView.setRotation(180);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        myWebView.setRotation(270);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else {
+                        myWebView.setRotation(0);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                }
+                else{
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
+
+                }
+
+
+
+                progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
+                super.onPageStarted(view, url, favicon);
+
+
+               /* if(isNetworkAvailable()){
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                    }
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
+                    }
+
+
+
+                    progressBar.setVisibility(View.VISIBLE);
+                    parentInternetLay.setVisibility(GONE);
+                    super.onPageStarted(view, url, favicon);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                overLays(item);
+                progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                view.loadUrl(javascript);
+                myWebView.setVisibility(VISIBLE);
+
+
+
+
+
+                /*if(isNetworkAvailable()){
+                    overLays(item);
+                    progressBar.setVisibility(View.GONE);
+                    Log.e("test>>>","list"+list);
+                    view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            contentLay(list);
+                        }
+                    };
+                    clearTimeout();
+                    handler.postDelayed(myRunnable, duration);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+                // Both url and title is available in this stage
+                mUrl = view.getUrl();
+            }
+
+        });
+        //myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        String myYouTubeVideoUrl = newurl;
+        // YouTube video ID
+        String videoId = null;
+        if (myYouTubeVideoUrl != null && myYouTubeVideoUrl.contains("youtube.com")) {
+            int startIndex = myYouTubeVideoUrl.indexOf("v=");
+            if (startIndex != -1) {
+                startIndex += 2; // Move past the "v="
+                int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
+                if (endIndex == -1) {
+                    endIndex = myYouTubeVideoUrl.length();
+                }
+                videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
+            }
+        }
+
+        // Create the embedded YouTube link
+        String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
+        Log.e("Tag","youtubeUrl>>>"+embeddedLink);
+        myWebView.loadUrl(embeddedLink);
+
+
+
+
+       /* if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String myYouTubeVideoUrl = newurl;
+            // YouTube video ID
+            String videoId = null;
+            if (myYouTubeVideoUrl != null && myYouTubeVideoUrl.contains("youtube.com")) {
+                int startIndex = myYouTubeVideoUrl.indexOf("v=");
+                if (startIndex != -1) {
+                    startIndex += 2; // Move past the "v="
+                    int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
+                    if (endIndex == -1) {
+                         endIndex = myYouTubeVideoUrl.length();
+                    }
+                    videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
+                }
+            }
+
+            // Create the embedded YouTube link
+            String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
+            Log.e("Tag","youtubeUrl>>>"+embeddedLink);
+            myWebView.loadUrl(embeddedLink);
+            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + embeddedLink + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            //myWebView.loadData(dataUrl, "text/html", "utf-8");
+
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }*/
+    }
+    private void clockiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT < 18) {
+                    myWebView.clearView();
+                } else {
+                    myWebView.loadUrl("about:blank");
+                }
+                myWebView.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                contentLay(list);
+            }
+        };
+        handler.postDelayed(myRunnable, duration);
+        myWebView.clearCache(true);
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        String customCSS = "iframe { border: none; }";
+        String javascript = "javascript:(function() {" +
+                "var parent = document.getElementsByTagName('head').item(0);" +
+                "var style = document.createElement('style');" +
+                "style.type = 'text/css';" +
+                "style.innerHTML = '" + customCSS + "';" +
+                "parent.appendChild(style);" +
+                "})()";
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                /*if(isNetworkAvailable()){
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                    }
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
+                    }
+
+                    progressBar.setVisibility(View.VISIBLE);
+                    parentInternetLay.setVisibility(GONE);
+                    super.onPageStarted(view, url, favicon);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+
+                if (strech.equals("off")){
+                    if (orientation.equals("90 degrees")) {
+                        myWebView.setRotation(90);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        myWebView.setRotation(180);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        myWebView.setRotation(270);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else {
+                        myWebView.setRotation(0);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                }
+                else{
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
+
+                }
+
+                progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
+                super.onPageStarted(view, url, favicon);
+
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                overLays(item);
+                progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                view.loadUrl(javascript);
+                myWebView.setVisibility(VISIBLE);
+
+
+
+
+
+                /*if(isNetworkAvailable()){
+                    overLays(item);
+                    progressBar.setVisibility(View.GONE);
+                    Log.e("test>>>","list"+list);
+                    view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            contentLay(list);
+                        }
+                    };
+                    clearTimeout();
+                    handler.postDelayed(myRunnable, duration);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+                // Both url and title is available in this stage
+                mUrl = view.getUrl();
+            }
+
+        });
+        //myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+
+        progressBar.setVisibility(View.VISIBLE);
+        parentInternetLay.setVisibility(GONE);
+        String appClockHandsColor = item.getApp_clock_hands_color();
+        Log.e("appClockHandsColor>>","appClockHandsColor"+appClockHandsColor);
+        String[] appClockHandsColorArray = appClockHandsColor.split(",");
+        String clockText=item.getApp_clock_text();
+        if(clockText.equals("null")){
+            clockText="";
+        }else{
+            clockText=item.getApp_clock_text();
+        }
+        // Construct the URL using the parameters
+        String baseUrl = "https://webplayer.neosign.tv/clock.php?";
+        Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+        builder.appendQueryParameter("text", clockText);
+        builder.appendQueryParameter("size", item.getApp_clock_size());
+        builder.appendQueryParameter("hourColor", appClockHandsColorArray[0]);
+        builder.appendQueryParameter("minuteColor", appClockHandsColorArray[1]);
+        builder.appendQueryParameter("secondColor", appClockHandsColorArray[2]);
+        builder.appendQueryParameter("minorIndicator",item.getApp_clock_minor_indicator_color());
+        builder.appendQueryParameter("majorIndicator", item.getApp_clock_major_indicator_color());
+        builder.appendQueryParameter("innerDotSize",  item.getApp_clock_innerdot_size());
+        builder.appendQueryParameter("innerDotColor", item.getApp_clock_innerdot_color());
+
+        String clockurl = builder.build().toString();
+        myWebView.loadUrl(clockurl);
+
+        /*if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String appClockHandsColor = item.getApp_clock_hands_color();
+            Log.e("appClockHandsColor>>","appClockHandsColor"+appClockHandsColor);
+            String[] appClockHandsColorArray = appClockHandsColor.split(",");
+            String clockText=item.getApp_clock_text();
+            if(clockText.equals("null")){
+                clockText="";
+            }else{
+                clockText=item.getApp_clock_text();
+            }
+            // Construct the URL using the parameters
+            String baseUrl = "https://webplayer.neosign.tv/clock.php?";
+            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+            builder.appendQueryParameter("text", clockText);
+            builder.appendQueryParameter("size", item.getApp_clock_size());
+            builder.appendQueryParameter("hourColor", appClockHandsColorArray[0]);
+            builder.appendQueryParameter("minuteColor", appClockHandsColorArray[1]);
+            builder.appendQueryParameter("secondColor", appClockHandsColorArray[2]);
+            builder.appendQueryParameter("minorIndicator",item.getApp_clock_minor_indicator_color());
+            builder.appendQueryParameter("majorIndicator", item.getApp_clock_major_indicator_color());
+            builder.appendQueryParameter("innerDotSize",  item.getApp_clock_innerdot_size());
+            builder.appendQueryParameter("innerDotColor", item.getApp_clock_innerdot_color());
+
+            String clockurl = builder.build().toString();
+            myWebView.loadUrl(clockurl);
+            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + " ></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            //myWebView.loadData(dataUrl, "text/html", "utf-8");
+
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }*/
+    }
+    private void countDowniFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT < 18) {
+                    myWebView.clearView();
+                } else {
+                    myWebView.loadUrl("about:blank");
+                }
+                myWebView.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                contentLay(list);
+            }
+        };
+        handler.postDelayed(myRunnable, duration);
+        myWebView.clearCache(true);
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        String customCSS = "iframe { border: none; }";
+        String javascript = "javascript:(function() {" +
+                "var parent = document.getElementsByTagName('head').item(0);" +
+                "var style = document.createElement('style');" +
+                "style.type = 'text/css';" +
+                "style.innerHTML = '" + customCSS + "';" +
+                "parent.appendChild(style);" +
+                "})()";
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                /*if(isNetworkAvailable()){
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                    }
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
+                    }
+
+                    progressBar.setVisibility(View.VISIBLE);
+                    parentInternetLay.setVisibility(GONE);
+                    super.onPageStarted(view, url, favicon);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+
+                if (strech.equals("off")){
+                    if (orientation.equals("90 degrees")) {
+                        myWebView.setRotation(90);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        myWebView.setRotation(180);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        myWebView.setRotation(270);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else {
+                        myWebView.setRotation(0);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                }
+                else{
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
+
+                }
+
+                progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
+                super.onPageStarted(view, url, favicon);
+
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                overLays(item);
+                progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                view.loadUrl(javascript);
+                myWebView.setVisibility(VISIBLE);
+
+
+
+                /*if(isNetworkAvailable()){
+                    overLays(item);
+                    progressBar.setVisibility(View.GONE);
+                    Log.e("test>>>","list"+list);
+                    view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            contentLay(list);
+                        }
+                    };
+                    clearTimeout();
+                    handler.postDelayed(myRunnable, duration);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+                // Both url and title is available in this stage
+                mUrl = view.getUrl();
+            }
+
+        });
+        //myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+        // Inject custom CSS to remove the default border around iframes
+
+        progressBar.setVisibility(View.VISIBLE);
+        parentInternetLay.setVisibility(GONE);
+        String timeString = convertTimeFormat(item.getCdtime());
+        if (item.getApp_cd_text().equals("null")){
+            countdownText = "";
+        }else{
+            countdownText = item.getApp_cd_text();
+        }
+        if (item.getCdtranslation().equals("null")){
+            translationString = ",,,";
+        }else{
+            translationString = item.getCdtranslation();
+        }
+        String[] translation = translationString.split(",");
+
+        String day="",hour="",minute="",second="";
+        if(translation.length>0){
+            if(translation[0].equals("null")){
+                day = "Days";
+            }else{
+                day = translation[0];
+            }
+            if(translation[1].equals("null")){
+                hour = "Hours";
+            }else{
+                hour = translation[1];
+            }
+            if(translation[2].equals("null")){
+                minute ="Minutes";
+            }else{
+                minute = translation[2];
+            }
+            if(translation[3].equals("null")){
+                second = "Seconds";
+            }else{
+                second = translation[3];
+            }
+
+        }
+
+        // Construct the URL using the parameters
+        String baseUrl = "https://webplayer.neosign.tv/countdown.php?";
+        Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+        builder.appendQueryParameter("dayText", day);
+        builder.appendQueryParameter("hourText", hour);
+        builder.appendQueryParameter("minText", minute);
+        builder.appendQueryParameter("secText", second);
+        builder.appendQueryParameter("date", timeString);
+        builder.appendQueryParameter("countdownText",countdownText);
+
+
+        String clockurl = builder.build().toString();
+        myWebView.loadUrl(clockurl);
+
+       /* if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            String timeString = convertTimeFormat(item.getCdtime());
+            if (item.getApp_cd_text().equals("null")){
+                countdownText = "";
+            }else{
+                countdownText = item.getApp_cd_text();
+            }
+            if (item.getCdtranslation().equals("null")){
+                translationString = ",,,";
+            }else{
+                translationString = item.getCdtranslation();
+            }
+            String[] translation = translationString.split(",");
+
+            String day="",hour="",minute="",second="";
+            if(translation.length>0){
+                if(translation[0].equals("null")){
+                    day = "Days";
+                }else{
+                    day = translation[0];
+                }
+                if(translation[1].equals("null")){
+                    hour = "Hours";
+                }else{
+                    hour = translation[1];
+                }
+                if(translation[2].equals("null")){
+                    minute ="Minutes";
+                }else{
+                    minute = translation[2];
+                }
+                if(translation[3].equals("null")){
+                    second = "Seconds";
+                }else{
+                    second = translation[3];
+                }
+
+            }
+
+            // Construct the URL using the parameters
+            String baseUrl = "https://webplayer.neosign.tv/countdown.php?";
+            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
+            builder.appendQueryParameter("dayText", day);
+            builder.appendQueryParameter("hourText", hour);
+            builder.appendQueryParameter("minText", minute);
+            builder.appendQueryParameter("secText", second);
+            builder.appendQueryParameter("date", timeString);
+            builder.appendQueryParameter("countdownText",countdownText);
+
+
+            String clockurl = builder.build().toString();
+            myWebView.loadUrl(clockurl);
+            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + "></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            //myWebView.loadData(dataUrl, "text/html", "utf-8");
+            //myWebView.loadUrl(newurl);
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }*/
+    }
+    private void webUriiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT < 18) {
+                    myWebView.clearView();
+                } else {
+                    myWebView.loadUrl("about:blank");
+                }
+                myWebView.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                contentLay(list);
+            }
+        };
+        handler.postDelayed(myRunnable, duration);
+        myWebView.clearCache(true);
+        String originalString = item.getUrl();
+        String newString = originalString.replace("https://app.neosign.tv/", "");
+        String webUrl = newString;
+
+        String customCSS = "iframe { border: none; }";
+        String javascript = "javascript:(function() {" +
+                "var parent = document.getElementsByTagName('head').item(0);" +
+                "var style = document.createElement('style');" +
+                "style.type = 'text/css';" +
+                "style.innerHTML = '" + customCSS + "';" +
+                "parent.appendChild(style);" +
+                "})()";
+
+        // WebView setup
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (strech.equals("off")){
+                    if (orientation.equals("90 degrees")) {
+                        myWebView.setRotation(90);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        myWebView.setRotation(180);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        myWebView.setRotation(270);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else {
+                        myWebView.setRotation(0);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                }
+                else{
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
+
+                }
+                progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
+               /* if(isNetworkAvailable()){
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                    }
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
+                    }
+
+                    progressBar.setVisibility(View.VISIBLE);
+                    parentInternetLay.setVisibility(GONE);
+                    super.onPageStarted(view, url, favicon);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                overLays(item);
+                progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                view.loadUrl(javascript);
+                myWebView.setVisibility(VISIBLE);
+
+
+
+                /*if(isNetworkAvailable()){
+                    overLays(item);
+                    progressBar.setVisibility(View.GONE);
+                    Log.e("test>>>","list"+list);
+                    view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            contentLay(list);
+                        }
+                    };
+                    clearTimeout();
+                    handler.postDelayed(myRunnable, duration);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+                // Both url and title is available in this stage
+                mUrl = view.getUrl();
+            }
+
+        });
+        myWebView.loadUrl(webUrl);
+
+        /*if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + webUrl + " ></iframe>";
+            myWebView.loadUrl(webUrl);
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            //myWebView.loadData(dataUrl, "text/html", "utf-8");
+
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }*/
+
+    }
+    private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
+        myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT < 18) {
+                    myWebView.clearView();
+                } else {
+                    myWebView.loadUrl("about:blank");
+                }
+                myWebView.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                contentLay(list);
+            }
+        };
+        handler.postDelayed(myRunnable, duration);
+        String originalString = item.getUrl();
+        String newString = originalString.replace("https://app.neosign.tv/", "");
+        String webUrl = newString;
+        myWebView.clearCache(true);
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        String customCSS = "iframe { border: none; }";
+        String javascript = "javascript:(function() {" +
+                "var parent = document.getElementsByTagName('head').item(0);" +
+                "var style = document.createElement('style');" +
+                "style.type = 'text/css';" +
+                "style.innerHTML = '" + customCSS + "';" +
+                "parent.appendChild(style);" +
+                "})()";
+        if (Build.VERSION.SDK_INT >= 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
+            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        webSettings.setDomStorageEnabled(true);
+        // Other webview options
+        myWebView.getSettings().setLoadWithOverviewMode(true);
+        //Other webview settings
+        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        myWebView.setScrollbarFadingEnabled(false);
+        myWebView.getSettings().setBuiltInZoomControls(false);
+        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        myWebView.getSettings().setAllowFileAccess(true);
+        myWebView.getSettings().setSupportZoom(false);
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                /*if(isNetworkAvailable()){
+                    if (strech.equals("off")){
+                        if (orientation.equals("90 degrees")) {
+                            myWebView.setRotation(90);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            myWebView.setRotation(180);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            myWebView.setRotation(270);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                        else {
+                            myWebView.setRotation(0);
+                            myWebView.setScaleX(1);
+                            myWebView.setScaleY(1);
+                        }
+                    }
+                    else{
+                        // Handle size changes if needed
+                        if (orientation.equals("90 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                        }
+                        else if (orientation.equals("180 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                        }
+                        else if (orientation.equals("270 degrees")) {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                        }
+                        else {
+                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                        }
+
+
+                    }
+
+                    progressBar.setVisibility(View.VISIBLE);
+                    parentInternetLay.setVisibility(GONE);
+                    super.onPageStarted(view, url, favicon);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+
+                if (strech.equals("off")){
+                    if (orientation.equals("90 degrees")) {
+                        myWebView.setRotation(90);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        myWebView.setRotation(180);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        myWebView.setRotation(270);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                    else {
+                        myWebView.setRotation(0);
+                        myWebView.setScaleX(1);
+                        myWebView.setScaleY(1);
+                    }
+                }
+                else{
+                    // Handle size changes if needed
+                    if (orientation.equals("90 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+                    }
+                    else if (orientation.equals("180 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+                    }
+                    else if (orientation.equals("270 degrees")) {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+                    }
+                    else {
+                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+                    }
+
+
+                }
+
+                progressBar.setVisibility(View.VISIBLE);
+                parentInternetLay.setVisibility(GONE);
+                super.onPageStarted(view, url, favicon);
+
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                progressBar.setVisibility(View.GONE);
+                Log.e("test>>>","list"+list);
+                view.loadUrl(javascript);
+                myWebView.setVisibility(VISIBLE);
+
+
+
+                /*if(isNetworkAvailable()){
+                    progressBar.setVisibility(View.GONE);
+                    Log.e("test>>>","list"+list);
+                    view.loadUrl(javascript);
+                    myWebView.setVisibility(VISIBLE);
+                    myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            myWebView.setVisibility(GONE);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            contentLay(list);
+                        }
+                    };
+                    clearTimeout();
+                    handler.postDelayed(myRunnable, duration);
+                }
+                else{
+                    parentInternetLay.setVisibility(VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+
+                }*/
+                // Both url and title is available in this stage
+                mUrl = view.getUrl();
+            }
+
+        });
+        //myWebView.setWebViewClient(new BrowserPage(list));
+        myWebView.setWebChromeClient(new Browser());
+        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        myWebView.getSettings().setUseWideViewPort(true);
+
+        progressBar.setVisibility(View.VISIBLE);
+        parentInternetLay.setVisibility(GONE);
+        myWebView.loadUrl(newString+"?autoplay=1");
+
+        /*if(isNetworkAvailable()){
+            progressBar.setVisibility(View.VISIBLE);
+            parentInternetLay.setVisibility(GONE);
+            myWebView.loadUrl(newString+"?autoplay=1");
+            //String dataUrl = "<iframe src='" + newString+"?autoplay=1"+"' frameborder='0' allowfullscreen='true' autoplay='true' muted='true' style='width:100%; height:100%;'></iframe>";
+            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
+            //myWebView.loadData(dataUrl, "text/html", "utf-8");
+
+        }
+        else{
+            parentInternetLay.setVisibility(VISIBLE);
+            progressBar.setVisibility(View.GONE);
+
+        }*/
+    }
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
         if (strech.equals("off")){
             if (orientation.equals("90 degrees")) {
@@ -3400,937 +4684,114 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
-        StringRequest getRequest = new StringRequest(Request.Method.GET,
-                apiUrlWithParams,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.e("TAG","response>>>"+response);
-                        rssProgrss.setVisibility(GONE);
-                        overLays(item1);
-                        myRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                myWebView.setVisibility(GONE);
-                                parentTopOverlay.setVisibility(GONE);
-                                parentLeftOverlay.setVisibility(GONE);
-                                parentRightOverlay.setVisibility(GONE);
-                                parentBottomOverlay.setVisibility(GONE);
-                                rssImageView.setVisibility(GONE);
-                                rssTitle.setVisibility(GONE);
-                                rssDescription.setVisibility(GONE);
-                                rssDate.setVisibility(GONE);
-                                rssQR.setVisibility(GONE);
-                                contentLay(list);
-                            }
-                        };
-                        clearTimeout();
-                        handler.postDelayed(myRunnable, duration);
-                        try {
-                            JSONArray jsonArray = new JSONArray(response);
-                            if (jsonArray.length()>0){
-                                rsslist.clear();
-                                for(int i=0;i<jsonArray.length();i++){
-                                    JSONObject dataObject = jsonArray.getJSONObject(i);
-                                    String title = dataObject.getString("title");
-                                    String description = dataObject.getString("description");
-
-                                    String date = dataObject.getString("date");
-                                    String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                    Log.e("TAG","qr_code>>>"+qr_code);
-                                    String photo= dataObject.getString("photo");
-                                    RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                    rsslist.add(rssModel);
+        if(isNetworkAvailable()){
+            StringRequest getRequest = new StringRequest(Request.Method.GET,
+                    apiUrlWithParams,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("TAG","response>>>"+response);
+                            rssProgrss.setVisibility(GONE);
+                            overLays(item1);
+                            myRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    myWebView.setVisibility(GONE);
+                                    parentTopOverlay.setVisibility(GONE);
+                                    parentLeftOverlay.setVisibility(GONE);
+                                    parentRightOverlay.setVisibility(GONE);
+                                    parentBottomOverlay.setVisibility(GONE);
+                                    rssImageView.setVisibility(GONE);
+                                    rssTitle.setVisibility(GONE);
+                                    rssDescription.setVisibility(GONE);
+                                    rssDate.setVisibility(GONE);
+                                    rssQR.setVisibility(GONE);
+                                    contentLay(list);
                                 }
+                            };
+                            handler.postDelayed(myRunnable, duration);
+                            try {
+                                JSONArray jsonArray = new JSONArray(response);
+                                if (jsonArray.length()>0){
+                                    rsslist.clear();
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject dataObject = jsonArray.getJSONObject(i);
+                                        String title = dataObject.getString("title");
+                                        String description = dataObject.getString("description");
+
+                                        String date = dataObject.getString("date");
+                                        String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                        Log.e("TAG","qr_code>>>"+qr_code);
+                                        String photo= dataObject.getString("photo");
+                                        RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                        rsslist.add(rssModel);
+                                    }
+                                }
+
+
+                                if (rssSlideShowCallCount==0){
+                                    clearTimeout1();
+                                    rssContentCurrentIndex=0;
+                                    rssContentLay(rsslist,item1);
+                                    firstRssFeeddataCount= rsslist.size();
+                                }
+                                int newDataCount=rsslist.size();
+                                if(firstRssFeeddataCount != newDataCount){
+                                    rssSlideShowCallCount=0;
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
 
 
-                            if (rssSlideShowCallCount==0){
-                                clearTimeout1();
-                                rssContentCurrentIndex=0;
-                                rssContentLay(rsslist,item1);
-                                firstRssFeeddataCount= rsslist.size();
-                            }
-                            int newDataCount=rsslist.size();
-                            if(firstRssFeeddataCount != newDataCount){
-                                rssSlideShowCallCount=0;
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
-
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        Log.e("Error", "-----VollyError----: "+error.getMessage());
-                    }
-                });
-        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-        requestQueue.add(getRequest);
-        getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
-
-    }
-    private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
-        rssImageView.setVisibility(VISIBLE);
-        rssTitle.setVisibility(VISIBLE);
-        rssDescription.setVisibility(VISIBLE);
-        rssDate.setVisibility(VISIBLE);
-        rssQR.setVisibility(VISIBLE);
-        myWebView.setVisibility(VISIBLE);
-        rssSlideShowCallCount++;
-        long duration = 10000;
-        if (rsslist.size()>0){
-            RSSModel item = rsslist.get(rssContentCurrentIndex);
-            if (item.getPhoto() != null) {
-                RequestOptions requestOptions = RequestOptions.bitmapTransform(new RoundedCorners(30)); // Set the corner radius as desired
-                Glide.with(getApplicationContext())
-                        .load(item.getPhoto())
-                        .transform(new RotateTransformation(0))
-                        .error(R.drawable.neo_logo)
-                        .apply(requestOptions)
-                        .into(rssImageView);
-            }
-
-            rssTitle.setText(item.getTitle());
-            rssDescription.setText(item.getDescription());
-            rssDate.setText(item.getDate());
-            try {
-                // Load the SVG data from the string
-                String svgData = "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"80\" height=\"80\" viewBox=\"0 0 80 80\"><rect x=\"0\" y=\"0\" width=\"80\" height=\"80\" fill=\"#FFFFFF\"></rect><g transform=\"scale(1.951)\"><g transform=\"translate(0,0)\"><path fill-rule=\"evenodd\" d=\"M10 0L10 2L11 2L11 3L10 3L10 5L11 5L11 4L13 4L13 5L12 5L12 8L10 8L10 7L11 7L11 6L10 6L10 7L9 7L9 6L8 6L8 7L9 7L9 8L10 8L10 9L9 9L9 10L8 10L8 8L5 8L5 9L3 9L3 10L1 10L1 11L3 11L3 12L4 12L4 15L7 15L7 14L9 14L9 13L11 13L11 12L12 12L12 13L13 13L13 14L11 14L11 16L10 16L10 15L8 15L8 16L9 16L9 18L8 18L8 19L7 19L7 18L5 18L5 19L3 19L3 18L2 18L2 19L3 19L3 21L5 21L5 22L4 22L4 23L3 23L3 22L2 22L2 23L1 23L1 26L0 26L0 33L1 33L1 31L2 31L2 33L3 33L3 32L4 32L4 31L5 31L5 30L4 30L4 28L5 28L5 27L7 27L7 28L6 28L6 29L7 29L7 30L6 30L6 31L7 31L7 30L8 30L8 32L9 32L9 33L8 33L8 36L9 36L9 37L10 37L10 35L11 35L11 34L12 34L12 33L13 33L13 37L12 37L12 38L13 38L13 37L14 37L14 35L15 35L15 38L14 38L14 40L13 40L13 39L12 39L12 41L14 41L14 40L15 40L15 39L16 39L16 40L17 40L17 41L18 41L18 40L17 40L17 38L21 38L21 39L23 39L23 38L24 38L24 40L22 40L22 41L28 41L28 40L29 40L29 41L31 41L31 40L29 40L29 33L32 33L32 34L30 34L30 36L31 36L31 37L30 37L30 39L31 39L31 38L32 38L32 39L33 39L33 41L34 41L34 40L35 40L35 41L36 41L36 39L37 39L37 41L39 41L39 39L40 39L40 40L41 40L41 38L39 38L39 39L38 39L38 38L36 38L36 39L35 39L35 38L34 38L34 37L38 37L38 36L37 36L37 32L38 32L38 33L40 33L40 31L41 31L41 28L40 28L40 26L41 26L41 25L40 25L40 24L39 24L39 25L40 25L40 26L37 26L37 25L38 25L38 22L37 22L37 21L39 21L39 22L40 22L40 21L41 21L41 20L40 20L40 19L41 19L41 17L39 17L39 14L41 14L41 11L39 11L39 14L38 14L38 13L36 13L36 10L40 10L40 9L38 9L38 8L36 8L36 9L35 9L35 10L34 10L34 11L31 11L31 12L34 12L34 15L33 15L33 13L31 13L31 14L30 14L30 13L29 13L29 12L28 12L28 10L30 10L30 8L29 8L29 6L30 6L30 7L31 7L31 10L33 10L33 9L32 9L32 7L33 7L33 6L32 6L32 7L31 7L31 5L33 5L33 2L31 2L31 0L30 0L30 2L31 2L31 3L29 3L29 2L28 2L28 9L27 9L27 10L26 10L26 8L27 8L27 6L26 6L26 5L25 5L25 4L27 4L27 2L26 2L26 3L23 3L23 1L22 1L22 2L19 2L19 4L18 4L18 3L15 3L15 2L14 2L14 3L12 3L12 2L13 2L13 1L15 1L15 0ZM18 0L18 1L19 1L19 0ZM25 0L25 1L26 1L26 0ZM28 0L28 1L29 1L29 0ZM8 3L8 5L9 5L9 3ZM14 3L14 4L15 4L15 5L13 5L13 8L14 8L14 9L10 9L10 10L9 10L9 12L7 12L7 11L8 11L8 10L7 10L7 9L6 9L6 10L3 10L3 11L5 11L5 13L6 13L6 14L7 14L7 13L9 13L9 12L10 12L10 10L11 10L11 11L12 11L12 10L13 10L13 13L15 13L15 12L16 12L16 11L15 11L15 12L14 12L14 9L16 9L16 10L17 10L17 8L19 8L19 9L20 9L20 10L19 10L19 11L17 11L17 13L16 13L16 14L17 14L17 15L14 15L14 14L13 14L13 15L12 15L12 16L15 16L15 17L12 17L12 19L11 19L11 18L10 18L10 19L9 19L9 20L7 20L7 19L6 19L6 20L7 20L7 21L6 21L6 22L5 22L5 23L4 23L4 24L2 24L2 28L1 28L1 29L2 29L2 30L3 30L3 26L4 26L4 27L5 27L5 26L4 26L4 24L7 24L7 23L9 23L9 22L10 22L10 24L12 24L12 23L13 23L13 25L12 25L12 26L10 26L10 25L6 25L6 26L7 26L7 27L9 27L9 28L8 28L8 30L9 30L9 29L10 29L10 27L12 27L12 26L13 26L13 29L11 29L11 31L9 31L9 32L10 32L10 33L9 33L9 35L10 35L10 33L11 33L11 31L12 31L12 32L14 32L14 31L12 31L12 30L13 30L13 29L14 29L14 30L15 30L15 29L17 29L17 30L16 30L16 34L18 34L18 33L17 33L17 32L20 32L20 34L19 34L19 35L20 35L20 36L21 36L21 37L23 37L23 36L22 36L22 35L25 35L25 37L24 37L24 38L25 38L25 40L28 40L28 39L26 39L26 38L27 38L27 37L28 37L28 35L27 35L27 34L26 34L26 33L27 33L27 32L28 32L28 31L25 31L25 30L27 30L27 29L24 29L24 28L27 28L27 26L25 26L25 25L26 25L26 24L28 24L28 29L29 29L29 32L32 32L32 31L33 31L33 30L32 30L32 31L30 31L30 30L31 30L31 27L32 27L32 29L37 29L37 30L36 30L36 31L35 31L35 32L36 32L36 31L38 31L38 32L39 32L39 31L40 31L40 28L39 28L39 29L37 29L37 28L38 28L38 27L37 27L37 26L36 26L36 28L35 28L35 26L34 26L34 24L36 24L36 25L37 25L37 23L35 23L35 22L36 22L36 21L37 21L37 20L33 20L33 19L35 19L35 18L34 18L34 17L37 17L37 18L39 18L39 19L38 19L38 20L39 20L39 21L40 21L40 20L39 20L39 19L40 19L40 18L39 18L39 17L37 17L37 15L38 15L38 14L37 14L37 15L36 15L36 16L33 16L33 15L32 15L32 14L31 14L31 17L33 17L33 19L31 19L31 20L30 20L30 18L29 18L29 17L28 17L28 16L30 16L30 15L27 15L27 16L26 16L26 15L25 15L25 14L26 14L26 13L27 13L27 12L26 12L26 10L22 10L22 8L26 8L26 6L25 6L25 5L23 5L23 3L22 3L22 4L20 4L20 5L19 5L19 7L18 7L18 5L17 5L17 8L16 8L16 4L15 4L15 3ZM29 4L29 5L30 5L30 4ZM21 5L21 6L20 6L20 7L19 7L19 8L21 8L21 6L22 6L22 7L23 7L23 6L22 6L22 5ZM14 6L14 8L15 8L15 6ZM24 6L24 7L25 7L25 6ZM0 8L0 9L2 9L2 8ZM6 10L6 11L7 11L7 10ZM21 10L21 11L22 11L22 13L23 13L23 14L24 14L24 13L25 13L25 11L24 11L24 13L23 13L23 11L22 11L22 10ZM19 11L19 12L20 12L20 11ZM34 11L34 12L35 12L35 11ZM37 11L37 12L38 12L38 11ZM0 12L0 15L3 15L3 14L2 14L2 13L1 13L1 12ZM6 12L6 13L7 13L7 12ZM17 13L17 14L20 14L20 15L22 15L22 14L21 14L21 13ZM28 13L28 14L29 14L29 13ZM40 15L40 16L41 16L41 15ZM2 16L2 17L3 17L3 16ZM6 16L6 17L7 17L7 16ZM17 16L17 17L15 17L15 19L16 19L16 20L13 20L13 19L14 19L14 18L13 18L13 19L12 19L12 20L13 20L13 21L12 21L12 22L13 22L13 23L14 23L14 22L15 22L15 23L18 23L18 24L19 24L19 25L18 25L18 26L22 26L22 29L23 29L23 31L22 31L22 30L21 30L21 29L20 29L20 28L19 28L19 31L20 31L20 30L21 30L21 31L22 31L22 32L23 32L23 33L22 33L22 34L21 34L21 35L22 35L22 34L24 34L24 33L26 33L26 32L24 32L24 29L23 29L23 26L24 26L24 24L23 24L23 23L22 23L22 24L23 24L23 26L22 26L22 25L21 25L21 24L20 24L20 23L21 23L21 21L19 21L19 22L18 22L18 20L17 20L17 18L18 18L18 16ZM19 16L19 19L20 19L20 18L21 18L21 19L22 19L22 22L24 22L24 23L28 23L28 24L29 24L29 23L30 23L30 22L32 22L32 25L30 25L30 27L31 27L31 26L33 26L33 28L34 28L34 26L33 26L33 24L34 24L34 21L33 21L33 22L32 22L32 20L31 20L31 21L30 21L30 20L29 20L29 19L28 19L28 17L26 17L26 16L24 16L24 17L23 17L23 16L22 16L22 17L21 17L21 16ZM0 17L0 18L1 18L1 17ZM24 17L24 19L25 19L25 20L27 20L27 18L26 18L26 17ZM22 18L22 19L23 19L23 18ZM10 19L10 20L9 20L9 21L11 21L11 19ZM16 20L16 22L17 22L17 20ZM23 20L23 21L24 21L24 22L27 22L27 21L24 21L24 20ZM28 20L28 22L29 22L29 20ZM0 21L0 22L1 22L1 21ZM13 21L13 22L14 22L14 21ZM6 22L6 23L7 23L7 22ZM19 22L19 23L20 23L20 22ZM14 25L14 27L16 27L16 28L17 28L17 29L18 29L18 28L17 28L17 27L16 27L16 26L17 26L17 25ZM29 28L29 29L30 29L30 28ZM17 30L17 31L18 31L18 30ZM5 32L5 33L7 33L7 32ZM14 33L14 34L15 34L15 33ZM33 33L33 36L36 36L36 33ZM25 34L25 35L26 35L26 36L27 36L27 35L26 35L26 34ZM34 34L34 35L35 35L35 34ZM38 34L38 35L39 35L39 37L40 37L40 36L41 36L41 35L39 35L39 34ZM16 35L16 36L17 36L17 37L19 37L19 36L18 36L18 35ZM31 35L31 36L32 36L32 35ZM25 37L25 38L26 38L26 37ZM32 37L32 38L33 38L33 37ZM9 38L9 39L8 39L8 41L10 41L10 40L9 40L9 39L10 39L10 38ZM19 39L19 40L20 40L20 39ZM0 0L0 7L7 7L7 0ZM1 1L1 6L6 6L6 1ZM2 2L2 5L5 5L5 2ZM34 0L34 7L41 7L41 0ZM35 1L35 6L40 6L40 1ZM36 2L36 5L39 5L39 2ZM0 34L0 41L7 41L7 34ZM1 35L1 40L6 40L6 35ZM2 36L2 39L5 39L5 36Z\" fill=\"#000000\"></path></g></g></svg>"; // Replace with your actual resource name
-                Log.e("QRData","svgData"+item.getQr());
-                SVG svg = SVG.getFromString(item.getQr());
-
-                // Set the SVG to the ImageView
-                rssQR.setLayerType(ImageView.LAYER_TYPE_SOFTWARE, null);
-                rssQR.setImageDrawable(new PictureDrawable(svg.renderToPicture()));
-            } catch (SVGParseException e) {
-                e.printStackTrace();
-            }
-
-        }
-        rssContentCurrentIndex++;
-        if (rssContentCurrentIndex >= rsslist.size()) {
-            rssContentCurrentIndex = 0;
-        }
-        myRunnable1 = new Runnable() {
-            @Override
-            public void run() {
-                rssContentLay(rsslist, item1);
-            }
-        };
-        clearTimeout1();
-        handler1.postDelayed(myRunnable1, duration);
-    }
-    private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
-        String originalString = item.getUrl();
-        String newString = originalString.replace("https://app.neosign.tv/", "");
-        String webUrl = newString;
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        String customCSS = "iframe { border: none; }";
-        String javascript = "javascript:(function() {" +
-                "var parent = document.getElementsByTagName('head').item(0);" +
-                "var style = document.createElement('style');" +
-                "style.type = 'text/css';" +
-                "style.innerHTML = '" + customCSS + "';" +
-                "parent.appendChild(style);" +
-                "})()";
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-
-            }
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if(isNetworkAvailable()){
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
+                    },
+                    new Response.ErrorListener() {
                         @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.e("Error", "-----VollyError----: "+error.getMessage());
                         }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-                // Both url and title is available in this stage
-                mUrl = view.getUrl();
-            }
-
-        });
-        //myWebView.setWebViewClient(new BrowserPage(list));
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        myWebView.getSettings().setUseWideViewPort(true);
-
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            myWebView.loadUrl(newString+"?autoplay=1");
-            //String dataUrl = "<iframe src='" + newString+"?autoplay=1"+"' frameborder='0' allowfullscreen='true' autoplay='true' muted='true' style='width:100%; height:100%;'></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
+                    });
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            requestQueue.add(getRequest);
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            );
         }
         else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }
-    }
-    private void webUriiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
-        String originalString = item.getUrl();
-        String newString = originalString.replace("https://app.neosign.tv/", "");
-        String webUrl = newString;
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        String customCSS = "iframe { border: none; }";
-        String javascript = "javascript:(function() {" +
-                "var parent = document.getElementsByTagName('head').item(0);" +
-                "var style = document.createElement('style');" +
-                "style.type = 'text/css';" +
-                "style.innerHTML = '" + customCSS + "';" +
-                "parent.appendChild(style);" +
-                "})()";
-
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
+            rssProgrss.setVisibility(GONE);
+            overLays(item1);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    myWebView.setVisibility(GONE);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    rssImageView.setVisibility(GONE);
+                    rssTitle.setVisibility(GONE);
+                    rssDescription.setVisibility(GONE);
+                    rssDate.setVisibility(GONE);
+                    rssQR.setVisibility(VISIBLE);
+                    rssProgrss.setVisibility(VISIBLE);
+                    contentLay(list);
                 }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-
-            }
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-                // Both url and title is available in this stage
-                mUrl = view.getUrl();
-            }
-
-        });
-        //myWebView.setWebViewClient(new BrowserPage(list));
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        myWebView.getSettings().setUseWideViewPort(true);
-
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + webUrl + " ></iframe>";
-            myWebView.loadUrl(webUrl);
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
+            };
+            handler.postDelayed(myRunnable, duration);
         }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
 
-        }
+
+
+
+
+
 
     }
-    private void countDowniFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        String customCSS = "iframe { border: none; }";
-        String javascript = "javascript:(function() {" +
-                "var parent = document.getElementsByTagName('head').item(0);" +
-                "var style = document.createElement('style');" +
-                "style.type = 'text/css';" +
-                "style.innerHTML = '" + customCSS + "';" +
-                "parent.appendChild(style);" +
-                "})()";
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
 
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-
-            }
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-                // Both url and title is available in this stage
-                mUrl = view.getUrl();
-            }
-
-        });
-        //myWebView.setWebViewClient(new BrowserPage(list));
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        myWebView.getSettings().setUseWideViewPort(true);
-        // Inject custom CSS to remove the default border around iframes
-
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            String timeString = convertTimeFormat(item.getCdtime());
-            if (item.getApp_cd_text().equals("null")){
-                countdownText = "";
-            }else{
-                countdownText = item.getApp_cd_text();
-            }
-            if (item.getCdtranslation().equals("null")){
-                translationString = ",,,";
-            }else{
-                translationString = item.getCdtranslation();
-            }
-            String[] translation = translationString.split(",");
-
-            String day="",hour="",minute="",second="";
-            if(translation.length>0){
-                if(translation[0].equals("null")){
-                    day = "Days";
-                }else{
-                    day = translation[0];
-                }
-                if(translation[1].equals("null")){
-                    hour = "Hours";
-                }else{
-                    hour = translation[1];
-                }
-                if(translation[2].equals("null")){
-                    minute ="Minutes";
-                }else{
-                    minute = translation[2];
-                }
-                if(translation[3].equals("null")){
-                    second = "Seconds";
-                }else{
-                    second = translation[3];
-                }
-
-            }
-
-            // Construct the URL using the parameters
-            String baseUrl = "https://webplayer.neosign.tv/countdown.php?";
-            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
-            builder.appendQueryParameter("dayText", day);
-            builder.appendQueryParameter("hourText", hour);
-            builder.appendQueryParameter("minText", minute);
-            builder.appendQueryParameter("secText", second);
-            builder.appendQueryParameter("date", timeString);
-            builder.appendQueryParameter("countdownText",countdownText);
-
-
-            String clockurl = builder.build().toString();
-            myWebView.loadUrl(clockurl);
-            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + "></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-            //myWebView.loadUrl(newurl);
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }
-    }
-    private String convertTimeFormat(String cdtime) {
-        // Splitting the original time into hours and minutes
-        String[] timeParts = cdtime.split(":");
-        int hours = Integer.parseInt(timeParts[0]);
-        int minutes = Integer.parseInt(timeParts[1]);
-
-        // Creating a new Date object with the current date
-        Date currentDate = new Date();
-
-        // Setting the hours and minutes of the Date object
-        currentDate.setHours(hours);
-        currentDate.setMinutes(minutes);
-
-        // Formatting the date in the desired format
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd:HH:mm:ss", Locale.getDefault());
-        String formattedTime = sdf.format(currentDate);
-
-        return formattedTime;
-    }
-    private void clockiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        String customCSS = "iframe { border: none; }";
-        String javascript = "javascript:(function() {" +
-                "var parent = document.getElementsByTagName('head').item(0);" +
-                "var style = document.createElement('style');" +
-                "style.type = 'text/css';" +
-                "style.innerHTML = '" + customCSS + "';" +
-                "parent.appendChild(style);" +
-                "})()";
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-
-            }
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-                // Both url and title is available in this stage
-                mUrl = view.getUrl();
-            }
-
-        });
-        //myWebView.setWebViewClient(new BrowserPage(list));
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        myWebView.getSettings().setUseWideViewPort(true);
-
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            String appClockHandsColor = item.getApp_clock_hands_color();
-            Log.e("appClockHandsColor>>","appClockHandsColor"+appClockHandsColor);
-            String[] appClockHandsColorArray = appClockHandsColor.split(",");
-            String clockText=item.getApp_clock_text();
-            if(clockText.equals("null")){
-                clockText="";
-            }else{
-                clockText=item.getApp_clock_text();
-            }
-            // Construct the URL using the parameters
-            String baseUrl = "https://webplayer.neosign.tv/clock.php?";
-            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
-            builder.appendQueryParameter("text", clockText);
-            builder.appendQueryParameter("size", item.getApp_clock_size());
-            builder.appendQueryParameter("hourColor", appClockHandsColorArray[0]);
-            builder.appendQueryParameter("minuteColor", appClockHandsColorArray[1]);
-            builder.appendQueryParameter("secondColor", appClockHandsColorArray[2]);
-            builder.appendQueryParameter("minorIndicator",item.getApp_clock_minor_indicator_color());
-            builder.appendQueryParameter("majorIndicator", item.getApp_clock_major_indicator_color());
-            builder.appendQueryParameter("innerDotSize",  item.getApp_clock_innerdot_size());
-            builder.appendQueryParameter("innerDotColor", item.getApp_clock_innerdot_color());
-
-            String clockurl = builder.build().toString();
-            myWebView.loadUrl(clockurl);
-            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + " ></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }
-    }
-    private void iFrameLay(String newurl, List<ContentModel> list, long duration, ContentModel item) {
-        myWebView.clearCache(true);
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        String customCSS = "iframe { border: none; }";
-        String javascript = "javascript:(function() {" +
-                "var parent = document.getElementsByTagName('head').item(0);" +
-                "var style = document.createElement('style');" +
-                "style.type = 'text/css';" +
-                "style.innerHTML = '" + customCSS + "';" +
-                "parent.appendChild(style);" +
-                "})()";
-        if (Build.VERSION.SDK_INT >= 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else if(Build.VERSION.SDK_INT >=17 && Build.VERSION.SDK_INT < 19) {
-            myWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setMediaPlaybackRequiresUserGesture(false);
-        // Other webview options
-        myWebView.getSettings().setLoadWithOverviewMode(true);
-        //Other webview settings
-        myWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        myWebView.setScrollbarFadingEnabled(false);
-        myWebView.getSettings().setBuiltInZoomControls(false);
-        myWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        myWebView.getSettings().setAllowFileAccess(true);
-        myWebView.getSettings().setSupportZoom(false);
-        myWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-
-            }
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }
-                // Both url and title is available in this stage
-                mUrl = view.getUrl();
-            }
-
-        });
-        //myWebView.setWebViewClient(new BrowserPage(list));
-        myWebView.setWebChromeClient(new Browser());
-        myWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        myWebView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        myWebView.getSettings().setUseWideViewPort(true);
-
-        if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            String myYouTubeVideoUrl = newurl;
-            // YouTube video ID
-            String videoId = null;
-            if (myYouTubeVideoUrl != null && myYouTubeVideoUrl.contains("youtube.com")) {
-                int startIndex = myYouTubeVideoUrl.indexOf("v=");
-                if (startIndex != -1) {
-                    startIndex += 2; // Move past the "v="
-                    int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
-                    if (endIndex == -1) {
-                         endIndex = myYouTubeVideoUrl.length();
-                    }
-                    videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
-                }
-            }
-
-            // Create the embedded YouTube link
-            String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
-            Log.e("Tag","youtubeUrl>>>"+embeddedLink);
-            myWebView.loadUrl(embeddedLink);
-            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + embeddedLink + " ></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }
-    }
     private void initSession() {
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         sessionManagement = new SessionManagement(MainActivity.this);
@@ -4898,6 +5359,7 @@ public class MainActivity extends AppCompatActivity {
                                                 clearTimeout1();
                                                 clearTimeout2();
                                                 clearTimeout3();
+                                                clearTimeout4();
                                                 overLaysIds.clear();
                                                 parentTopOverlay.setVisibility(GONE);
                                                 parentLeftOverlay.setVisibility(GONE);
@@ -4926,15 +5388,9 @@ public class MainActivity extends AppCompatActivity {
                                                     //videoView.setZOrderOnTop(false);
                                                     drawer.closeDrawer(GravityCompat.START);
                                                 }
-                                                if(isNetworkAvailable()){
-                                                    parentInternetLay.setVisibility(GONE);
-                                                    slideShowCallCount=0;
-                                                    initPairing(pairCode);
-                                                }
-                                                else{
-                                                    parentInternetLay.setVisibility(VISIBLE);
-                                                    showSnack();
-                                                }
+                                                parentInternetLay.setVisibility(GONE);
+                                                slideShowCallCount=0;
+                                                initPairing(pairCode);
                                             }
                                         })
                                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -5067,6 +5523,58 @@ public class MainActivity extends AppCompatActivity {
             }else if(status.equals("No internet is available")){
                 status="No internet is available";
                 showSnack();
+                HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+                getcontentDetails = sessionManagement.getContentItemDetails();
+                List<ContentModel> list = new ArrayList<>();
+                list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+                if(list==null){
+                    if (pairingStatus){
+                        parentPairing.setVisibility(VISIBLE);
+                    }
+                    else{
+                        terminal_lay.setVisibility(GONE);
+                        parentVideoView.setVisibility(GONE);
+                        parentVlcVideoView.setVisibility(GONE);
+                        parentContentImage.setVisibility(GONE);
+                        webView_lay.setVisibility(GONE);
+                        parentContentRssFeed.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentPairing.setVisibility(VISIBLE);
+                    }
+                }
+                else{
+                    if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                        parentPairing.setVisibility(GONE);
+                        clearTimeout();
+                        clearTimeout1();
+                        clearTimeout2();
+                        clearTimeout3();
+                        clearTimeout4();
+                        contentCurrentIndex=0;
+                        rssSlideShowCallCount=0;
+                        overlayRssSlideShowCallCount=0;
+                        displayOverlayRssSlideShowCallCount=0;
+                        contentLay(list);
+                    }
+                    else{
+                        terminal_lay.setVisibility(GONE);
+                        parentVideoView.setVisibility(GONE);
+                        parentVlcVideoView.setVisibility(GONE);
+                        parentContentImage.setVisibility(GONE);
+                        webView_lay.setVisibility(GONE);
+                        parentContentRssFeed.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentPairing.setVisibility(VISIBLE);
+                    }
+                }
+
+
             }else{
                 slideShowCallCount=0;
                 initPairing(pairCode);
@@ -5086,6 +5594,7 @@ public class MainActivity extends AppCompatActivity {
         snackbar.show();
     }
     public void clearTimeout() {
+        // Or, clear a specific callback (assuming you have a reference to the Runnable)
         handler.removeCallbacks(myRunnable);
     }
     public void clearTimeout1() {
@@ -5214,7 +5723,6 @@ public class MainActivity extends AppCompatActivity {
         clearTimeout2();
         clearTimeout3();
         clearTimeout4();
-        //releaseMediaPlayer();
         unregisterReceiver(MyReceiver);
     }
 
