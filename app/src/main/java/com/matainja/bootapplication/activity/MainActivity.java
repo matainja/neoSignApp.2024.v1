@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -78,6 +79,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -114,10 +116,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.matainja.bootapplication.Adapter.DisplayAdapter;
 import com.matainja.bootapplication.Adapter.TerminalAdapter;
+import com.matainja.bootapplication.DabaseHelper.DatabaseHelper;
+import com.matainja.bootapplication.FileDownloader;
 import com.matainja.bootapplication.Model.ContentModel;
 import com.matainja.bootapplication.Model.DisplayDataModel;
 import com.matainja.bootapplication.Model.RSSModel;
 import com.matainja.bootapplication.Model.TerminalModel;
+import com.matainja.bootapplication.Model.VideoItem;
 import com.matainja.bootapplication.R;
 import com.matainja.bootapplication.helper.RotatableMediaController;
 import com.matainja.bootapplication.session.SessionManagement;
@@ -266,6 +271,22 @@ public class MainActivity extends AppCompatActivity {
     TranslateAnimation marqueeAnimation;
     private int currentTextAnimationPosition = 0;
 
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    String videoFilePath;
+    VideoItem fetchedVideo;
+    MediaItem mediaItem;
+    boolean downloadStatus=false;
+    String[] permissionsRequired = {
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+    String[] permissionsRequired1 = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
+    private SharedPreferences permissionStatus = null;
+    private final int PERMISSION_CALLBACK_CONSTANT = 100;
+    private final int REQUEST_PERMISSION_SETTING = 101;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -273,6 +294,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initSession();
+        /*permissionStatus = getSharedPreferences("permissionStatus", Context.MODE_PRIVATE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getPermission();
+            } else {
+                getPermission1();
+            }
+        }*/
 
         //accessAllPermission();
 
@@ -1010,6 +1039,9 @@ public class MainActivity extends AppCompatActivity {
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
+                                    // Create an instance of DatabaseHelper
+                                    DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+                                    dbHelper.deleteAllVideos();
                                     contentLay(newSlideItems);
 
                                 }
@@ -2403,10 +2435,102 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(VISIBLE);
             video_progress1.setVisibility(VISIBLE);
 
-            Log.e("Tag","videoView>>>1"+item.getUrl());
+            String urlString = item.getUrl();
+            Uri uri = Uri.parse(urlString);
+            // Alternatively, you can use Uri's methods to achieve the same
+            String path = uri.getPath();
+            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
+            // Create an instance of DatabaseHelper
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
 
+            if (contentCurrentIndex <list.size()) {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        @SuppressLint("Range")
+                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                        @SuppressLint("Range")
+                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                        else{
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // Create an instance of FileDownloader
+                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                @Override
+                                public void onDownloadComplete(String filePath) {
+                                    // Create a VideoItem object
+                                    VideoItem videoItem = new VideoItem();
+                                    videoItem.setTitle(filenameFromUri);
+                                    videoItem.setVideo_url(item.getUrl());
+                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                    // Add the video to the database
+                                    long id = dbHelper.addVideo(videoItem);
+                                    Log.e("Tag","filenameid>>>"+id);
+                                    // Handle download completion
+                                    Log.d("TAG", "File downloaded: " + filePath);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    // Handle download error
+                                    Log.e("TAG", "Error downloading file: " + errorMessage);
+                                }
+
+                                @Override
+                                public void onDownloadStatus(boolean isDownloading) {
+                                    Log.e("TAG", "downloading status: " + isDownloading);
+                                    downloadStatus=isDownloading;
+                                }
+                            });
+
+                            fileDownloader.execute(item.getUrl());
+
+
+
+                        }
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+                else{
+                    // Create an instance of FileDownloader
+                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                        @Override
+                        public void onDownloadComplete(String filePath) {
+                            Log.e("Tag","filePath>>>"+filePath);
+                            // Create a VideoItem object
+                            VideoItem videoItem = new VideoItem();
+                            videoItem.setTitle(filenameFromUri);
+                            videoItem.setVideo_url(item.getUrl());
+                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                            // Add the video to the database
+                            long id = dbHelper.addVideo(videoItem);
+                            Log.e("Tag","firstfilenameid>>>"+id);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Handle download error
+                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                        }
+
+                        @Override
+                        public void onDownloadStatus(boolean isDownloading) {
+                            Log.e("TAG", "downloading status: " + isDownloading);
+                            downloadStatus=isDownloading;
+                        }
+                    });
+
+                    fileDownloader.execute(item.getUrl());
+
+
+                }
+            }
+
+            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
             // Initialize ExoPlayer instance
+
             player = new SimpleExoPlayer.Builder(this).build();
 
             if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
@@ -2416,27 +2540,51 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                // Create a MediaItem representing the video
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setUri(item.getUrl())
-                        .setMimeType(MimeTypes.APPLICATION_MP4)
-                        .build();
-                /*MediaItem mediaItem = new MediaItem.Builder()
-                        .setUri(Uri.parse(videoFilePath))
-                        .setMimeType(MimeTypes.APPLICATION_MP4)
-                        .build();*/
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                    Log.e("Tag","filename>>>"+localFilePath);
+
+                    if (localFilePath==null){
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(item.getUrl())
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","Test>>>"+localFilePath);
+                    }else{
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(Uri.parse("file://"+localFilePath))
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","test>>>1"+localFilePath);
+
+                    }
+
+                    cursor.close();
+                }
+                else{
+                    mediaItem = null;
+                    mediaItem = new MediaItem.Builder()
+                            .setUri(item.getUrl())
+                            .setMimeType(MimeTypes.APPLICATION_MP4)
+                            .build();
+                    Log.e("Tag","test>>>3");
+                }
+
 
                 // Create a MediaSource using ProgressiveMediaSource.Factory
                 DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
                 MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(mediaItem);
-
                 // Assign the media source to the player and start preparing
                 player.setMediaSource(mediaSource);
                 player.setVolume(0f); // Mute the player
                 player.seekTo(0, 0L); // Seek to the beginning
                 player.prepare(); // Transition player to the prepared state
-
                 // Attach player listener
                 player.addListener(new Player.Listener() {
                     @Override
@@ -5450,6 +5598,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -5714,6 +5863,90 @@ public class MainActivity extends AppCompatActivity {
         );
         return imageFile;
     }
+
+    private void getPermission() {
+        if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, permissionsRequired[1]) != PackageManager.PERMISSION_GRANTED
+                ) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0]) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[1])) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Need Multiple Permissions");
+                builder.setMessage("This app needs Media Storage permissions.");
+                builder.setPositiveButton("Grant", (dialog, which) -> {
+                    dialog.cancel();
+                    ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+                });
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+                builder.show();
+            }
+            else if (permissionStatus.getBoolean(permissionsRequired[0], false)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Need Permissions");
+                builder.setMessage("This app needs Media Storage permissions.");
+                builder.setPositiveButton("Grant", (dialog, which) -> {
+                    dialog.cancel();
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
+                    Toast.makeText(this, "Go to Permissions to Grant Media Storage", Toast.LENGTH_LONG).show();
+                });
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+                builder.show();
+            }
+            else {
+                ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+            }
+
+            SharedPreferences.Editor editor = permissionStatus.edit();
+            editor.putBoolean(permissionsRequired[0], true);
+            editor.apply();
+        }
+    }
+
+    private void getPermission1() {
+        if (ContextCompat.checkSelfPermission(this, permissionsRequired1[0]) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired1[0])) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Need  Permissions");
+                builder.setMessage("This app needs Media Storage permissions.");
+                builder.setPositiveButton("Grant", (dialog, which) -> {
+                    dialog.cancel();
+                    ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
+                });
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+                builder.show();
+            }
+            else if (permissionStatus.getBoolean(permissionsRequired1[0], false)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Need Permissions");
+                builder.setMessage("This app needs Media Storage permissions.");
+                builder.setPositiveButton("Grant", (dialog, which) -> {
+                    dialog.cancel();
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
+                    Toast.makeText(this, "Go to Permissions to GrantMedia Storage", Toast.LENGTH_LONG).show();
+                });
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+                builder.show();
+            }
+            else {
+                ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
+            }
+            SharedPreferences.Editor editor = permissionStatus.edit();
+            editor.putBoolean(permissionsRequired1[0], true);
+            editor.apply();
+        }
+    }
+
+
 
     @Override
     protected void onDestroy() {
