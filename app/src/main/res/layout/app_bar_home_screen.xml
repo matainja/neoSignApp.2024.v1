@@ -607,7 +607,7 @@
             android:background="@color/rss_back"
             android:visibility="gone"
             >
-           <!-- <HorizontalScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -625,8 +625,8 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
 
-            </HorizontalScrollView>-->
-            <TextView
+            </HorizontalScrollView>
+            <!--<TextView
                 android:text=""
                 android:id="@+id/textTopOverlay"
                 android:layout_width="match_parent"
@@ -636,7 +636,7 @@
                 android:fadeScrollbars="false"
                 android:scrollHorizontally="true"
                 android:layout_centerVertical="true"
-                android:singleLine="true"/>
+                android:singleLine="true"/>-->
 
 
         </RelativeLayout>
@@ -648,7 +648,7 @@
             android:layout_gravity="center_vertical|start"
             android:visibility="gone"
             >
-           <!-- <HorizontalScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -666,8 +666,8 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
 
-            </HorizontalScrollView>-->
-            <TextView
+            </HorizontalScrollView>
+            <!--<TextView
                 android:text=""
                 android:id="@+id/textLeftOverlay"
                 android:layout_width="match_parent"
@@ -677,7 +677,7 @@
                 android:fadeScrollbars="false"
                 android:scrollHorizontally="true"
                 android:layout_centerVertical="true"
-                android:singleLine="true"/>
+                android:singleLine="true"/>-->
 
         </RelativeLayout>
         <RelativeLayout
@@ -688,7 +688,7 @@
             android:visibility="gone"
             android:layout_gravity="center_vertical|end"
             >
-            <!--<HorizontalScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -706,8 +706,8 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
 
-            </HorizontalScrollView>-->
-            <TextView
+            </HorizontalScrollView>
+            <!--<TextView
                 android:text=""
                 android:id="@+id/textRightOverlay"
                 android:layout_width="match_parent"
@@ -717,7 +717,7 @@
                 android:fadeScrollbars="false"
                 android:scrollHorizontally="true"
                 android:layout_centerVertical="true"
-                android:singleLine="true" />
+                android:singleLine="true" />-->
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/parentBottomOverlay"
@@ -727,7 +727,7 @@
             android:visibility="gone"
             android:layout_gravity="bottom"
             >
-           <!-- <HorizontalScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -746,8 +746,8 @@
                     android:singleLine="true"
                    />
 
-            </HorizontalScrollView>-->
-            <TextView
+            </HorizontalScrollView>
+            <!--<TextView
                 android:text=""
                 android:id="@+id/textBottomOverlay"
                 android:layout_width="match_parent"
@@ -760,7 +760,7 @@
                 android:focusableInTouchMode="false"
                 android:scrollHorizontally="true"
                 android:layout_centerVertical="true"
-                android:singleLine="true" />
+                android:singleLine="true" />-->
 
         </RelativeLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

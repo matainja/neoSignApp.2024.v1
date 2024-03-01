@@ -3,7 +3,6 @@ package com.matainja.bootapplication;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,12 +14,8 @@ import java.util.Random;
 
 public class FileDownloader extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "FileDownloader";
-    private static final int CONNECTION_TIMEOUT = 10000; // Connection timeout in milliseconds
-
     private Context context;
     private OnDownloadCompleteListener listener;
-    private boolean isDownloadingNext = false;
 
     public interface OnDownloadCompleteListener {
         void onDownloadComplete(String filePath);
@@ -48,19 +43,23 @@ public class FileDownloader extends AsyncTask<String, Void, String> {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setDoOutput(true);
-            connection.setConnectTimeout(CONNECTION_TIMEOUT);
+            connection.setConnectTimeout(10000); // Connection timeout in milliseconds
 
             Random random = new Random();
             int randomNumber = random.nextInt(100);
 
-            File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+            File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
             if (directory != null) {
+                if (!directory.exists()) {
+                    directory.mkdirs(); // Create directories if they don't exist
+                }
                 File file = new File(directory, "downloaded_video" + randomNumber + ".mp4");
                 FileOutputStream outputStream = new FileOutputStream(file);
                 InputStream inputStream = connection.getInputStream();
 
                 byte[] buffer = new byte[1024];
                 int bytesRead;
+
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesRead);
                 }
@@ -87,11 +86,4 @@ public class FileDownloader extends AsyncTask<String, Void, String> {
         listener.onDownloadStatus(false); // Notify that download is complete
     }
 
-    public boolean isDownloadingNext() {
-        return isDownloadingNext;
-    }
-
-    public void setDownloadingNext(boolean downloadingNext) {
-        isDownloadingNext = downloadingNext;
-    }
 }

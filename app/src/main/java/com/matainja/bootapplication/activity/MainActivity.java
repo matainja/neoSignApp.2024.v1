@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
     private PlayerView playerView;
     private SimpleExoPlayer player;
 
-    TranslateAnimation marqueeAnimation;
+
     private int currentTextAnimationPosition = 0;
 
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -287,13 +287,40 @@ public class MainActivity extends AppCompatActivity {
     private final int PERMISSION_CALLBACK_CONSTANT = 100;
     private final int REQUEST_PERMISSION_SETTING = 101;
 
+    TranslateAnimation marqueeAnimation;
+    TranslateAnimation marqueeAnimation1;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    boolean isDeleted = file.delete();
+                    if (!isDeleted) {
+                        Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
+                    }
+                }
+            }
+            boolean isDeleted = directory.delete();
+            if (isDeleted) {
+                Log.d("TAG", "Directory deleted successfully");
+            } else {
+                Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
+            }
+        } else {
+            Log.d("TAG", "Directory doesn't exist");
+        }
         initSession();
+
+
+
+
         /*permissionStatus = getSharedPreferences("permissionStatus", Context.MODE_PRIVATE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -388,11 +415,7 @@ public class MainActivity extends AppCompatActivity {
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
 
 
-        marqueeAnimation = new TranslateAnimation(
-                Animation.RELATIVE_TO_PARENT, 1f,
-                Animation.RELATIVE_TO_PARENT, -1f,
-                Animation.RELATIVE_TO_PARENT, 0f,
-                Animation.RELATIVE_TO_PARENT, 0f);
+
 
 
 
@@ -815,6 +838,99 @@ public class MainActivity extends AppCompatActivity {
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
+    private void initPairing(String pairCode){
+        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+        getcontentDetails = sessionManagement.getContentItemDetails();
+        List<ContentModel> list = new ArrayList<>();
+        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
+        if(list==null){
+            if (pairingStatus){
+                parentPairing.setVisibility(VISIBLE);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+        else{
+            if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                parentPairing.setVisibility(GONE);
+                clearTimeout();
+                clearTimeout1();
+                clearTimeout2();
+                clearTimeout3();
+                clearTimeout4();
+                contentCurrentIndex=0;
+                rssSlideShowCallCount=0;
+                overlayRssSlideShowCallCount=0;
+                displayOverlayRssSlideShowCallCount=0;
+                contentLay(list);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+
+
+
+
+
+
+
+
+        if(isNetworkAvailable()){
+            Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
+            StringRequest getRequest = new StringRequest(Request.Method.GET,
+                    "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.e("TAG","response>>>"+response);
+
+
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.e("Error", "-----VollyError----: "+error.getMessage());
+                        }
+                    });
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            requestQueue.add(getRequest);
+            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+            );
+        }
+        else{
+            //parentInternetLay.setVisibility(VISIBLE);
+            showSnack();
+        }
+
+
+
+    }
     private void initPusher() {
         PusherOptions options = new PusherOptions();
         options.setCluster("ap2");
@@ -1039,9 +1155,34 @@ public class MainActivity extends AppCompatActivity {
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
+
+
+
+                                    File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+                                    if (directory.exists()) {
+                                        File[] files = directory.listFiles();
+                                        if (files != null) {
+                                            for (File file : files) {
+                                                boolean isDeleted = file.delete();
+                                                if (!isDeleted) {
+                                                    Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
+                                                }
+                                            }
+                                        }
+                                        boolean isDeleted = directory.delete();
+                                        if (isDeleted) {
+                                            Log.d("TAG", "Directory deleted successfully");
+                                        } else {
+                                            Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
+                                        }
+                                    } else {
+                                        Log.d("TAG", "Directory doesn't exist");
+                                    }
+
                                     // Create an instance of DatabaseHelper
                                     DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
                                     dbHelper.deleteAllVideos();
+
                                     contentLay(newSlideItems);
 
                                 }
@@ -1213,97 +1354,704 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.start();
         }
     }
-    private void initPairing(String pairCode){
-        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
-        getcontentDetails = sessionManagement.getContentItemDetails();
-        List<ContentModel> list = new ArrayList<>();
-        list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
-        if(list==null){
-            if (pairingStatus){
-                parentPairing.setVisibility(VISIBLE);
+    @SuppressLint("NotifyDataSetChanged")
+    private void contentLay(List<ContentModel> list) {
+        HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
+        getOrientationDetails = sessionManagement.getOrientDetails();
+        orientation=getOrientationDetails.get(ORIENTATION);
+        HashMap<String, String> getStrechsDetails = new HashMap<String, String>();
+        getStrechsDetails = sessionManagement.getStrechDetails();
+        strech=getStrechsDetails.get(STRECH);
+        slideShowCallCount++;
+        long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
+
+        ContentModel item = list.get(contentCurrentIndex);
+        parentTopOverlay.setVisibility(GONE);
+        parentLeftOverlay.setVisibility(GONE);
+        parentRightOverlay.setVisibility(GONE);
+        parentBottomOverlay.setVisibility(GONE);
+        Log.e("newDuration","newDuration>>>"+item.getDuration());
+        if (item.getType().equals("image")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            content_image.setImageBitmap(null);
+            content_image.destroyDrawingCache();
+            parentContentImage.setVisibility(VISIBLE);
+
+
+
+            if (orientation.equals("90 degrees")) {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(90))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else if (orientation.equals("180 degrees")) {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .transform(new RotateTransformation(180))  // Rotate by 270 degrees
+                        .into(content_image);
+
+
+            }
+            else if (orientation.equals("270 degrees")) {
+
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(270))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(0))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+            }
+
+
+            if (strech.equals("off")){
+                content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             }
             else{
-                terminal_lay.setVisibility(GONE);
-                parentVideoView.setVisibility(GONE);
-                parentVlcVideoView.setVisibility(GONE);
-                parentContentImage.setVisibility(GONE);
-                webView_lay.setVisibility(GONE);
-                parentContentRssFeed.setVisibility(GONE);
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentPairing.setVisibility(VISIBLE);
+                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
+
             }
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
         }
-        else{
-            if (pairingStatus && Objects.requireNonNull(list).size()>0){
-                parentPairing.setVisibility(GONE);
-                clearTimeout();
-                clearTimeout1();
-                clearTimeout2();
-                clearTimeout3();
-                clearTimeout4();
-                contentCurrentIndex=0;
-                rssSlideShowCallCount=0;
-                overlayRssSlideShowCallCount=0;
-                displayOverlayRssSlideShowCallCount=0;
-                contentLay(list);
-            }
-            else{
-                terminal_lay.setVisibility(GONE);
-                parentVideoView.setVisibility(GONE);
-                parentVlcVideoView.setVisibility(GONE);
-                parentContentImage.setVisibility(GONE);
-                webView_lay.setVisibility(GONE);
-                parentContentRssFeed.setVisibility(GONE);
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-                parentPairing.setVisibility(VISIBLE);
-            }
-        }
+        else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            video_progress.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(VISIBLE);
+            video_progress1.setVisibility(VISIBLE);
 
+            String urlString = item.getUrl();
+            Uri uri = Uri.parse(urlString);
+            // Alternatively, you can use Uri's methods to achieve the same
+            String path = uri.getPath();
+            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
+            // Create an instance of DatabaseHelper
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
 
+            if (contentCurrentIndex <list.size()) {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        @SuppressLint("Range")
+                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                        @SuppressLint("Range")
+                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                        else{
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // Create an instance of FileDownloader
+                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                @Override
+                                public void onDownloadComplete(String filePath) {
+                                    // Create a VideoItem object
+                                    VideoItem videoItem = new VideoItem();
+                                    videoItem.setTitle(filenameFromUri);
+                                    videoItem.setVideo_url(item.getUrl());
+                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                    // Add the video to the database
+                                    long id = dbHelper.addVideo(videoItem);
+                                    Log.e("Tag","filenameid>>>"+id);
+                                    // Handle download completion
+                                    Log.d("TAG", "File downloaded: " + filePath);
+                                }
 
+                                @Override
+                                public void onError(String errorMessage) {
+                                    // Handle download error
+                                    Log.e("TAG", "Error downloading file: " + errorMessage);
+                                }
 
+                                @Override
+                                public void onDownloadStatus(boolean isDownloading) {
+                                    Log.e("TAG", "downloading status: " + isDownloading);
+                                    downloadStatus=isDownloading;
+                                }
+                            });
 
+                            fileDownloader.execute(item.getUrl());
 
-
-
-        if(isNetworkAvailable()){
-            Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
-            StringRequest getRequest = new StringRequest(Request.Method.GET,
-                    "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.e("TAG","response>>>"+response);
 
 
                         }
-                    },
-                    new Response.ErrorListener() {
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+                else{
+                    // Create an instance of FileDownloader
+                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
                         @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                            Log.e("Error", "-----VollyError----: "+error.getMessage());
+                        public void onDownloadComplete(String filePath) {
+                            Log.e("Tag","filePath>>>"+filePath);
+                            // Create a VideoItem object
+                            VideoItem videoItem = new VideoItem();
+                            videoItem.setTitle(filenameFromUri);
+                            videoItem.setVideo_url(item.getUrl());
+                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                            // Add the video to the database
+                            long id = dbHelper.addVideo(videoItem);
+                            Log.e("Tag","firstfilenameid>>>"+id);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Handle download error
+                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                        }
+
+                        @Override
+                        public void onDownloadStatus(boolean isDownloading) {
+                            Log.e("TAG", "downloading status: " + isDownloading);
+                            downloadStatus=isDownloading;
                         }
                     });
-            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-            requestQueue.add(getRequest);
-            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-            );
+
+                    fileDownloader.execute(item.getUrl());
+
+
+                }
+            }
+
+            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
+
+            // Initialize ExoPlayer instance
+
+            player = new SimpleExoPlayer.Builder(this).build();
+
+            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
+                player.stop(); // Stop the player
+                player.release(); // Release the player
+                player = null; // Set player to null
+            }
+
+            try {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                    Log.e("Tag","filename>>>"+localFilePath);
+
+                    if (localFilePath==null){
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(item.getUrl())
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","Test>>>"+localFilePath);
+                    }else{
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(Uri.parse("file://"+localFilePath))
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","test>>>1"+localFilePath);
+
+                    }
+
+                    cursor.close();
+                }
+                else{
+                    mediaItem = null;
+                    mediaItem = new MediaItem.Builder()
+                            .setUri(item.getUrl())
+                            .setMimeType(MimeTypes.APPLICATION_MP4)
+                            .build();
+                    Log.e("Tag","test>>>3");
+                }
+
+
+                // Create a MediaSource using ProgressiveMediaSource.Factory
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
+                MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+                // Assign the media source to the player and start preparing
+                player.setMediaSource(mediaSource);
+                player.setVolume(0f); // Mute the player
+                player.seekTo(0, 0L); // Seek to the beginning
+                player.prepare(); // Transition player to the prepared state
+                // Attach player listener
+                player.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                        if (playbackState == Player.STATE_READY && playWhenReady) {
+                            if (strech.equals("off")){
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                            }
+                            else{
+                                // Handle size changes if needed
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+
+                            }
+                            overLays(item);
+                            video_progress1.setVisibility(GONE);
+                            playerView.setVisibility(VISIBLE);
+
+
+                        }
+                    }
+                });
+
+                // Start playback
+                player.setPlayWhenReady(true);
+
+                // Attach the player to the PlayerView
+                playerView.setPlayer(player);
+
+                myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("Tag","videoView>>>5");
+                        playerView.setVisibility(GONE);
+                        videoView.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+
+                        releasePlayer();
+                        contentLay(list);
+
+                    }
+                };
+                handler.postDelayed(myRunnable, duration);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
         }
-        else{
-            //parentInternetLay.setVisibility(VISIBLE);
-            showSnack();
+        /*else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(VISIBLE);
+            video_progress.setVisibility(VISIBLE);
+
+            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
+
+            if(videoView.getSurfaceTexture()!=null){
+                releaseMediaPlayer();
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
+            }
+
+            videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                @Override
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    // Release the MediaPlayer when the TextureView is destroyed
+                    releaseMediaPlayer();
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+
+                }
+            });
+
+
+        }*/
+        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            iFrameLay(item.getUrl(),list,duration,item);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            clockiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            countDowniFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+
+            webUriiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            vimeoiFrameLay(item.getUrl(),list,item,duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(VISIBLE);
+            rssProgrss.setVisibility(VISIBLE);
+            String rssFeedUrl = item.getUrl();
+
+            /*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+            rssFeediFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            terminalProgress.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(VISIBLE);
+            terminalLogo.setVisibility(VISIBLE);
+            txtTerminal.setVisibility(VISIBLE);
+            /*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+
+
+            }
+
+            Glide.with(getApplicationContext())
+                    .load(item.getLogo())
+                    .transform(new RotateTransformation(0))
+                    .error(R.drawable.neo_logo)
+                    .into(terminalLogo);
+
+
+            txtTerminal.setText(item.getMain_text_translation());
+
+
+
+            String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
+
+            // Parse the cleaned JSON array string into a JSONArray
+            JSONArray app_queue_departmentsArray = null;
+            try {
+                app_queue_departmentsArray = new JSONArray(cleanedJsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e("overlays","jsonArray>>>"+app_queue_departmentsArray);
+            // Now you can iterate through the elements of the array
+            terminalList.clear();
+            for (int i = 0; i < app_queue_departmentsArray.length(); i++) {
+                // Access each element using jsonArray.getString(i)
+                try {
+                    String departmentName = app_queue_departmentsArray.getString(i);
+                    //List<TerminalModel> items = new ArrayList<>();
+                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName, item.getApp_id()));
+                    Log.e("overlays","terminalList>>>"+terminalList);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // Do something with the departmentName...
+            }
+            terminalAdapter = new TerminalAdapter(this, terminalList);
+            terminalView.setAdapter(terminalAdapter);
+            terminalAdapter.notifyDataSetChanged();
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(VISIBLE);
+            clearTimeout4();
+            updateTime();
+            handler4.postDelayed(timeUpdater, 1000);
+
+           /* ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+                }
+
+
+            }
+
+            initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
+
+            if(item.getShow_news_channel().equals("2")){
+                displayOverlay.setVisibility(VISIBLE);
+            }else{
+                displayOverlay.setVisibility(GONE);
+            }
+
+            displayOverLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
         }
 
 
+        contentCurrentIndex++;
+        if (contentCurrentIndex >= list.size()) {
+            contentCurrentIndex = 0;
+        }
+        Log.e("newDuration","duration>>>"+duration);
+        Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
     private void overLays(ContentModel item) {
@@ -2090,19 +2838,73 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void textAnimation(TextView textOverlay, String laysContent) {
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+
+        marqueeAnimation = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 1f,
+                Animation.RELATIVE_TO_PARENT, -1f,
+                Animation.RELATIVE_TO_PARENT, 0f,
+                Animation.RELATIVE_TO_PARENT, 0f);
+        marqueeAnimation.setInterpolator(new LinearInterpolator());
+        marqueeAnimation.setRepeatCount(Animation.INFINITE);
+        marqueeAnimation.setRepeatMode(Animation.RESTART);
+        marqueeAnimation.setDuration(20000); // Adjust the duration as needed
+        textOverlay.setHorizontallyScrolling(true);
+        textOverlay.setSelected(true);
+        marqueeAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                textOverlay.startAnimation(marqueeAnimation1);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+
+
+
+        marqueeAnimation1 = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 1f,
+                Animation.RELATIVE_TO_PARENT, -1f,
+                Animation.RELATIVE_TO_PARENT, 0f,
+                Animation.RELATIVE_TO_PARENT, 0f);
+        marqueeAnimation1.setInterpolator(new LinearInterpolator());
+        marqueeAnimation1.setRepeatCount(Animation.INFINITE);
+        marqueeAnimation1.setRepeatMode(Animation.RESTART);
+        marqueeAnimation1.setDuration(20000); // Adjust the duration as needed
+        textOverlay.setHorizontallyScrolling(true);
+        textOverlay.setSelected(true);
+        marqueeAnimation1.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                textOverlay.startAnimation(marqueeAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+
+        // Start the animation
+        textOverlay.startAnimation(marqueeAnimation);
+
+
+
+        /*int screenWidth = getResources().getDisplayMetrics().widthPixels;
         Paint textPaint = textOverlay.getPaint();
         // Get the text content of the TextView
         CharSequence text = textOverlay.getText();
         // Calculate the width of the text based on the text size and content
         int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-        Log.e("screenWidth>>",""+screenWidth+" "+width);
-        Log.e("textLength>>",""+text.length());
+
+
 
         if (width <= screenWidth) {
             // Create a translation animation to make it scroll horizontally
-
-
             // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatCount(Animation.INFINITE);
@@ -2115,62 +2917,11 @@ public class MainActivity extends AppCompatActivity {
             // Set the animation properties
             marqueeAnimation.setInterpolator(new LinearInterpolator());
             marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setStartOffset(currentTextAnimationPosition);
             textOverlay.setHorizontallyScrolling(true);
             textOverlay.setSelected(true);
-            marqueeAnimation.setDuration(0);
             textOverlay.startAnimation(marqueeAnimation);
 
-           /* long duration = 0;
-            if(text.length()<=500){
-                duration = 25000;
-            }
-            else if(text.length()>500 && text.length()<=1000){
-                duration = 50000;
-            }
-            else if(text.length()>1000){
-                duration = 60000;
-            }
-            *//*else{
-
-                duration = calculateDuration(laysContent);
-            }*//*
-            // Create a translation animation to make it scroll horizontally
-            TranslateAnimation marqueeAnimation = new TranslateAnimation(
-                    Animation.RELATIVE_TO_SELF, 1f,
-                    Animation.RELATIVE_TO_SELF, -1f,
-                    Animation.RELATIVE_TO_SELF, 0f,
-                    Animation.RELATIVE_TO_SELF, 0f);
-
-            // Set the animation properties
-            marqueeAnimation.setInterpolator(new LinearInterpolator());
-            marqueeAnimation.setRepeatCount(Animation.INFINITE);
-            marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(duration); // Adjust the duration as needed
-
-            marqueeAnimation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    // Animation started
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    // Animation ended, restart it
-                    textOverlay.startAnimation(marqueeAnimation);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    // Animation repeated
-                }
-            });
-
-            textOverlay.setHorizontallyScrolling(true);
-            textOverlay.setSelected(true);
-            // Start the animation
-            textOverlay.startAnimation(marqueeAnimation);*/
-        }
+        }*/
 
 
     }
@@ -2188,7 +2939,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
-        long duration = 15000;
+        long duration = 20000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
@@ -2327,706 +3078,7 @@ public class MainActivity extends AppCompatActivity {
         params.height = desiredHeight;
         view.setLayoutParams(params);
     }
-    @SuppressLint("NotifyDataSetChanged")
-    private void contentLay(List<ContentModel> list) {
-        HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
-        getOrientationDetails = sessionManagement.getOrientDetails();
-        orientation=getOrientationDetails.get(ORIENTATION);
-        HashMap<String, String> getStrechsDetails = new HashMap<String, String>();
-        getStrechsDetails = sessionManagement.getStrechDetails();
-        strech=getStrechsDetails.get(STRECH);
-        slideShowCallCount++;
-        long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
-        ContentModel item = list.get(contentCurrentIndex);
-        parentTopOverlay.setVisibility(GONE);
-        parentLeftOverlay.setVisibility(GONE);
-        parentRightOverlay.setVisibility(GONE);
-        parentBottomOverlay.setVisibility(GONE);
-        Log.e("newDuration","newDuration>>>"+item.getDuration());
-        if (item.getType().equals("image")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            content_image.setImageBitmap(null);
-            content_image.destroyDrawingCache();
-            parentContentImage.setVisibility(VISIBLE);
-
-
-
-            if (orientation.equals("90 degrees")) {
-                if (item.getUrl() != null) {
-                    Glide.with(getApplicationContext())
-                            .load(item.getUrl())
-                            .error(R.drawable.neo_logo)
-                            .transform(new RotateTransformation(90))  // Rotate by 270 degrees
-                            .into(content_image);
-                }
-
-            }
-            else if (orientation.equals("180 degrees")) {
-                Glide.with(getApplicationContext())
-                        .load(item.getUrl())
-                        .error(R.drawable.neo_logo)
-                        .transform(new RotateTransformation(180))  // Rotate by 270 degrees
-                        .into(content_image);
-
-
-            }
-            else if (orientation.equals("270 degrees")) {
-
-                if (item.getUrl() != null) {
-                    Glide.with(getApplicationContext())
-                            .load(item.getUrl())
-                            .error(R.drawable.neo_logo)
-                            .transform(new RotateTransformation(270))  // Rotate by 270 degrees
-                            .into(content_image);
-                }
-
-            }
-            else {
-                if (item.getUrl() != null) {
-                    Glide.with(getApplicationContext())
-                            .load(item.getUrl())
-                            .error(R.drawable.neo_logo)
-                            .transform(new RotateTransformation(0))  // Rotate by 270 degrees
-                            .into(content_image);
-                }
-            }
-
-
-            if (strech.equals("off")){
-                content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            }
-            else{
-                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
-
-            }
-
-            overLays(item);
-            myRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-
-                    contentLay(list);
-                }
-            };
-            handler.postDelayed(myRunnable, duration);
-        }
-        else if(item.getType().equals("video")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            video_progress.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(VISIBLE);
-            video_progress1.setVisibility(VISIBLE);
-
-            String urlString = item.getUrl();
-            Uri uri = Uri.parse(urlString);
-            // Alternatively, you can use Uri's methods to achieve the same
-            String path = uri.getPath();
-            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
-            // Create an instance of DatabaseHelper
-            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
-
-            if (contentCurrentIndex <list.size()) {
-                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
-                if (cursor != null && cursor.moveToFirst()) {
-                    do {
-                        @SuppressLint("Range")
-                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
-                        @SuppressLint("Range")
-                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
-                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
-                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
-                        else{
-                            dbHelper.deleteVideoByTitle(localFileTitle);
-                            // Create an instance of FileDownloader
-                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
-                                @Override
-                                public void onDownloadComplete(String filePath) {
-                                    // Create a VideoItem object
-                                    VideoItem videoItem = new VideoItem();
-                                    videoItem.setTitle(filenameFromUri);
-                                    videoItem.setVideo_url(item.getUrl());
-                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
-                                    // Add the video to the database
-                                    long id = dbHelper.addVideo(videoItem);
-                                    Log.e("Tag","filenameid>>>"+id);
-                                    // Handle download completion
-                                    Log.d("TAG", "File downloaded: " + filePath);
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-                                    // Handle download error
-                                    Log.e("TAG", "Error downloading file: " + errorMessage);
-                                }
-
-                                @Override
-                                public void onDownloadStatus(boolean isDownloading) {
-                                    Log.e("TAG", "downloading status: " + isDownloading);
-                                    downloadStatus=isDownloading;
-                                }
-                            });
-
-                            fileDownloader.execute(item.getUrl());
-
-
-
-                        }
-                    } while (cursor.moveToNext());
-                    cursor.close();
-                }
-                else{
-                    // Create an instance of FileDownloader
-                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
-                        @Override
-                        public void onDownloadComplete(String filePath) {
-                            Log.e("Tag","filePath>>>"+filePath);
-                            // Create a VideoItem object
-                            VideoItem videoItem = new VideoItem();
-                            videoItem.setTitle(filenameFromUri);
-                            videoItem.setVideo_url(item.getUrl());
-                            videoItem.setVideo_path(filePath); // Set local file path after downloading
-                            // Add the video to the database
-                            long id = dbHelper.addVideo(videoItem);
-                            Log.e("Tag","firstfilenameid>>>"+id);
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            // Handle download error
-                            Log.e("TAG", "Error downloading file: " + errorMessage);
-                        }
-
-                        @Override
-                        public void onDownloadStatus(boolean isDownloading) {
-                            Log.e("TAG", "downloading status: " + isDownloading);
-                            downloadStatus=isDownloading;
-                        }
-                    });
-
-                    fileDownloader.execute(item.getUrl());
-
-
-                }
-            }
-
-            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
-
-            // Initialize ExoPlayer instance
-
-            player = new SimpleExoPlayer.Builder(this).build();
-
-            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
-                player.stop(); // Stop the player
-                player.release(); // Release the player
-                player = null; // Set player to null
-            }
-
-            try {
-                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
-
-                if (cursor != null && cursor.moveToFirst()) {
-                    @SuppressLint("Range")
-                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
-                    Log.e("Tag","filename>>>"+localFilePath);
-
-                    if (localFilePath==null){
-                        mediaItem = null;
-                        mediaItem = new MediaItem.Builder()
-                                .setUri(item.getUrl())
-                                .setMimeType(MimeTypes.APPLICATION_MP4)
-                                .build();
-                        Log.e("Tag","Test>>>"+localFilePath);
-                    }else{
-                        mediaItem = null;
-                        mediaItem = new MediaItem.Builder()
-                                .setUri(Uri.parse("file://"+localFilePath))
-                                .setMimeType(MimeTypes.APPLICATION_MP4)
-                                .build();
-                        Log.e("Tag","test>>>1"+localFilePath);
-
-                    }
-
-                    cursor.close();
-                }
-                else{
-                    mediaItem = null;
-                    mediaItem = new MediaItem.Builder()
-                            .setUri(item.getUrl())
-                            .setMimeType(MimeTypes.APPLICATION_MP4)
-                            .build();
-                    Log.e("Tag","test>>>3");
-                }
-
-
-                // Create a MediaSource using ProgressiveMediaSource.Factory
-                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
-                MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(mediaItem);
-                // Assign the media source to the player and start preparing
-                player.setMediaSource(mediaSource);
-                player.setVolume(0f); // Mute the player
-                player.seekTo(0, 0L); // Seek to the beginning
-                player.prepare(); // Transition player to the prepared state
-                // Attach player listener
-                player.addListener(new Player.Listener() {
-                    @Override
-                    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                        if (playbackState == Player.STATE_READY && playWhenReady) {
-                            if (strech.equals("off")){
-                                if (orientation.equals("90 degrees")) {
-                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
-                                }
-                                else if (orientation.equals("180 degrees")) {
-                                    playerView.getVideoSurfaceView().setRotation(180);
-                                    playerView.getVideoSurfaceView().setScaleX(1);
-                                    playerView.getVideoSurfaceView().setScaleY(1);
-                                }
-                                else if (orientation.equals("270 degrees")) {
-                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
-                                }
-                                else {
-                                    playerView.getVideoSurfaceView().setRotation(0);
-                                    playerView.getVideoSurfaceView().setScaleX(1);
-                                    playerView.getVideoSurfaceView().setScaleY(1);
-                                }
-                            }
-                            else{
-                                // Handle size changes if needed
-                                if (orientation.equals("90 degrees")) {
-                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
-                                }
-                                else if (orientation.equals("180 degrees")) {
-                                    playerView.getVideoSurfaceView().setRotation(180);
-                                    playerView.getVideoSurfaceView().setScaleX(1);
-                                    playerView.getVideoSurfaceView().setScaleY(1);
-                                }
-                                else if (orientation.equals("270 degrees")) {
-                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
-                                }
-                                else {
-                                    playerView.getVideoSurfaceView().setRotation(0);
-                                    playerView.getVideoSurfaceView().setScaleX(1);
-                                    playerView.getVideoSurfaceView().setScaleY(1);
-                                }
-
-                            }
-                            overLays(item);
-                            video_progress1.setVisibility(GONE);
-                            playerView.setVisibility(VISIBLE);
-
-
-                        }
-                    }
-                });
-
-                // Start playback
-                player.setPlayWhenReady(true);
-
-                // Attach the player to the PlayerView
-                playerView.setPlayer(player);
-
-                myRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("Tag","videoView>>>5");
-                        playerView.setVisibility(GONE);
-                        videoView.setVisibility(GONE);
-                        parentTopOverlay.setVisibility(GONE);
-                        parentLeftOverlay.setVisibility(GONE);
-                        parentRightOverlay.setVisibility(GONE);
-                        parentBottomOverlay.setVisibility(GONE);
-
-                        releasePlayer();
-                        contentLay(list);
-
-                    }
-                };
-                handler.postDelayed(myRunnable, duration);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Handle exception
-            }
-
-        }
-        /*else if(item.getType().equals("video")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            parentVideoView.setVisibility(VISIBLE);
-            video_progress.setVisibility(VISIBLE);
-
-            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
-
-            if(videoView.getSurfaceTexture()!=null){
-                releaseMediaPlayer();
-                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
-            }
-
-            videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-                @Override
-                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
-                }
-
-                @Override
-                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
-
-                }
-
-                @Override
-                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-                    // Release the MediaPlayer when the TextureView is destroyed
-                    releaseMediaPlayer();
-                    return false;
-                }
-
-                @Override
-                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
-
-                }
-            });
-
-
-        }*/
-        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-
-            webView_lay.setVisibility(VISIBLE);
-
-            iFrameLay(item.getUrl(),list,duration,item);
-
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-
-            webView_lay.setVisibility(VISIBLE);
-
-            clockiFrameLay(item.getUrl(),list,item,duration);
-
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-
-            webView_lay.setVisibility(VISIBLE);
-
-            countDowniFrameLay(item.getUrl(),list,item,duration);
-
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            webView_lay.setVisibility(VISIBLE);
-
-            webUriiFrameLay(item.getUrl(),list,item,duration);
-
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-
-            webView_lay.setVisibility(VISIBLE);
-
-            vimeoiFrameLay(item.getUrl(),list,item,duration);
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(VISIBLE);
-            rssProgrss.setVisibility(VISIBLE);
-            String rssFeedUrl = item.getUrl();
-
-            /*ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
-            rssFeediFrameLay(item.getUrl(),list,item,duration);
-
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
-            parentContentImage.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            terminalProgress.setVisibility(GONE);
-            display_lay.setVisibility(GONE);
-            terminal_lay.setVisibility(VISIBLE);
-            terminalLogo.setVisibility(VISIBLE);
-            txtTerminal.setVisibility(VISIBLE);
-            /*ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
-
-            if (strech.equals("off")){
-                if (orientation.equals("90 degrees")) {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
-
-                }
-                else if (orientation.equals("180 degrees")) {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    terminal_lay.setRotation(180);
-
-                }
-                else if (orientation.equals("270 degrees")) {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
-                }
-                else {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    terminal_lay.setRotation(0);
-
-                }
-            }
-            else{
-                // Handle size changes if needed
-                if (orientation.equals("90 degrees")) {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
-                }
-                else if (orientation.equals("180 degrees")) {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    terminal_lay.setRotation(180);
-
-                }
-                else if (orientation.equals("270 degrees")) {
-                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
-                }
-                else {
-                    terminal_lay.setScaleX(1);
-                    terminal_lay.setScaleY(1);
-                    terminal_lay.setRotation(0);
-
-                }
-
-
-            }
-
-            Glide.with(getApplicationContext())
-                    .load(item.getLogo())
-                    .transform(new RotateTransformation(0))
-                    .error(R.drawable.neo_logo)
-                    .into(terminalLogo);
-
-
-            txtTerminal.setText(item.getMain_text_translation());
-
-
-
-            String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
-
-            // Parse the cleaned JSON array string into a JSONArray
-            JSONArray app_queue_departmentsArray = null;
-            try {
-                app_queue_departmentsArray = new JSONArray(cleanedJsonString);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Log.e("overlays","jsonArray>>>"+app_queue_departmentsArray);
-            // Now you can iterate through the elements of the array
-            terminalList.clear();
-            for (int i = 0; i < app_queue_departmentsArray.length(); i++) {
-                // Access each element using jsonArray.getString(i)
-                try {
-                    String departmentName = app_queue_departmentsArray.getString(i);
-                    //List<TerminalModel> items = new ArrayList<>();
-                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName, item.getApp_id()));
-                    Log.e("overlays","terminalList>>>"+terminalList);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                // Do something with the departmentName...
-            }
-            terminalAdapter = new TerminalAdapter(this, terminalList);
-            terminalView.setAdapter(terminalAdapter);
-            terminalAdapter.notifyDataSetChanged();
-
-            overLays(item);
-            myRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    contentLay(list);
-                }
-            };
-            handler.postDelayed(myRunnable, duration);
-        }
-        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
-            terminalLogo.setVisibility(GONE);
-            txtTerminal.setVisibility(GONE);
-            terminal_lay.setVisibility(GONE);
-            parentVideoView.setVisibility(GONE);
-            parentVlcVideoView.setVisibility(GONE);
-            parentContentRssFeed.setVisibility(GONE);
-            webView_lay.setVisibility(GONE);
-            parentContentImage.setVisibility(GONE);
-            display_lay.setVisibility(VISIBLE);
-            clearTimeout4();
-            updateTime();
-            handler4.postDelayed(timeUpdater, 1000);
-
-           /* ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
-            if (strech.equals("off")){
-                if (orientation.equals("90 degrees")) {
-                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
-
-                }
-                else if (orientation.equals("180 degrees")) {
-                    display_lay.setScaleX(1);
-                    display_lay.setScaleY(1);
-                    display_lay.setRotation(180);
-
-                }
-                else if (orientation.equals("270 degrees")) {
-                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
-
-                }
-                else {
-                    display_lay.setScaleX(1);
-                    display_lay.setScaleY(1);
-                    display_lay.setRotation(0);
-
-                }
-            }
-            else{
-                // Handle size changes if needed
-                if (orientation.equals("90 degrees")) {
-                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
-                }
-                else if (orientation.equals("180 degrees")) {
-                    display_lay.setScaleX(1);
-                    display_lay.setScaleY(1);
-                    display_lay.setRotation(180);
-                }
-                else if (orientation.equals("270 degrees")) {
-                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
-                }
-                else {
-                    display_lay.setScaleX(1);
-                    display_lay.setScaleY(1);
-                    display_lay.setRotation(0);
-                }
-
-
-            }
-
-            initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
-
-            if(item.getShow_news_channel().equals("2")){
-                displayOverlay.setVisibility(VISIBLE);
-            }else{
-                displayOverlay.setVisibility(GONE);
-            }
-
-            displayOverLays(item);
-            myRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    contentLay(list);
-                }
-            };
-            handler.postDelayed(myRunnable, duration);
-        }
-
-
-        contentCurrentIndex++;
-        if (contentCurrentIndex >= list.size()) {
-            contentCurrentIndex = 0;
-        }
-        Log.e("newDuration","duration>>>"+duration);
-        Log.e("newDuration","newDuration>>>"+newDuration);
-
-    }
 
 
     private Runnable timeUpdater = new Runnable() {
