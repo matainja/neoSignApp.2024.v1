@@ -48,6 +48,8 @@ public class FileDownloader extends AsyncTask<String, Void, String> {
             Random random = new Random();
             int randomNumber = random.nextInt(100);
 
+            //File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
             File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
             if (directory != null) {
                 if (!directory.exists()) {
