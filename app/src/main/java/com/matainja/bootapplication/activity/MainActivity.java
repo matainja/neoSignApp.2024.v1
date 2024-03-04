@@ -13,6 +13,8 @@ import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -1462,6 +1464,8 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(VISIBLE);
             video_progress1.setVisibility(VISIBLE);
 
+            overLays(item);
+
             String urlString = item.getUrl();
             Uri uri = Uri.parse(urlString);
             // Alternatively, you can use Uri's methods to achieve the same
@@ -1655,7 +1659,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                             }
-                            overLays(item);
+                            //overLays(item);
                             video_progress1.setVisibility(GONE);
                             playerView.setVisibility(VISIBLE);
 
@@ -1752,7 +1756,7 @@ public class MainActivity extends AppCompatActivity {
             display_lay.setVisibility(GONE);
 
             webView_lay.setVisibility(VISIBLE);
-
+            overLays(item);
             iFrameLay(item.getUrl(),list,duration,item);
 
         }
@@ -1769,6 +1773,8 @@ public class MainActivity extends AppCompatActivity {
 
             webView_lay.setVisibility(VISIBLE);
 
+            overLays(item);
+
             clockiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1784,6 +1790,8 @@ public class MainActivity extends AppCompatActivity {
 
             webView_lay.setVisibility(VISIBLE);
 
+            overLays(item);
+
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1797,7 +1805,7 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
             webView_lay.setVisibility(VISIBLE);
-
+            overLays(item);
             webUriiFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -1812,7 +1820,7 @@ public class MainActivity extends AppCompatActivity {
             display_lay.setVisibility(GONE);
 
             webView_lay.setVisibility(VISIBLE);
-
+            overLays(item);
             vimeoiFrameLay(item.getUrl(),list,item,duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
@@ -1826,6 +1834,8 @@ public class MainActivity extends AppCompatActivity {
             display_lay.setVisibility(GONE);
             parentContentRssFeed.setVisibility(VISIBLE);
             rssProgrss.setVisibility(VISIBLE);
+            overLays(item);
+
             String rssFeedUrl = item.getUrl();
 
             /*ViewGroup.MarginLayoutParams params1 =
@@ -2838,21 +2848,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void textAnimation(TextView textOverlay, String laysContent) {
+        final int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        final int textWidth = (int) textOverlay.getPaint().measureText(textOverlay.getText().toString());
 
-        marqueeAnimation = new TranslateAnimation(
+        float speedFactor = 0.1f; // Adjust this value to change animation speed
+
+        int animationDuration = (int) ((screenWidth + textWidth) / speedFactor);
+
+        Animation animation = new TranslateAnimation(screenWidth, -textWidth, 0, 0);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setRepeatCount(Animation.INFINITE);
+        animation.setRepeatMode(Animation.RESTART);
+        animation.setDuration(animationDuration);
+        textOverlay.startAnimation(animation);
+
+
+
+
+        /*marqueeAnimation = new TranslateAnimation(
                 Animation.RELATIVE_TO_PARENT, 1f,
                 Animation.RELATIVE_TO_PARENT, -1f,
                 Animation.RELATIVE_TO_PARENT, 0f,
                 Animation.RELATIVE_TO_PARENT, 0f);
         marqueeAnimation.setInterpolator(new LinearInterpolator());
-        //marqueeAnimation.setRepeatCount(Animation.INFINITE);
+        marqueeAnimation.setRepeatCount(Animation.INFINITE);
         marqueeAnimation.setRepeatMode(Animation.RESTART);
         marqueeAnimation.setDuration(20000); // Adjust the duration as needed
         textOverlay.setHorizontallyScrolling(true);
         textOverlay.setSelected(true);
-
         // Start the animation
-        textOverlay.startAnimation(marqueeAnimation);
+        textOverlay.startAnimation(marqueeAnimation);*/
 
 
 
@@ -3684,7 +3709,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                overLays(item);
+                //overLays(item);
                 progressBar.setVisibility(View.GONE);
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
@@ -3933,7 +3958,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                overLays(item);
+                //overLays(item);
                 progressBar.setVisibility(View.GONE);
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
@@ -4192,7 +4217,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                overLays(item);
+                //overLays(item);
                 progressBar.setVisibility(View.GONE);
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
@@ -4501,7 +4526,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
 
-                overLays(item);
+                //overLays(item);
                 progressBar.setVisibility(View.GONE);
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
