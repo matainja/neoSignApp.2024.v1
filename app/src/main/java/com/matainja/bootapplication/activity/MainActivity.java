@@ -2845,49 +2845,11 @@ public class MainActivity extends AppCompatActivity {
                 Animation.RELATIVE_TO_PARENT, 0f,
                 Animation.RELATIVE_TO_PARENT, 0f);
         marqueeAnimation.setInterpolator(new LinearInterpolator());
-        marqueeAnimation.setRepeatCount(Animation.INFINITE);
+        //marqueeAnimation.setRepeatCount(Animation.INFINITE);
         marqueeAnimation.setRepeatMode(Animation.RESTART);
         marqueeAnimation.setDuration(20000); // Adjust the duration as needed
         textOverlay.setHorizontallyScrolling(true);
         textOverlay.setSelected(true);
-        marqueeAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                textOverlay.startAnimation(marqueeAnimation1);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-
-
-
-        marqueeAnimation1 = new TranslateAnimation(
-                Animation.RELATIVE_TO_PARENT, 1f,
-                Animation.RELATIVE_TO_PARENT, -1f,
-                Animation.RELATIVE_TO_PARENT, 0f,
-                Animation.RELATIVE_TO_PARENT, 0f);
-        marqueeAnimation1.setInterpolator(new LinearInterpolator());
-        marqueeAnimation1.setRepeatCount(Animation.INFINITE);
-        marqueeAnimation1.setRepeatMode(Animation.RESTART);
-        marqueeAnimation1.setDuration(20000); // Adjust the duration as needed
-        textOverlay.setHorizontallyScrolling(true);
-        textOverlay.setSelected(true);
-        marqueeAnimation1.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                textOverlay.startAnimation(marqueeAnimation);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
 
         // Start the animation
         textOverlay.startAnimation(marqueeAnimation);
