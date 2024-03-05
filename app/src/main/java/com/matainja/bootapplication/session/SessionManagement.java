@@ -4,10 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.matainja.bootapplication.Model.ContentModel;
+import com.matainja.bootapplication.Model.RSSModel;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -84,6 +83,14 @@ public class SessionManagement {
     public void createContentDataSession( List<ContentModel> slideItems ){
         editor.putString("slideItem", new Gson().toJson(slideItems)).apply();
     }
+
+    public void createContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
+        editor.putString(newString, new Gson().toJson(rssContent)).apply();
+    }
+    public void createdisplayContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
+        editor.putString(newString, new Gson().toJson(rssContent)).apply();
+    }
+
     /**
      * Get stored session data
      **/
@@ -134,5 +141,28 @@ public class SessionManagement {
         user.put("slideItem", pref.getString("slideItem",""));
         // return user
         return user;
+    }
+    public HashMap<String, String> getContentRssFeedItemDetails(String newString){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(newString, pref.getString(newString,""));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getdisplayContentRssFeedItemDetails(String newString){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put(newString, pref.getString(newString,""));
+        // return user
+        return user;
+    }
+
+    //Session clear
+    public void clearSession(){
+        editor.remove(ORIENTATION);
+        editor.remove(STRECH);
+        editor.remove("slideItem");
+        editor.remove("");
+        editor.remove("");
+    // Apply the changes
+        editor.apply();
     }
 }

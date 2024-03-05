@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+       /* File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
         if (directory.exists()) {
             File[] files = directory.listFiles();
             if (files != null) {
@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             Log.d("TAG", "Directory doesn't exist");
-        }
+        }*/
         initSession();
 
 
@@ -1159,6 +1159,7 @@ public class MainActivity extends AppCompatActivity {
                                     displayOverlayRssSlideShowCallCount=0;
 
 
+                                    //sessionManagement.clearSession();
 
                                     File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
                                     if (directory.exists()) {
@@ -2233,63 +2234,87 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
-                StringRequest getRequest = new StringRequest(Request.Method.GET,
-                        apiUrlWithParams,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                Log.e("TAG","response>>>"+response);
-                                rssProgrss.setVisibility(GONE);
-                                try {
-                                    JSONArray jsonArray = new JSONArray(response);
-                                    if (jsonArray.length()>0){
-                                        overlaysRssList.clear();
-                                        for(int i=0;i<jsonArray.length();i++){
-                                            JSONObject dataObject = jsonArray.getJSONObject(i);
-                                            String title = dataObject.getString("title");
-                                            String description = dataObject.getString("description");
+                if(isNetworkAvailable()){
+                    StringRequest getRequest = new StringRequest(Request.Method.GET,
+                            apiUrlWithParams,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Log.e("TAG","response>>>"+response);
+                                    rssProgrss.setVisibility(GONE);
+                                    try {
+                                        JSONArray jsonArray = new JSONArray(response);
+                                        if (jsonArray.length()>0){
+                                            overlaysRssList.clear();
+                                            for(int i=0;i<jsonArray.length();i++){
+                                                JSONObject dataObject = jsonArray.getJSONObject(i);
+                                                String title = dataObject.getString("title");
+                                                String description = dataObject.getString("description");
 
-                                            String date = dataObject.getString("date");
-                                            String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                            Log.e("TAG","qr_code>>>"+qr_code);
-                                            String photo= dataObject.getString("photo");
-                                            RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                            overlaysRssList.add(rssModel);
+                                                String date = dataObject.getString("date");
+                                                String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                                Log.e("TAG","qr_code>>>"+qr_code);
+                                                String photo= dataObject.getString("photo");
+                                                RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                                overlaysRssList.add(rssModel);
+                                            }
+
+                                            sessionManagement.createContentRssFeedDataSession(overlaysRssList,newString);
                                         }
-                                    }
-                                    if (overlayRssSlideShowCallCount==0){
-                                        clearTimeout2();
-                                        overlaysRssContentCurrentIndex=0;
-                                        overlayRssContentLay(overlaysRssList,item);
-                                        firstRssFeedLaysdataCount= overlaysRssList.size();
+                                        if (overlayRssSlideShowCallCount==0){
+                                            clearTimeout2();
+                                            overlaysRssContentCurrentIndex=0;
+                                            overlayRssContentLay(overlaysRssList,item);
+                                            firstRssFeedLaysdataCount= overlaysRssList.size();
+                                        }
+
+                                        int newDataCount=overlaysRssList.size();
+                                        if(firstRssFeedLaysdataCount != newDataCount){
+                                            overlayRssSlideShowCallCount=0;
+                                        }
+
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
                                     }
 
-                                    int newDataCount=overlaysRssList.size();
-                                    if(firstRssFeedLaysdataCount != newDataCount){
-                                        overlayRssSlideShowCallCount=0;
-                                    }
 
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
                                 }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    error.printStackTrace();
+                                    Log.e("Error", "-----VollyError----: "+error.getMessage());
+                                }
+                            });
+                    RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                    requestQueue.add(getRequest);
+                    getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                    );
+                }
+                else{
+                    HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
+                    getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(newString);
+                    List<RSSModel> list = new ArrayList<>();
+                    list=new Gson().fromJson(getrsscontentDetails.get(newString), new TypeToken<List<RSSModel>>(){}.getType());
+                    rssProgrss.setVisibility(GONE);
+                    if (overlayRssSlideShowCallCount==0){
+                        clearTimeout2();
+                        overlaysRssContentCurrentIndex=0;
+                        overlayRssContentLay(list,item);
+                        firstRssFeedLaysdataCount= list.size();
+                    }
+
+                    int newDataCount=list.size();
+                    if(firstRssFeedLaysdataCount != newDataCount){
+                        overlayRssSlideShowCallCount=0;
+                    }
+                }
 
 
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                error.printStackTrace();
-                                Log.e("Error", "-----VollyError----: "+error.getMessage());
-                            }
-                        });
-                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-                requestQueue.add(getRequest);
-                getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-                );
 
 
             }
@@ -2583,63 +2608,85 @@ public class MainActivity extends AppCompatActivity {
                      }
                      Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
-                     StringRequest getRequest = new StringRequest(Request.Method.GET,
-                             apiUrlWithParams,
-                             new Response.Listener<String>() {
-                                 @Override
-                                 public void onResponse(String response) {
-                                     Log.e("TAG","response>>>"+response);
-                                     rssProgrss.setVisibility(GONE);
-                                     try {
-                                         JSONArray jsonArray = new JSONArray(response);
-                                         if (jsonArray.length()>0){
-                                             overlaysRssList.clear();
-                                             for(int i=0;i<jsonArray.length();i++){
-                                                 JSONObject dataObject = jsonArray.getJSONObject(i);
-                                                 String title = dataObject.getString("title");
-                                                 String description = dataObject.getString("description");
+                     if(isNetworkAvailable()){
+                         StringRequest getRequest = new StringRequest(Request.Method.GET,
+                                 apiUrlWithParams,
+                                 new Response.Listener<String>() {
+                                     @Override
+                                     public void onResponse(String response) {
+                                         Log.e("TAG","response>>>"+response);
+                                         rssProgrss.setVisibility(GONE);
+                                         try {
+                                             JSONArray jsonArray = new JSONArray(response);
+                                             if (jsonArray.length()>0){
+                                                 overlaysRssList.clear();
+                                                 for(int i=0;i<jsonArray.length();i++){
+                                                     JSONObject dataObject = jsonArray.getJSONObject(i);
+                                                     String title = dataObject.getString("title");
+                                                     String description = dataObject.getString("description");
 
-                                                 String date = dataObject.getString("date");
-                                                 String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                                 Log.e("TAG","qr_code>>>"+qr_code);
-                                                 String photo= dataObject.getString("photo");
-                                                 RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                                 overlaysRssList.add(rssModel);
+                                                     String date = dataObject.getString("date");
+                                                     String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                                     Log.e("TAG","qr_code>>>"+qr_code);
+                                                     String photo= dataObject.getString("photo");
+                                                     RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                                     overlaysRssList.add(rssModel);
+                                                 }
+                                                 sessionManagement.createContentRssFeedDataSession(overlaysRssList,newString);
                                              }
-                                         }
-                                         if (overlayRssSlideShowCallCount==0){
-                                             clearTimeout2();
-                                             overlaysRssContentCurrentIndex=0;
-                                             overlayRssContentLay(overlaysRssList,item);
-                                             firstRssFeedLaysdataCount= overlaysRssList.size();
+                                             if (overlayRssSlideShowCallCount==0){
+                                                 clearTimeout2();
+                                                 overlaysRssContentCurrentIndex=0;
+                                                 overlayRssContentLay(overlaysRssList,item);
+                                                 firstRssFeedLaysdataCount= overlaysRssList.size();
+                                             }
+
+                                             int newDataCount=overlaysRssList.size();
+                                             if(firstRssFeedLaysdataCount != newDataCount){
+                                                 overlayRssSlideShowCallCount=0;
+                                             }
+
+
+                                         } catch (JSONException e) {
+                                             e.printStackTrace();
                                          }
 
-                                         int newDataCount=overlaysRssList.size();
-                                         if(firstRssFeedLaysdataCount != newDataCount){
-                                             overlayRssSlideShowCallCount=0;
-                                         }
 
-
-                                     } catch (JSONException e) {
-                                         e.printStackTrace();
                                      }
+                                 },
+                                 new Response.ErrorListener() {
+                                     @Override
+                                     public void onErrorResponse(VolleyError error) {
+                                         error.printStackTrace();
+                                         Log.e("Error", "-----VollyError----: "+error.getMessage());
+                                     }
+                                 });
+                         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                         requestQueue.add(getRequest);
+                         getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                         );
+                     }
+                     else{
+                         HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
+                         getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(newString);
+                         List<RSSModel> list = new ArrayList<>();
+                         list=new Gson().fromJson(getrsscontentDetails.get(newString), new TypeToken<List<RSSModel>>(){}.getType());
+                         if (overlayRssSlideShowCallCount==0){
+                             clearTimeout2();
+                             overlaysRssContentCurrentIndex=0;
+                             overlayRssContentLay(list,item);
+                             firstRssFeedLaysdataCount= list.size();
+                         }
+
+                         int newDataCount=list.size();
+                         if(firstRssFeedLaysdataCount != newDataCount){
+                             overlayRssSlideShowCallCount=0;
+                         }
+                     }
 
 
-                                 }
-                             },
-                             new Response.ErrorListener() {
-                                 @Override
-                                 public void onErrorResponse(VolleyError error) {
-                                     error.printStackTrace();
-                                     Log.e("Error", "-----VollyError----: "+error.getMessage());
-                                 }
-                             });
-                     RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-                     requestQueue.add(getRequest);
-                     getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-                     );
 
 
                  }
@@ -2787,63 +2834,87 @@ public class MainActivity extends AppCompatActivity {
             }
             Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
-            StringRequest getRequest = new StringRequest(Request.Method.GET,
-                    apiUrlWithParams,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.e("TAG","response>>>"+response);
-                            rssProgrss.setVisibility(GONE);
-                            try {
-                                JSONArray jsonArray = new JSONArray(response);
-                                if (jsonArray.length()>0){
-                                    displayOverlaysRssList.clear();
-                                    for(int i=0;i<jsonArray.length();i++){
-                                        JSONObject dataObject = jsonArray.getJSONObject(i);
-                                        String title = dataObject.getString("title");
-                                        String description = dataObject.getString("description");
+            if(isNetworkAvailable()){
+                StringRequest getRequest = new StringRequest(Request.Method.GET,
+                        apiUrlWithParams,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.e("TAG","response>>>"+response);
+                                rssProgrss.setVisibility(GONE);
+                                try {
+                                    JSONArray jsonArray = new JSONArray(response);
+                                    if (jsonArray.length()>0){
+                                        displayOverlaysRssList.clear();
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject dataObject = jsonArray.getJSONObject(i);
+                                            String title = dataObject.getString("title");
+                                            String description = dataObject.getString("description");
 
-                                        String date = dataObject.getString("date");
-                                        String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                        Log.e("TAG","qr_code>>>"+qr_code);
-                                        String photo= dataObject.getString("photo");
-                                        RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                        displayOverlaysRssList.add(rssModel);
+                                            String date = dataObject.getString("date");
+                                            String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                            Log.e("TAG","qr_code>>>"+qr_code);
+                                            String photo= dataObject.getString("photo");
+                                            RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                            displayOverlaysRssList.add(rssModel);
+                                        }
+                                        sessionManagement.createdisplayContentRssFeedDataSession(displayOverlaysRssList,overlayContent);
                                     }
-                                }
-                                if (displayOverlayRssSlideShowCallCount==0){
-                                    clearTimeout3();
-                                    displayOverlaysRssContentCurrentIndex=0;
-                                    displayOverlayRssContentLay(displayOverlaysRssList,item);
-                                    displayFirstRssFeedLaysdataCount= displayOverlaysRssList.size();
+                                    if (displayOverlayRssSlideShowCallCount==0){
+                                        clearTimeout3();
+                                        displayOverlaysRssContentCurrentIndex=0;
+                                        displayOverlayRssContentLay(displayOverlaysRssList,item);
+                                        displayFirstRssFeedLaysdataCount= displayOverlaysRssList.size();
+                                    }
+
+                                    int newDataCount=displayOverlaysRssList.size();
+                                    if(displayFirstRssFeedLaysdataCount != newDataCount){
+                                        displayOverlayRssSlideShowCallCount=0;
+                                    }
+
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
 
-                                int newDataCount=displayOverlaysRssList.size();
-                                if(displayFirstRssFeedLaysdataCount != newDataCount){
-                                    displayOverlayRssSlideShowCallCount=0;
-                                }
 
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
                             }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                error.printStackTrace();
+                                Log.e("Error", "-----VollyError----: "+error.getMessage());
+                            }
+                        });
+                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                requestQueue.add(getRequest);
+                getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                );
+            }
+            else{
+
+                HashMap<String, String> getdisplayrsscontentDetails = new HashMap<String, String>();
+                getdisplayrsscontentDetails = sessionManagement.getdisplayContentRssFeedItemDetails(overlayContent);
+                List<RSSModel> list = new ArrayList<>();
+                list=new Gson().fromJson(getdisplayrsscontentDetails.get(overlayContent), new TypeToken<List<RSSModel>>(){}.getType());
+                rssProgrss.setVisibility(GONE);
+                if (displayOverlayRssSlideShowCallCount==0){
+                    clearTimeout3();
+                    displayOverlaysRssContentCurrentIndex=0;
+                    displayOverlayRssContentLay(list,item);
+                    displayFirstRssFeedLaysdataCount= list.size();
+                }
+
+                int newDataCount=list.size();
+                if(displayFirstRssFeedLaysdataCount != newDataCount){
+                    displayOverlayRssSlideShowCallCount=0;
+                }
+            }
 
 
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                            Log.e("Error", "-----VollyError----: "+error.getMessage());
-                        }
-                    });
-            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-            requestQueue.add(getRequest);
-            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-            );
 
         }
     }
@@ -2926,7 +2997,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
-        long duration = 20000;
+        long duration = 60000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
@@ -3001,6 +3072,27 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+        else{
+            if(contentModel.getLaysType().equals("Right")){
+                textRightOverlay.setText("No Data Available");
+                textAnimation(textRightOverlay, "No Data Available");
+            }
+            else if(contentModel.getLaysType().equals("Left")){
+                textLeftOverlay.setText("No Data Available");
+                textAnimation(textLeftOverlay, "No Data Available");
+
+            }
+            else if(contentModel.getLaysType().equals("Top")){
+                textTopOverlay.setText("No Data Available");
+                textAnimation(textTopOverlay, "No Data Available");
+
+            }
+            else if(contentModel.getLaysType().equals("Bottom")){
+                textBottomOverlay.setText("No Data Available");
+                textAnimation(textBottomOverlay, "No Data Available");
+            }
+
+        }
 
         myRunnable2 = new Runnable() {
             @Override
@@ -3014,7 +3106,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("DefaultLocale")
     private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         displayOverlayRssSlideShowCallCount++;
-        long duration = 240000;
+        long duration = 60000;
 
         if (overlaysRssList.size()>0){
             RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
@@ -3025,6 +3117,10 @@ public class MainActivity extends AppCompatActivity {
 
             textdisplayOverlay.setText(Html.fromHtml(ovelaytext));
             textAnimation(textdisplayOverlay, ovelaytext);
+        }
+        else{
+            textdisplayOverlay.setText("No Data Available");
+            textAnimation(textdisplayOverlay, "No Data Available");
         }
 
         displayOverlaysRssContentCurrentIndex++;
