@@ -2,6 +2,7 @@ package com.matainja.bootapplication.session;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.matainja.bootapplication.Model.ContentModel;
@@ -85,10 +86,12 @@ public class SessionManagement {
     }
 
     public void createContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
-        editor.putString(newString, new Gson().toJson(rssContent)).apply();
+        Log.e("Tag","sesionSave>>>"+newString);
+
+        editor.putString("rssfeed"+newString, new Gson().toJson(rssContent)).apply();
     }
     public void createdisplayContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
-        editor.putString(newString, new Gson().toJson(rssContent)).apply();
+        editor.putString("displayrssfeed", new Gson().toJson(rssContent)).apply();
     }
 
     /**
@@ -144,25 +147,31 @@ public class SessionManagement {
     }
     public HashMap<String, String> getContentRssFeedItemDetails(String newString){
         HashMap<String, String> user = new HashMap<String, String>();
-        user.put(newString, pref.getString(newString,""));
+        user.put("rssfeed"+newString, pref.getString("rssfeed"+newString,""));
         // return user
         return user;
     }
     public HashMap<String, String> getdisplayContentRssFeedItemDetails(String newString){
         HashMap<String, String> user = new HashMap<String, String>();
-        user.put(newString, pref.getString(newString,""));
+        user.put("displayrssfeed", pref.getString("displayrssfeed",""));
         // return user
         return user;
     }
 
     //Session clear
     public void clearSession(){
+        Log.e("Tag","remove>>>2");
         editor.remove(ORIENTATION);
         editor.remove(STRECH);
         editor.remove("slideItem");
-        editor.remove("");
-        editor.remove("");
+        editor.remove("displayrssfeed");
     // Apply the changes
+        editor.apply();
+    }
+    public void clearRssFeedOverlaysSession(String laysId){
+        Log.e("Tag","remove>>>1");
+        editor.remove("rssfeed"+laysId);
+        // Apply the changes
         editor.apply();
     }
 }

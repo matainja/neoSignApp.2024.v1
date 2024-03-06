@@ -471,8 +471,27 @@
                     android:background="@android:color/black"
                     android:visibility="visible"
                     android:layout_alignParentBottom="true">
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_centerVertical="true"
+                        android:gravity="center_vertical"
+                        android:scrollbars="none">
 
-                    <TextView
+                        <TextView
+                            android:text=""
+                            android:id="@+id/textdisplayOverlay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="marquee"
+                            android:marqueeRepeatLimit="marquee_forever"
+                            android:scrollHorizontally="true"
+                            android:singleLine="true" />
+
+                    </HorizontalScrollView>
+
+                   <!-- <TextView
                         android:text=""
                         android:id="@+id/textdisplayOverlay"
                         android:layout_width="match_parent"
@@ -482,7 +501,7 @@
                         android:fadeScrollbars="false"
                         android:scrollHorizontally="true"
                         android:layout_centerVertical="true"
-                        android:singleLine="true" />
+                        android:singleLine="true" />-->
                 </RelativeLayout>
 
             </LinearLayout>

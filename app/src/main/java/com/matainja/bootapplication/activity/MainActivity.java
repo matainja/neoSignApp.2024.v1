@@ -1041,6 +1041,33 @@ public class MainActivity extends AppCompatActivity {
                                 pairingCode.setText("Paired");
                                 JSONArray dataArray = content.getJSONArray("data");
                                 if(dataArray.length()>0){
+                                    File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+                                    if (directory.exists()) {
+                                        File[] files = directory.listFiles();
+                                        if (files != null) {
+                                            for (File file : files) {
+                                                boolean isDeleted = file.delete();
+                                                if (!isDeleted) {
+                                                    Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
+                                                }
+                                            }
+                                        }
+                                        boolean isDeleted = directory.delete();
+                                        if (isDeleted) {
+                                            Log.d("TAG", "Directory deleted successfully");
+                                        } else {
+                                            Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
+                                        }
+                                    } else {
+                                        Log.d("TAG", "Directory doesn't exist");
+                                    }
+
+                                    // Create an instance of DatabaseHelper
+                                    DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+                                    dbHelper.deleteAllVideos();
+
+
+
                                     parentPairing.setVisibility(GONE);
                                     pairProgress.setVisibility(GONE);
                                     newSlideItems.clear();
@@ -1090,7 +1117,7 @@ public class MainActivity extends AppCompatActivity {
                                             laysContent=overlays.getString("content");
                                             laysRssInfo=overlays.getString("rssinfo");
                                             laysDeleted=overlays.getString("is_deleted");
-
+                                            sessionManagement.clearRssFeedOverlaysSession(laysId);
                                             Log.e("overlays","laysContentType>>>"+laysContentType);
                                         }
 
@@ -1145,6 +1172,7 @@ public class MainActivity extends AppCompatActivity {
                                                 show_time,show_history,show_specific_screen,show_news_channel,screen_id,
                                                 feed_url,text
                                         ));
+                                        sessionManagement.clearSession();
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
 
@@ -1157,34 +1185,6 @@ public class MainActivity extends AppCompatActivity {
                                     rssSlideShowCallCount=0;
                                     overlayRssSlideShowCallCount=0;
                                     displayOverlayRssSlideShowCallCount=0;
-
-
-                                    //sessionManagement.clearSession();
-
-                                    File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-                                    if (directory.exists()) {
-                                        File[] files = directory.listFiles();
-                                        if (files != null) {
-                                            for (File file : files) {
-                                                boolean isDeleted = file.delete();
-                                                if (!isDeleted) {
-                                                    Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
-                                                }
-                                            }
-                                        }
-                                        boolean isDeleted = directory.delete();
-                                        if (isDeleted) {
-                                            Log.d("TAG", "Directory deleted successfully");
-                                        } else {
-                                            Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
-                                        }
-                                    } else {
-                                        Log.d("TAG", "Directory doesn't exist");
-                                    }
-
-                                    // Create an instance of DatabaseHelper
-                                    DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
-                                    dbHelper.deleteAllVideos();
 
                                     contentLay(newSlideItems);
 
@@ -2259,19 +2259,24 @@ public class MainActivity extends AppCompatActivity {
                                                 overlaysRssList.add(rssModel);
                                             }
 
-                                            sessionManagement.createContentRssFeedDataSession(overlaysRssList,newString);
-                                        }
-                                        if (overlayRssSlideShowCallCount==0){
-                                            clearTimeout2();
-                                            overlaysRssContentCurrentIndex=0;
-                                            overlayRssContentLay(overlaysRssList,item);
-                                            firstRssFeedLaysdataCount= overlaysRssList.size();
+                                            sessionManagement.createContentRssFeedDataSession(overlaysRssList,item.getLaysId());
                                         }
 
-                                        int newDataCount=overlaysRssList.size();
-                                        if(firstRssFeedLaysdataCount != newDataCount){
-                                            overlayRssSlideShowCallCount=0;
+                                        if(overlaysRssList==null){}
+                                        else{
+                                            if (overlayRssSlideShowCallCount==0){
+                                                clearTimeout2();
+                                                overlaysRssContentCurrentIndex=0;
+                                                overlayRssContentLay(overlaysRssList,item);
+                                                firstRssFeedLaysdataCount= overlaysRssList.size();
+                                            }
+
+                                            int newDataCount=overlaysRssList.size();
+                                            if(firstRssFeedLaysdataCount != newDataCount){
+                                                overlayRssSlideShowCallCount=0;
+                                            }
                                         }
+
 
 
                                     } catch (JSONException e) {
@@ -2296,22 +2301,29 @@ public class MainActivity extends AppCompatActivity {
                     );
                 }
                 else{
+                    String layId=item.getLaysId();
+                    Log.e("TAG","apiUrlWithParamsLays>>>"+layId);
                     HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
-                    getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(newString);
+                    getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(layId);
                     List<RSSModel> list = new ArrayList<>();
-                    list=new Gson().fromJson(getrsscontentDetails.get(newString), new TypeToken<List<RSSModel>>(){}.getType());
-                    rssProgrss.setVisibility(GONE);
-                    if (overlayRssSlideShowCallCount==0){
-                        clearTimeout2();
-                        overlaysRssContentCurrentIndex=0;
-                        overlayRssContentLay(list,item);
-                        firstRssFeedLaysdataCount= list.size();
+                    list=new Gson().fromJson(getrsscontentDetails.get("rssfeed"+layId), new TypeToken<List<RSSModel>>(){}.getType());
+                    Log.e("TAG","apiUrlWithParamsLayslist>>>"+list);
+                    if(list==null){}
+                    else{
+                        rssProgrss.setVisibility(GONE);
+                        if (overlayRssSlideShowCallCount==0){
+                            clearTimeout2();
+                            overlaysRssContentCurrentIndex=0;
+                            overlayRssContentLay(list,item);
+                            firstRssFeedLaysdataCount= list.size();
+                        }
+
+                        int newDataCount=list.size();
+                        if(firstRssFeedLaysdataCount != newDataCount){
+                            overlayRssSlideShowCallCount=0;
+                        }
                     }
 
-                    int newDataCount=list.size();
-                    if(firstRssFeedLaysdataCount != newDataCount){
-                        overlayRssSlideShowCallCount=0;
-                    }
                 }
 
 
@@ -2632,19 +2644,24 @@ public class MainActivity extends AppCompatActivity {
                                                      RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
                                                      overlaysRssList.add(rssModel);
                                                  }
-                                                 sessionManagement.createContentRssFeedDataSession(overlaysRssList,newString);
-                                             }
-                                             if (overlayRssSlideShowCallCount==0){
-                                                 clearTimeout2();
-                                                 overlaysRssContentCurrentIndex=0;
-                                                 overlayRssContentLay(overlaysRssList,item);
-                                                 firstRssFeedLaysdataCount= overlaysRssList.size();
+                                                 sessionManagement.createContentRssFeedDataSession(overlaysRssList,item.getLaysId());
                                              }
 
-                                             int newDataCount=overlaysRssList.size();
-                                             if(firstRssFeedLaysdataCount != newDataCount){
-                                                 overlayRssSlideShowCallCount=0;
+                                             if(overlaysRssList==null){}
+                                             else{
+                                                 if (overlayRssSlideShowCallCount==0){
+                                                     clearTimeout2();
+                                                     overlaysRssContentCurrentIndex=0;
+                                                     overlayRssContentLay(overlaysRssList,item);
+                                                     firstRssFeedLaysdataCount= overlaysRssList.size();
+                                                 }
+
+                                                 int newDataCount=overlaysRssList.size();
+                                                 if(firstRssFeedLaysdataCount != newDataCount){
+                                                     overlayRssSlideShowCallCount=0;
+                                                 }
                                              }
+
 
 
                                          } catch (JSONException e) {
@@ -2669,21 +2686,27 @@ public class MainActivity extends AppCompatActivity {
                          );
                      }
                      else{
+                         String layId=item.getLaysId();
                          HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
-                         getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(newString);
+                         getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(layId);
                          List<RSSModel> list = new ArrayList<>();
-                         list=new Gson().fromJson(getrsscontentDetails.get(newString), new TypeToken<List<RSSModel>>(){}.getType());
-                         if (overlayRssSlideShowCallCount==0){
-                             clearTimeout2();
-                             overlaysRssContentCurrentIndex=0;
-                             overlayRssContentLay(list,item);
-                             firstRssFeedLaysdataCount= list.size();
+                         list=new Gson().fromJson(getrsscontentDetails.get("rssfeed"+item.getLaysId()), new TypeToken<List<RSSModel>>(){}.getType());
+
+                         if(list==null){}
+                         else{
+                             if (overlayRssSlideShowCallCount==0){
+                                 clearTimeout2();
+                                 overlaysRssContentCurrentIndex=0;
+                                 overlayRssContentLay(list,item);
+                                 firstRssFeedLaysdataCount= list.size();
+                             }
+
+                             int newDataCount=list.size();
+                             if(firstRssFeedLaysdataCount != newDataCount){
+                                 overlayRssSlideShowCallCount=0;
+                             }
                          }
 
-                         int newDataCount=list.size();
-                         if(firstRssFeedLaysdataCount != newDataCount){
-                             overlayRssSlideShowCallCount=0;
-                         }
                      }
 
 
@@ -2860,16 +2883,21 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         sessionManagement.createdisplayContentRssFeedDataSession(displayOverlaysRssList,overlayContent);
                                     }
-                                    if (displayOverlayRssSlideShowCallCount==0){
-                                        clearTimeout3();
-                                        displayOverlaysRssContentCurrentIndex=0;
-                                        displayOverlayRssContentLay(displayOverlaysRssList,item);
-                                        displayFirstRssFeedLaysdataCount= displayOverlaysRssList.size();
-                                    }
 
-                                    int newDataCount=displayOverlaysRssList.size();
-                                    if(displayFirstRssFeedLaysdataCount != newDataCount){
-                                        displayOverlayRssSlideShowCallCount=0;
+                                    if(displayOverlaysRssList==null){}
+                                    else{
+                                        if (displayOverlayRssSlideShowCallCount==0){
+                                            clearTimeout3();
+                                            displayOverlaysRssContentCurrentIndex=0;
+                                            displayOverlayRssContentLay(displayOverlaysRssList,item);
+                                            displayFirstRssFeedLaysdataCount= displayOverlaysRssList.size();
+                                        }
+
+                                        int newDataCount=displayOverlaysRssList.size();
+                                        if(displayFirstRssFeedLaysdataCount != newDataCount){
+                                            displayOverlayRssSlideShowCallCount=0;
+                                        }
+
                                     }
 
 
@@ -2899,19 +2927,24 @@ public class MainActivity extends AppCompatActivity {
                 HashMap<String, String> getdisplayrsscontentDetails = new HashMap<String, String>();
                 getdisplayrsscontentDetails = sessionManagement.getdisplayContentRssFeedItemDetails(overlayContent);
                 List<RSSModel> list = new ArrayList<>();
-                list=new Gson().fromJson(getdisplayrsscontentDetails.get(overlayContent), new TypeToken<List<RSSModel>>(){}.getType());
+                list=new Gson().fromJson(getdisplayrsscontentDetails.get("displayrssfeed"), new TypeToken<List<RSSModel>>(){}.getType());
                 rssProgrss.setVisibility(GONE);
-                if (displayOverlayRssSlideShowCallCount==0){
-                    clearTimeout3();
-                    displayOverlaysRssContentCurrentIndex=0;
-                    displayOverlayRssContentLay(list,item);
-                    displayFirstRssFeedLaysdataCount= list.size();
+
+                if(list==null){}
+                else{
+                    if (displayOverlayRssSlideShowCallCount==0){
+                        clearTimeout3();
+                        displayOverlaysRssContentCurrentIndex=0;
+                        displayOverlayRssContentLay(list,item);
+                        displayFirstRssFeedLaysdataCount= list.size();
+                    }
+
+                    int newDataCount=list.size();
+                    if(displayFirstRssFeedLaysdataCount != newDataCount){
+                        displayOverlayRssSlideShowCallCount=0;
+                    }
                 }
 
-                int newDataCount=list.size();
-                if(displayFirstRssFeedLaysdataCount != newDataCount){
-                    displayOverlayRssSlideShowCallCount=0;
-                }
             }
 
 
@@ -2999,19 +3032,21 @@ public class MainActivity extends AppCompatActivity {
         overlayRssSlideShowCallCount++;
         long duration = 60000;
 
-        if (overlaysRssList.size()>0){
-            RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
-            String ovelaytext;
-            if (contentModel.getLaysRssInfo() != null) {
-                String rssinfo = contentModel.getLaysRssInfo();
-                String[] rssinfoArray = rssinfo.split(",");
-                List<String> rssinfoList = Arrays.asList(rssinfoArray);
-                Log.e("Tag","date>>>>"+item.getDate());
+        if(overlaysRssList==null){}
+        else{
+            if (overlaysRssList.size()>0){
+                RSSModel item = overlaysRssList.get(overlaysRssContentCurrentIndex);
+                String ovelaytext;
+                if (contentModel.getLaysRssInfo() != null) {
+                    String rssinfo = contentModel.getLaysRssInfo();
+                    String[] rssinfoArray = rssinfo.split(",");
+                    List<String> rssinfoList = Arrays.asList(rssinfoArray);
+                    Log.e("Tag","date>>>>"+item.getDate());
 
-                ovelaytext=item.getDate();
+                    ovelaytext=item.getDate();
 
-                if (rssinfoList.contains("1")) {
-                    String text = item.getTitle();
+                    if (rssinfoList.contains("1")) {
+                        String text = item.getTitle();
                     /*SpannableString spannableString = new SpannableString(text);
                     // Set text size for a specific part of the string
                     float relativeSize = 22f; // Change this value to adjust the size
@@ -3019,80 +3054,83 @@ public class MainActivity extends AppCompatActivity {
 
                     // Set text style for a specific part of the string (e.g., bold)
                     spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);*/
-                    //ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
-                    ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
+                        //ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
+                        ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
+                    }
+                    if (rssinfoList.contains("2")) {
+                        //ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
+                        ovelaytext = String.format("%s  %s", ovelaytext, item.getDescription());
+                    }
+                    Log.e("Tag","ovelaytext>>>>"+ovelaytext.length());
+                    Log.e("Tag","ovelaytext>>>>"+ovelaytext);
                 }
-                if (rssinfoList.contains("2")) {
-                    //ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
-                    ovelaytext = String.format("%s  %s", ovelaytext, item.getDescription());
+                else{
+                    //ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
+                    ovelaytext = String.format("%s  <b>%s</b>  %s",
+                            item.getDate(),
+                            item.getTitle(),
+                            item.getDescription());
+
                 }
-                Log.e("Tag","ovelaytext>>>>"+ovelaytext.length());
-                Log.e("Tag","ovelaytext>>>>"+ovelaytext);
+                if(contentModel.getLaysType().equals("Right")){
+                    Log.e("Tag","testingRight>>>9");
+                    textRightOverlay.setText(Html.fromHtml(ovelaytext));
+                    textAnimation(textRightOverlay, ovelaytext);
+                }
+                else if(contentModel.getLaysType().equals("Left")){
+                    Log.e("Tag","testingLeft>>>9");
+                    textLeftOverlay.setText(Html.fromHtml(ovelaytext));
+                    textAnimation(textLeftOverlay, ovelaytext);
+
+                }
+                else if(contentModel.getLaysType().equals("Top")){
+
+                    Log.e("Tag","testingTop>>>9"+ovelaytext);
+                    textTopOverlay.setText(Html.fromHtml(ovelaytext));
+                    textAnimation(textTopOverlay, ovelaytext);
+
+                }
+                else if(contentModel.getLaysType().equals("Bottom")){
+
+
+                    Log.e("Tag","testingBottom>>>9");
+                    textBottomOverlay.setText(Html.fromHtml(ovelaytext));
+                    textAnimation(textBottomOverlay, ovelaytext);
+                }
+
+
+
+                overlaysRssContentCurrentIndex++;
+                if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
+                    overlaysRssContentCurrentIndex = 0;
+                }
+
+
             }
             else{
-                //ovelaytext=String.format(item.getDate(), 18f) + "  " +"<b>"+String.format(item.getTitle(), 18f)+"<b>" + String.format(item.getTitle(), 18f) +  "  " + String.format(item.getDescription(), 20f);
-                ovelaytext = String.format("%s  <b>%s</b>  %s",
-                        item.getDate(),
-                        item.getTitle(),
-                        item.getDescription());
+                if(contentModel.getLaysType().equals("Right")){
+                    textRightOverlay.setText("No Data Available");
+                    textAnimation(textRightOverlay, "No Data Available");
+                }
+                else if(contentModel.getLaysType().equals("Left")){
+                    textLeftOverlay.setText("No Data Available");
+                    textAnimation(textLeftOverlay, "No Data Available");
+
+                }
+                else if(contentModel.getLaysType().equals("Top")){
+                    textTopOverlay.setText("No Data Available");
+                    textAnimation(textTopOverlay, "No Data Available");
+
+                }
+                else if(contentModel.getLaysType().equals("Bottom")){
+                    textBottomOverlay.setText("No Data Available");
+                    textAnimation(textBottomOverlay, "No Data Available");
+                }
 
             }
-            if(contentModel.getLaysType().equals("Right")){
-                Log.e("Tag","testingRight>>>9");
-                textRightOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textRightOverlay, ovelaytext);
-            }
-            else if(contentModel.getLaysType().equals("Left")){
-                Log.e("Tag","testingLeft>>>9");
-                textLeftOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textLeftOverlay, ovelaytext);
-
-            }
-            else if(contentModel.getLaysType().equals("Top")){
-
-                Log.e("Tag","testingTop>>>9"+ovelaytext);
-                textTopOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textTopOverlay, ovelaytext);
-
-            }
-            else if(contentModel.getLaysType().equals("Bottom")){
-
-
-                Log.e("Tag","testingBottom>>>9");
-                textBottomOverlay.setText(Html.fromHtml(ovelaytext));
-                textAnimation(textBottomOverlay, ovelaytext);
-            }
-
-
-
-            overlaysRssContentCurrentIndex++;
-            if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
-                overlaysRssContentCurrentIndex = 0;
-            }
-
-
         }
-        else{
-            if(contentModel.getLaysType().equals("Right")){
-                textRightOverlay.setText("No Data Available");
-                textAnimation(textRightOverlay, "No Data Available");
-            }
-            else if(contentModel.getLaysType().equals("Left")){
-                textLeftOverlay.setText("No Data Available");
-                textAnimation(textLeftOverlay, "No Data Available");
 
-            }
-            else if(contentModel.getLaysType().equals("Top")){
-                textTopOverlay.setText("No Data Available");
-                textAnimation(textTopOverlay, "No Data Available");
 
-            }
-            else if(contentModel.getLaysType().equals("Bottom")){
-                textBottomOverlay.setText("No Data Available");
-                textAnimation(textBottomOverlay, "No Data Available");
-            }
-
-        }
 
         myRunnable2 = new Runnable() {
             @Override
@@ -3107,21 +3145,24 @@ public class MainActivity extends AppCompatActivity {
     private void displayOverlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         displayOverlayRssSlideShowCallCount++;
         long duration = 60000;
-
-        if (overlaysRssList.size()>0){
-            RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
-            String ovelaytext;
-            //ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
-            ovelaytext = String.format("%s  %.2f  <b>%s</b>  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
-
-
-            textdisplayOverlay.setText(Html.fromHtml(ovelaytext));
-            textAnimation(textdisplayOverlay, ovelaytext);
-        }
+        if(overlaysRssList==null){}
         else{
-            textdisplayOverlay.setText("No Data Available");
-            textAnimation(textdisplayOverlay, "No Data Available");
+            if (overlaysRssList.size()>0){
+                RSSModel item = overlaysRssList.get(displayOverlaysRssContentCurrentIndex);
+                String ovelaytext;
+                //ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
+                ovelaytext = String.format("%s  %.2f  <b>%s</b>  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
+
+
+                textdisplayOverlay.setText(Html.fromHtml(ovelaytext));
+                textAnimation(textdisplayOverlay, ovelaytext);
+            }
+            else{
+                textdisplayOverlay.setText("No Data Available");
+                textAnimation(textdisplayOverlay, "No Data Available");
+            }
         }
+
 
         displayOverlaysRssContentCurrentIndex++;
         if (displayOverlaysRssContentCurrentIndex >= overlaysRssList.size()) {
