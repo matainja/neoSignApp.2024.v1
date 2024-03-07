@@ -892,13 +892,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-
-
-
-
-
-
         if(isNetworkAvailable()){
             Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
             StringRequest getRequest = new StringRequest(Request.Method.GET,
@@ -980,6 +973,7 @@ public class MainActivity extends AppCompatActivity {
                         HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
                         getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
                         pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
+
                         HashMap<String, String> getcontentDetails = new HashMap<String, String>();
                         getcontentDetails = sessionManagement.getContentItemDetails();
                         List<ContentModel> list = new ArrayList<>();
@@ -1020,6 +1014,12 @@ public class MainActivity extends AppCompatActivity {
                                 parentPairing.setVisibility(VISIBLE);
                             }
                         }
+
+
+
+
+
+
                         try{
                             JSONObject jsonObject = new JSONObject(event.getData().toString());
                             Log.e("Tag","jsonObject>>>"+jsonObject);
@@ -1040,6 +1040,10 @@ public class MainActivity extends AppCompatActivity {
                                 sessionManagement.createPairingSession(true);
                                 pairingCode.setText("Paired");
                                 JSONArray dataArray = content.getJSONArray("data");
+                                Log.e("Tag","dataArray>>>"+dataArray);
+                                JSONArray scheduled_data = content.getJSONArray("scheduled_data");
+                                Log.e("Tag","scheduled_data>>>"+scheduled_data);
+
                                 if(dataArray.length()>0){
                                     File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
                                     if (directory.exists()) {

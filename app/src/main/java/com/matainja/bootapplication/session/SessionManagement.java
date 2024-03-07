@@ -80,11 +80,9 @@ public class SessionManagement {
         // commit changes
         editor.commit();
     }
-
     public void createContentDataSession( List<ContentModel> slideItems ){
         editor.putString("slideItem", new Gson().toJson(slideItems)).apply();
     }
-
     public void createContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
         Log.e("Tag","sesionSave>>>"+newString);
 
@@ -92,6 +90,9 @@ public class SessionManagement {
     }
     public void createdisplayContentRssFeedDataSession(List<RSSModel> rssContent, String newString){
         editor.putString("displayrssfeed", new Gson().toJson(rssContent)).apply();
+    }
+    public void createScheduleContentDataSession( List<ContentModel> scheduleSlideItem ){
+        editor.putString("scheduleSlideItem", new Gson().toJson(scheduleSlideItem)).apply();
     }
 
     /**
@@ -154,6 +155,12 @@ public class SessionManagement {
     public HashMap<String, String> getdisplayContentRssFeedItemDetails(String newString){
         HashMap<String, String> user = new HashMap<String, String>();
         user.put("displayrssfeed", pref.getString("displayrssfeed",""));
+        // return user
+        return user;
+    }
+    public HashMap<String, String> getScheduleContentItemDetails(){
+        HashMap<String, String> user = new HashMap<String, String>();
+        user.put("scheduleSlideItem", pref.getString("scheduleSlideItem",""));
         // return user
         return user;
     }
