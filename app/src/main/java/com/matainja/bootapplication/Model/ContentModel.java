@@ -28,6 +28,25 @@ public class ContentModel {
             show_time,show_history,show_specific_screen,show_news_channel,screen_id,
             feed_url,text;
     String days,time;
+    String start_date, end_date;
+
+    public String getStart_date() {
+        return start_date;
+    }
+
+    public void setStart_date(String start_date) {
+        this.start_date = start_date;
+    }
+
+    public String getEnd_date() {
+        return end_date;
+    }
+
+    public void setEnd_date(String end_date) {
+        this.end_date = end_date;
+    }
+
+
 
     public String getDays() {
         return days;
@@ -526,7 +545,7 @@ public class ContentModel {
                         String display_id, String display_app_id, String history_translation,
                         String number_translation, String counter_translation,
                         String show_time, String show_history, String show_specific_screen, String show_news_channel, String screen_id,
-                        String feed_url, String text, String days, String time) {
+                        String feed_url, String text, String days, String time, String start_date, String end_date) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -584,6 +603,8 @@ public class ContentModel {
         this.text=text;
         this.days=days;
         this.time=time;
+        this.start_date=start_date;
+        this.end_date=end_date;
     }
 
     public String getType() {

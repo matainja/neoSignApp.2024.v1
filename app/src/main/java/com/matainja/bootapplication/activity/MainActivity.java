@@ -1345,7 +1345,7 @@ public class MainActivity extends AppCompatActivity {
                                                     laysContentType,laysContent,laysRssInfo,laysDeleted,id, app_id, main_text_translation, number_text_translation, people_before_translation,
                                                     wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments,display_id,display_app_id,history_translation,number_translation,counter_translation,
                                                     show_time,show_history,show_specific_screen,show_news_channel,screen_id,
-                                                    feed_url,text,days,time
+                                                    feed_url,text,days,time,start_date,end_date
                                             ));
                                             sessionManagement.clearSession();
                                             sessionManagement.createContentDataSession(scheduleSlideItems);
@@ -1453,7 +1453,7 @@ public class MainActivity extends AppCompatActivity {
                                                 text=queue_display.getString("text");
 
                                             }
-                                            String days = "",time="";
+                                            String start_date = "", end_date="", days = "",time="";
                                             if (dataObject.has("playing_time") && !dataObject.isNull("playing_time")){
                                                 JSONObject playing_time = dataObject.getJSONObject("playing_time");
                                                 days=playing_time.getString("days");
@@ -1469,7 +1469,7 @@ public class MainActivity extends AppCompatActivity {
                                                     laysContentType,laysContent,laysRssInfo,laysDeleted,id, app_id, main_text_translation, number_text_translation, people_before_translation,
                                                     wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments,display_id,display_app_id,history_translation,number_translation,counter_translation,
                                                     show_time,show_history,show_specific_screen,show_news_channel,screen_id,
-                                                    feed_url,text,days,time
+                                                    feed_url,text,days,time,start_date,end_date
                                             ));
                                             sessionManagement.clearSession();
                                             sessionManagement.createContentDataSession(newSlideItems);
