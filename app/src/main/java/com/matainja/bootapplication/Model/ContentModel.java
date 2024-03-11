@@ -27,6 +27,25 @@ public class ContentModel {
     String display_id,display_app_id,history_translation,number_translation,counter_translation,
             show_time,show_history,show_specific_screen,show_news_channel,screen_id,
             feed_url,text;
+    String days,time;
+
+    public String getDays() {
+        return days;
+    }
+
+    public void setDays(String days) {
+        this.days = days;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+
 
 
     public String getDisplay_id() {
@@ -504,10 +523,10 @@ public class ContentModel {
                         String id, String app_id, String main_text_translation, String number_text_translation,
                         String people_before_translation, String wait_time_translation, String show_people_before,
                         String show_waiting_time, String logo, String app_queue_departments,
-                        String display_id,String display_app_id,String history_translation,
-                        String number_translation,String counter_translation,
-                        String show_time,String show_history,String show_specific_screen,String show_news_channel,String screen_id,
-                        String feed_url,String text) {
+                        String display_id, String display_app_id, String history_translation,
+                        String number_translation, String counter_translation,
+                        String show_time, String show_history, String show_specific_screen, String show_news_channel, String screen_id,
+                        String feed_url, String text, String days, String time) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -563,6 +582,8 @@ public class ContentModel {
         this.screen_id=screen_id;
         this.feed_url=feed_url;
         this.text=text;
+        this.days=days;
+        this.time=time;
     }
 
     public String getType() {
