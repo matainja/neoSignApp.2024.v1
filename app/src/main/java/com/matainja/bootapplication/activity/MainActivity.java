@@ -13,8 +13,6 @@ import static com.matainja.bootapplication.session.SessionManagement.STRECH;
 
 
 import android.Manifest;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -30,7 +28,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -56,9 +53,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.webkit.ValueCallback;
@@ -147,9 +142,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -837,13 +834,60 @@ public class MainActivity extends AppCompatActivity {
         getscheduleSlideItemDetails = sessionManagement.getScheduleContentItemDetails();
         List<ContentModel> ScheduleContentItemList = new ArrayList<>();
         ScheduleContentItemList=new Gson().fromJson(getscheduleSlideItemDetails.get("scheduleSlideItem"), new TypeToken<List<ContentModel>>(){}.getType());
-
+        Log.e("TAG","ScheduleContentItemList>>>"+ScheduleContentItemList);
         HashMap<String, String> getcontentDetails = new HashMap<String, String>();
         getcontentDetails = sessionManagement.getContentItemDetails();
         List<ContentModel> list = new ArrayList<>();
         list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
 
-        if (ScheduleContentItemList==null){
+        if(list==null){
+            if (pairingStatus){
+                parentPairing.setVisibility(VISIBLE);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+        else{
+            if (pairingStatus && Objects.requireNonNull(list).size()>0){
+                parentPairing.setVisibility(GONE);
+                clearTimeout();
+                clearTimeout1();
+                clearTimeout2();
+                clearTimeout3();
+                clearTimeout4();
+                contentCurrentIndex=0;
+                rssSlideShowCallCount=0;
+                overlayRssSlideShowCallCount=0;
+                displayOverlayRssSlideShowCallCount=0;
+                contentLay(list);
+            }
+            else{
+                terminal_lay.setVisibility(GONE);
+                parentVideoView.setVisibility(GONE);
+                parentVlcVideoView.setVisibility(GONE);
+                parentContentImage.setVisibility(GONE);
+                webView_lay.setVisibility(GONE);
+                parentContentRssFeed.setVisibility(GONE);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+                parentPairing.setVisibility(VISIBLE);
+            }
+        }
+
+       /* if (ScheduleContentItemList==null){
             if(list==null){
                 if (pairingStatus){
                     parentPairing.setVisibility(VISIBLE);
@@ -903,7 +947,7 @@ public class MainActivity extends AppCompatActivity {
                 rssSlideShowCallCount=0;
                 overlayRssSlideShowCallCount=0;
                 displayOverlayRssSlideShowCallCount=0;
-                contentLay(ScheduleContentItemList);
+                scheduleContentLay(ScheduleContentItemList);
 
             }
             else{
@@ -957,7 +1001,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        }
+        }*/
 
 
 
@@ -1046,7 +1090,7 @@ public class MainActivity extends AppCompatActivity {
                         getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
                         pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
 
-                        /*HashMap<String, String> getcontentDetails = new HashMap<String, String>();
+                        HashMap<String, String> getcontentDetails = new HashMap<String, String>();
                         getcontentDetails = sessionManagement.getContentItemDetails();
                         List<ContentModel> list = new ArrayList<>();
                         list=new Gson().fromJson(getcontentDetails.get("slideItem"), new TypeToken<List<ContentModel>>(){}.getType());
@@ -1085,11 +1129,11 @@ public class MainActivity extends AppCompatActivity {
                                 parentBottomOverlay.setVisibility(GONE);
                                 parentPairing.setVisibility(VISIBLE);
                             }
-                        }*/
+                        }
 
 
 
-                        HashMap<String, String> getscheduleSlideItemDetails = new HashMap<String, String>();
+                       /* HashMap<String, String> getscheduleSlideItemDetails = new HashMap<String, String>();
                         getscheduleSlideItemDetails = sessionManagement.getScheduleContentItemDetails();
                         List<ContentModel> ScheduleContentItemList = new ArrayList<>();
                         ScheduleContentItemList=new Gson().fromJson(getscheduleSlideItemDetails.get("scheduleSlideItem"), new TypeToken<List<ContentModel>>(){}.getType());
@@ -1182,7 +1226,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                        }
+                        }*/
 
                         try{
                             JSONObject jsonObject = new JSONObject(event.getData().toString());
@@ -1205,10 +1249,10 @@ public class MainActivity extends AppCompatActivity {
                                 pairingCode.setText("Paired");
                                 JSONArray dataArray = content.getJSONArray("data");
                                 Log.e("Tag","dataArray>>>"+dataArray);
-                                JSONArray scheduled_data = content.getJSONArray("scheduled_data");
-                                Log.e("Tag","scheduled_data>>>"+scheduled_data);
+                                /*JSONArray scheduled_data = content.getJSONArray("scheduled_data");
+                                Log.e("Tag","scheduled_data>>>"+scheduled_data);*/
 
-                                if(dataArray.length()>0 || scheduled_data.length()>0 ){
+                                if(dataArray.length()>0){
                                     File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
                                     if (directory.exists()) {
                                         File[] files = directory.listFiles();
@@ -1239,19 +1283,174 @@ public class MainActivity extends AppCompatActivity {
                                     parentPairing.setVisibility(GONE);
                                     pairProgress.setVisibility(GONE);
 
-                                    if(scheduled_data.length()>0 ){
+                                    pairProgress.setVisibility(VISIBLE);
+                                    newSlideItems.clear();
+                                    for(currentIndex =0; currentIndex<dataArray.length();currentIndex++){
+                                        JSONObject dataObject = dataArray.getJSONObject(currentIndex);
+                                        String type = dataObject.getString("type");
+                                        String url = dataObject.getString("url");
+                                        Log.e("logo","url>>>"+url);
+                                        String duration = dataObject.getString("duration");
+                                        String extention = dataObject.getString("extention");
+                                        String app_clock_hands_color= dataObject.getString("app_clock_hands_color");
+                                        String app_clock_text= dataObject.getString("app_clock_text");
+                                        String app_clock_timezone= dataObject.getString("app_clock_timezone");
+                                        String app_clock_size= dataObject.getString("app_clock_size");
+                                        String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color");
+                                        String app_clock_major_indicator_color= dataObject.getString("app_clock_major_indicator_color");
+                                        String app_clock_innerdot_size= dataObject.getString("app_clock_innerdot_size");
+                                        String app_clock_innerdot_color= dataObject.getString("app_clock_innerdot_color");
+
+                                        String cdtime= dataObject.getString("cdtime");
+                                        String cdtranslation= dataObject.getString("cdtranslation");
+                                        String app_cd_text= dataObject.getString("app_cd_text");
+
+                                        String rssinfo= dataObject.getString("rssinfo");
+                                        String app_queue_departments= dataObject.getString("app_queue_departments");
+                                        Log.e("overlays","app_queue_departments>>>"+app_queue_departments);
+
+
+
+
+                                        String laysId="",laysCID="",laysType="",laysName="",laysheight="",
+                                                laysBgColor="",laysFontSize="",laysFontColor="",
+                                                laysFontFamily="",
+                                                laysContentType="",laysContent="",laysRssInfo="",laysDeleted="";
+                                        if (dataObject.has("overlays") && !dataObject.isNull("overlays")) {
+                                            JSONObject overlays = dataObject.getJSONObject("overlays");
+                                            Log.e("overlays","overlays>>>"+overlays);
+                                            laysId= String.valueOf(overlays.getInt("id"));
+                                            laysCID=overlays.getString("cid");
+                                            laysType=overlays.getString("type");
+                                            laysName=overlays.getString("name");
+                                            laysheight=overlays.getString("height");
+                                            laysBgColor=overlays.getString("bg_color");
+                                            laysFontSize=overlays.getString("font_size");
+                                            laysFontColor=overlays.getString("font_color");
+                                            laysFontFamily=overlays.getString("font_family");
+                                            laysContentType=overlays.getString("content_type");
+                                            laysContent=overlays.getString("content");
+                                            laysRssInfo=overlays.getString("rssinfo");
+                                            laysDeleted=overlays.getString("is_deleted");
+                                            sessionManagement.clearRssFeedOverlaysSession(laysId);
+                                            Log.e("overlays","laysContentType>>>"+laysContentType);
+                                        }
+
+                                        String id = "", app_id="", main_text_translation="", number_text_translation="", people_before_translation="",
+                                                wait_time_translation="", show_people_before="", show_waiting_time="", logo="";
+                                        if (dataObject.has("queue_terminal") && !dataObject.isNull("queue_terminal")) {
+                                            JSONObject queue_terminal = dataObject.getJSONObject("queue_terminal");
+                                            Log.e("queue_terminal","queue_terminal>>>"+queue_terminal);
+                                            id= String.valueOf(queue_terminal.getInt("id"));
+                                            app_id=String.valueOf(queue_terminal.getInt("app_id"));
+                                            Log.e("queue_terminal","app_id>>>"+app_id);
+                                            main_text_translation=queue_terminal.getString("main_text_translation");
+                                            number_text_translation=queue_terminal.getString("number_text_translation");
+                                            people_before_translation=queue_terminal.getString("people_before_translation");
+                                            wait_time_translation=queue_terminal.getString("wait_time_translation");
+                                            show_people_before=String.valueOf(queue_terminal.getInt("show_people_before"));
+                                            show_waiting_time=String.valueOf(queue_terminal.getInt("show_waiting_time"));
+                                            logo=queue_terminal.getString("logo");
+                                            Log.e("logo","logo>>>"+logo);
+                                        }
+                                        String display_id = "",display_app_id="",history_translation="",number_translation="",counter_translation="",
+                                                show_time="",show_history="",show_specific_screen="",show_news_channel="",screen_id="",
+                                                feed_url="",text=" ";
+                                        if (dataObject.has("queue_display") && !dataObject.isNull("queue_display")) {
+                                            JSONObject queue_display = dataObject.getJSONObject("queue_display");
+                                            Log.e("queue_display","queue_display>>>"+queue_display);
+                                            display_id= String.valueOf(queue_display.getInt("id"));
+                                            display_app_id=String.valueOf(queue_display.getInt("app_id"));
+                                            Log.e("display_app_id","display_app_id>>>"+display_app_id);
+                                            history_translation=queue_display.getString("history_translation");
+                                            number_translation=queue_display.getString("number_translation");
+                                            counter_translation=queue_display.getString("counter_translation");
+                                            show_time=String.valueOf(queue_display.getInt("show_time"));
+                                            show_history=String.valueOf(queue_display.getInt("show_history"));
+                                            show_specific_screen=String.valueOf(queue_display.getInt("show_specific_screen"));
+                                            show_news_channel=String.valueOf(queue_display.getInt("show_news_channel"));
+                                            screen_id=queue_display.getString("screen_id");
+                                            feed_url=queue_display.getString("feed_url");
+                                            text=queue_display.getString("text");
+
+                                        }
+                                        Boolean is_schedulled_content=dataObject.getBoolean("is_schedulled_content");
+                                        Log.e("logo","is_schedulled_content>>>"+is_schedulled_content);
+                                        String start_date = "", end_date="", days = "",time="";
+
+                                        if(is_schedulled_content){
+                                            if (dataObject.has("playing_time") && !dataObject.isNull("playing_time")){
+                                                JSONObject playing_time = dataObject.getJSONObject("playing_time");
+                                                Log.e("playing_time","playing_time>>>"+playing_time);
+                                                start_date=playing_time.getString("start_date");
+                                                Log.e("playing_time","start_date>>>"+start_date);
+                                                end_date=playing_time.getString("end_date");
+                                                Log.e("playing_time","end_date>>>"+end_date);
+                                            }
+                                        }
+                                        else{
+                                            if (dataObject.has("playing_time") && !dataObject.isNull("playing_time")){
+                                                JSONObject playing_time = dataObject.getJSONObject("playing_time");
+                                                days=playing_time.getString("days");
+                                                Log.e("days","days>>>"+days);
+                                                time=playing_time.getString("time");
+                                                Log.e("time","time>>>"+time);
+                                            }
+                                        }
+
+
+
+
+                                        newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
+                                                app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
+                                                app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
+                                                cdtime,cdtranslation,app_cd_text,rssinfo,laysId,laysCID,laysType,laysName,laysheight,laysBgColor,laysFontSize,laysFontColor,laysFontFamily,
+                                                laysContentType,laysContent,laysRssInfo,laysDeleted,id, app_id, main_text_translation, number_text_translation, people_before_translation,
+                                                wait_time_translation, show_people_before, show_waiting_time, logo,app_queue_departments,display_id,display_app_id,history_translation,number_translation,counter_translation,
+                                                show_time,show_history,show_specific_screen,show_news_channel,screen_id,
+                                                feed_url,text,days,time,start_date,end_date,is_schedulled_content
+                                        ));
+                                        sessionManagement.clearSlideItemSession();
+                                        sessionManagement.createContentDataSession(newSlideItems);
+                                    }
+                                    clearTimeout();
+                                    clearTimeout1();
+                                    clearTimeout2();
+                                    clearTimeout3();
+                                    clearTimeout4();
+                                    contentCurrentIndex=0;
+                                    rssSlideShowCallCount=0;
+                                    overlayRssSlideShowCallCount=0;
+                                    displayOverlayRssSlideShowCallCount=0;
+                                    pairProgress.setVisibility(GONE);
+                                    contentLay(newSlideItems);
+
+
+
+
+
+
+
+
+                                   /* if(scheduled_data.length()>0 ){
+                                        pairProgress.setVisibility(VISIBLE);
                                         scheduleSlideItems.clear();
                                         for(int index =0; index<scheduled_data.length();index++){
-                                            JSONObject dataObject = dataArray.getJSONObject(index);
+                                            JSONObject dataObject = scheduled_data.getJSONObject(index);
+                                            Log.e("dataObject","ScdataObject>>>"+dataObject);
                                             String type = dataObject.getString("type");
                                             String url = dataObject.getString("url");
                                             String duration = dataObject.getString("duration");
                                             String extention = dataObject.getString("extention");
+                                            Log.e("dataObject","Scdataextention>>>"+extention);
                                             String app_clock_hands_color= dataObject.getString("app_clock_hands_color");
+                                            Log.e("dataObject","Scdataapp_clock_hands_color>>>"+app_clock_hands_color);
                                             String app_clock_text= dataObject.getString("app_clock_text");
                                             String app_clock_timezone= dataObject.getString("app_clock_timezone");
                                             String app_clock_size= dataObject.getString("app_clock_size");
-                                            String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color ");
+                                            Log.e("dataObject","Scdataapp_clock_size>>>"+app_clock_size);
+                                            String app_clock_minor_indicator_color= dataObject.getString("app_clock_minor_indicator_color");
+                                            Log.e("dataObject","Scdataapp_clock_minor_indicator_color>>>"+app_clock_minor_indicator_color);
                                             String app_clock_major_indicator_color= dataObject.getString("app_clock_major_indicator_color");
                                             String app_clock_innerdot_size= dataObject.getString("app_clock_innerdot_size");
                                             String app_clock_innerdot_color= dataObject.getString("app_clock_innerdot_color");
@@ -1332,8 +1531,11 @@ public class MainActivity extends AppCompatActivity {
                                             String start_date = "",end_date="",days="",time="";
                                             if (dataObject.has("playing_time") && !dataObject.isNull("playing_time")){
                                                 JSONObject playing_time = dataObject.getJSONObject("playing_time");
+                                                Log.e("playing_time","playing_time>>>"+playing_time);
                                                 start_date=playing_time.getString("start_date");
+                                                Log.e("playing_time","start_date>>>"+start_date);
                                                 end_date=playing_time.getString("end_date");
+                                                Log.e("playing_time","end_date>>>"+end_date);
                                             }
 
 
@@ -1347,23 +1549,14 @@ public class MainActivity extends AppCompatActivity {
                                                     show_time,show_history,show_specific_screen,show_news_channel,screen_id,
                                                     feed_url,text,days,time,start_date,end_date
                                             ));
-                                            sessionManagement.clearSession();
-                                            sessionManagement.createContentDataSession(scheduleSlideItems);
+                                            sessionManagement.clearScheduleSlideItemSession();
+                                            sessionManagement.createScheduleContentDataSession(scheduleSlideItems);
                                         }
 
-                                        clearTimeout();
-                                        clearTimeout1();
-                                        clearTimeout2();
-                                        clearTimeout3();
-                                        clearTimeout4();
-                                        contentCurrentIndex=0;
-                                        rssSlideShowCallCount=0;
-                                        overlayRssSlideShowCallCount=0;
-                                        displayOverlayRssSlideShowCallCount=0;
 
-                                        contentLay(scheduleSlideItems);
                                     }
                                     if(dataArray.length()>0){
+                                        pairProgress.setVisibility(VISIBLE);
                                         newSlideItems.clear();
                                         for(currentIndex =0; currentIndex<dataArray.length();currentIndex++){
                                             JSONObject dataObject = dataArray.getJSONObject(currentIndex);
@@ -1471,10 +1664,12 @@ public class MainActivity extends AppCompatActivity {
                                                     show_time,show_history,show_specific_screen,show_news_channel,screen_id,
                                                     feed_url,text,days,time,start_date,end_date
                                             ));
-                                            sessionManagement.clearSession();
+                                            sessionManagement.clearSlideItemSession();
                                             sessionManagement.createContentDataSession(newSlideItems);
                                         }
 
+                                    }
+                                    if(scheduled_data.length()>0){
                                         clearTimeout();
                                         clearTimeout1();
                                         clearTimeout2();
@@ -1484,12 +1679,22 @@ public class MainActivity extends AppCompatActivity {
                                         rssSlideShowCallCount=0;
                                         overlayRssSlideShowCallCount=0;
                                         displayOverlayRssSlideShowCallCount=0;
-                                        if (scheduled_data.length()>0){}
-                                        else{
-                                            contentLay(newSlideItems);
-                                        }
+                                        pairProgress.setVisibility(GONE);
+                                        scheduleContentLay(scheduleSlideItems);
                                     }
-
+                                    else{
+                                        clearTimeout();
+                                        clearTimeout1();
+                                        clearTimeout2();
+                                        clearTimeout3();
+                                        clearTimeout4();
+                                        contentCurrentIndex=0;
+                                        rssSlideShowCallCount=0;
+                                        overlayRssSlideShowCallCount=0;
+                                        displayOverlayRssSlideShowCallCount=0;
+                                        pairProgress.setVisibility(GONE);
+                                        contentLay(newSlideItems);
+                                    }*/
 
 
 
@@ -1514,7 +1719,8 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             }else{}
-                        }catch (JSONException ex){
+                        }
+                        catch (JSONException ex){
                             ex.printStackTrace();
                             Log.e("Error", "-----Json Array----: "+ex.getMessage());
                         }
@@ -1663,6 +1869,737 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     @SuppressLint("NotifyDataSetChanged")
+    private void scheduleContentLay(List<ContentModel> list) {
+        HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
+        getOrientationDetails = sessionManagement.getOrientDetails();
+        orientation=getOrientationDetails.get(ORIENTATION);
+        HashMap<String, String> getStrechsDetails = new HashMap<String, String>();
+        getStrechsDetails = sessionManagement.getStrechDetails();
+        strech=getStrechsDetails.get(STRECH);
+        slideShowCallCount++;
+        long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
+
+        Calendar currentTime = Calendar.getInstance();
+        Log.e("currentTime","currentTime>>>"+currentTime);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+        String formattedCurrentTime = sdf.format(currentTime.getTime());
+        Log.e("formattedCurrentTime","formattedCurrentTime>>>"+formattedCurrentTime);
+        Date currentDate = currentTime.getTime();
+        Log.e("currentDate","currentDate>>>"+currentDate);
+        Date startDate = null;
+        Date endDate = null;
+        try {
+            startDate = sdf.parse(list.get(contentCurrentIndex).getStart_date());
+            endDate = sdf.parse(list.get(contentCurrentIndex).getEnd_date());
+            Log.e("startDate","startDate>>>"+startDate);
+            Log.e("endDate","endDate>>>"+endDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+        ContentModel item = list.get(contentCurrentIndex);
+        parentTopOverlay.setVisibility(GONE);
+        parentLeftOverlay.setVisibility(GONE);
+        parentRightOverlay.setVisibility(GONE);
+        parentBottomOverlay.setVisibility(GONE);
+        Log.e("newDuration","newDuration>>>"+item.getDuration());
+        if (item.getType().equals("image") && currentDate.after(startDate) && currentDate.before(endDate)){
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            content_image.setImageBitmap(null);
+            content_image.destroyDrawingCache();
+            parentContentImage.setVisibility(VISIBLE);
+
+
+
+            if (orientation.equals("90 degrees")) {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(90))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else if (orientation.equals("180 degrees")) {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .transform(new RotateTransformation(180))  // Rotate by 270 degrees
+                        .into(content_image);
+
+
+            }
+            else if (orientation.equals("270 degrees")) {
+
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(270))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(0))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+            }
+
+
+            if (strech.equals("off")){
+                content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            }
+            else{
+                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
+
+            }
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("video") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            video_progress.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(VISIBLE);
+            video_progress1.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            String urlString = item.getUrl();
+            Uri uri = Uri.parse(urlString);
+            // Alternatively, you can use Uri's methods to achieve the same
+            String path = uri.getPath();
+            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
+            // Create an instance of DatabaseHelper
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+
+            if (contentCurrentIndex <list.size()) {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        @SuppressLint("Range")
+                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                        @SuppressLint("Range")
+                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                        else{
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // Create an instance of FileDownloader
+                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                @Override
+                                public void onDownloadComplete(String filePath) {
+                                    // Create a VideoItem object
+                                    VideoItem videoItem = new VideoItem();
+                                    videoItem.setTitle(filenameFromUri);
+                                    videoItem.setVideo_url(item.getUrl());
+                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                    // Add the video to the database
+                                    long id = dbHelper.addVideo(videoItem);
+                                    Log.e("Tag","filenameid>>>"+id);
+                                    // Handle download completion
+                                    Log.d("TAG", "File downloaded: " + filePath);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    // Handle download error
+                                    Log.e("TAG", "Error downloading file: " + errorMessage);
+                                }
+
+                                @Override
+                                public void onDownloadStatus(boolean isDownloading) {
+                                    Log.e("TAG", "downloading status: " + isDownloading);
+                                    downloadStatus=isDownloading;
+                                }
+                            });
+
+                            fileDownloader.execute(item.getUrl());
+
+
+
+                        }
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+                else{
+                    // Create an instance of FileDownloader
+                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                        @Override
+                        public void onDownloadComplete(String filePath) {
+                            Log.e("Tag","filePath>>>"+filePath);
+                            // Create a VideoItem object
+                            VideoItem videoItem = new VideoItem();
+                            videoItem.setTitle(filenameFromUri);
+                            videoItem.setVideo_url(item.getUrl());
+                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                            // Add the video to the database
+                            long id = dbHelper.addVideo(videoItem);
+                            Log.e("Tag","firstfilenameid>>>"+id);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Handle download error
+                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                        }
+
+                        @Override
+                        public void onDownloadStatus(boolean isDownloading) {
+                            Log.e("TAG", "downloading status: " + isDownloading);
+                            downloadStatus=isDownloading;
+                        }
+                    });
+
+                    fileDownloader.execute(item.getUrl());
+
+
+                }
+            }
+
+            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
+
+            // Initialize ExoPlayer instance
+
+            player = new SimpleExoPlayer.Builder(this).build();
+
+            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
+                player.stop(); // Stop the player
+                player.release(); // Release the player
+                player = null; // Set player to null
+            }
+
+            try {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                    Log.e("Tag","filename>>>"+localFilePath);
+
+                    if (localFilePath==null){
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(item.getUrl())
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","Test>>>"+localFilePath);
+                    }else{
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(Uri.parse("file://"+localFilePath))
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","test>>>1"+localFilePath);
+
+                    }
+
+                    cursor.close();
+                }
+                else{
+                    mediaItem = null;
+                    mediaItem = new MediaItem.Builder()
+                            .setUri(item.getUrl())
+                            .setMimeType(MimeTypes.APPLICATION_MP4)
+                            .build();
+                    Log.e("Tag","test>>>3");
+                }
+
+
+                // Create a MediaSource using ProgressiveMediaSource.Factory
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
+                MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+                // Assign the media source to the player and start preparing
+                player.setMediaSource(mediaSource);
+                player.setVolume(0f); // Mute the player
+                player.seekTo(0, 0L); // Seek to the beginning
+                player.prepare(); // Transition player to the prepared state
+                // Attach player listener
+                player.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                        if (playbackState == Player.STATE_READY && playWhenReady) {
+                            if (strech.equals("off")){
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                            }
+                            else{
+                                // Handle size changes if needed
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+
+                            }
+                            //overLays(item);
+                            video_progress1.setVisibility(GONE);
+                            playerView.setVisibility(VISIBLE);
+
+
+                        }
+                    }
+                });
+
+                // Start playback
+                player.setPlayWhenReady(true);
+
+                // Attach the player to the PlayerView
+                playerView.setPlayer(player);
+
+                myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("Tag","videoView>>>5");
+                        playerView.setVisibility(GONE);
+                        videoView.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+
+                        releasePlayer();
+                        contentLay(list);
+
+                    }
+                };
+                handler.postDelayed(myRunnable, duration);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
+        }
+        /*else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(VISIBLE);
+            video_progress.setVisibility(VISIBLE);
+
+            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
+
+            if(videoView.getSurfaceTexture()!=null){
+                releaseMediaPlayer();
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
+            }
+
+            videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                @Override
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    // Release the MediaPlayer when the TextureView is destroyed
+                    releaseMediaPlayer();
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+
+                }
+            });
+
+
+        }*/
+        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            iFrameLay(item.getUrl(),list,duration,item);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Clock") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            clockiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            countDowniFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            webUriiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            vimeoiFrameLay(item.getUrl(),list,item,duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(VISIBLE);
+            rssProgrss.setVisibility(VISIBLE);
+            overLays(item);
+
+            String rssFeedUrl = item.getUrl();
+
+            /*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+            rssFeediFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp") && currentDate.after(startDate) && currentDate.before(endDate)){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            terminalProgress.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(VISIBLE);
+            terminalLogo.setVisibility(VISIBLE);
+            txtTerminal.setVisibility(VISIBLE);
+            /*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+
+
+            }
+
+            Glide.with(getApplicationContext())
+                    .load(item.getLogo())
+                    .transform(new RotateTransformation(0))
+                    .error(R.drawable.neo_logo)
+                    .into(terminalLogo);
+
+
+            txtTerminal.setText(item.getMain_text_translation());
+
+
+
+            String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
+
+            // Parse the cleaned JSON array string into a JSONArray
+            JSONArray app_queue_departmentsArray = null;
+            try {
+                app_queue_departmentsArray = new JSONArray(cleanedJsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e("overlays","jsonArray>>>"+app_queue_departmentsArray);
+            // Now you can iterate through the elements of the array
+            terminalList.clear();
+            for (int i = 0; i < app_queue_departmentsArray.length(); i++) {
+                // Access each element using jsonArray.getString(i)
+                try {
+                    String departmentName = app_queue_departmentsArray.getString(i);
+                    //List<TerminalModel> items = new ArrayList<>();
+                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName, item.getApp_id()));
+                    Log.e("overlays","terminalList>>>"+terminalList);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // Do something with the departmentName...
+            }
+            terminalAdapter = new TerminalAdapter(this, terminalList);
+            terminalView.setAdapter(terminalAdapter);
+            terminalAdapter.notifyDataSetChanged();
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp") && currentDate.after(startDate) && currentDate.before(endDate)){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(VISIBLE);
+            clearTimeout4();
+            updateTime();
+            handler4.postDelayed(timeUpdater, 1000);
+
+           /* ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*/
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+                }
+
+
+            }
+
+            initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
+
+            if(item.getShow_news_channel().equals("2")){
+                displayOverlay.setVisibility(VISIBLE);
+            }else{
+                displayOverlay.setVisibility(GONE);
+            }
+
+            displayOverLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else{
+            Log.e("NotScheduleMatch","NotScheduleMatch>>>");
+        }
+
+
+        contentCurrentIndex++;
+        if (contentCurrentIndex >= list.size()) {
+            contentCurrentIndex = 0;
+        }
+        Log.e("newDuration","duration>>>"+duration);
+        Log.e("newDuration","newDuration>>>"+newDuration);
+
+    }
+    @SuppressLint("NotifyDataSetChanged")
     private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
         getOrientationDetails = sessionManagement.getOrientDetails();
@@ -1673,13 +2610,115 @@ public class MainActivity extends AppCompatActivity {
         slideShowCallCount++;
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
-        ContentModel item = list.get(contentCurrentIndex);
+
+
+        if (list.get(contentCurrentIndex).getIs_schedulled_content()){
+            try {
+                Calendar currentTime = Calendar.getInstance();
+                Log.e("currentTime","currentTime>>>"+currentTime);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+                String formattedCurrentTime = sdf.format(currentTime.getTime());
+                Log.e("formattedCurrentTime","formattedCurrentTime>>>"+formattedCurrentTime);
+
+                Date currentDate = currentTime.getTime();
+                Log.e("currentDate","currentDate>>>"+currentDate);
+                Date startDate = sdf.parse(list.get(contentCurrentIndex).getStart_date());
+                Date endDate = sdf.parse(list.get(contentCurrentIndex).getEnd_date());
+
+                Log.e("startDate","startDate>>>"+startDate);
+                Log.e("endDate","endDate>>>"+endDate);
+                if(currentDate.after(startDate) && currentDate.before(endDate)){
+                    ContentModel item = list.get(contentCurrentIndex);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    Log.e("currentDate","contentLayItem>>>");
+                    contentLayItem(item,list,duration);
+                }
+
+
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            Log.e("getTime","getTime>>>"+list.get(contentCurrentIndex).getTime());
+            Log.e("getDays","getDays>>>"+list.get(contentCurrentIndex).getDays());
+            String jsonTimeString = list.get(contentCurrentIndex).getTime();
+            String jsonDaysString = list.get(contentCurrentIndex).getDays();
+            try {
+                JSONArray jsonDaysArray = new JSONArray(jsonDaysString);
+                Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray);
+                Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray.length());
+                // Parse the JSON string
+                JSONArray jsonTimeArray = new JSONArray(jsonTimeString);
+                Log.e("JSON Data", "jsonTimeArray" + jsonTimeArray);
+                Calendar calendar = Calendar.getInstance();
+                String today = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(calendar.getTime()).toLowerCase(); // Get the current day in lowercase
+                Log.e("JSON Data", "today" + today);
+                // Check if today is in the days array
+                if (list.get(contentCurrentIndex).getDays().contains(today)) {
+                    if(jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
+                        String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+                        boolean contentShown = false;
+
+                        for (int i = 0; i < jsonTimeArray.length(); i++) {
+                            JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
+                            String startTime = jsonObject.getString("start_time");
+                            String endTime = jsonObject.getString("end_time");
+
+                            if (isTimeWithinRange(startTime, endTime, currentTime)) {
+                                contentShown = true;
+                                break;
+                            }
+                        }
+
+                        if (contentShown) {
+                            // Show content
+                            ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>1");
+                            contentLayItem(item,list,duration);
+                        } else {
+                            // Do not show content
+                        }
+
+                    }
+
+                }
+                else{
+                    ContentModel item = list.get(contentCurrentIndex);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    Log.e("currentDate","contentLayItem>>>2");
+                    contentLayItem(item,list,duration);
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+       /* ContentModel item = list.get(contentCurrentIndex);
         parentTopOverlay.setVisibility(GONE);
         parentLeftOverlay.setVisibility(GONE);
         parentRightOverlay.setVisibility(GONE);
         parentBottomOverlay.setVisibility(GONE);
-        Log.e("newDuration","newDuration>>>"+item.getDuration());
-        if (item.getType().equals("image")){
+        Log.e("newDuration","newDuration>>>"+item.getDuration());*/
+
+
+
+
+
+       /* if (item.getType().equals("image")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -1756,6 +2795,714 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            video_progress.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(VISIBLE);
+            video_progress1.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            String urlString = item.getUrl();
+            Uri uri = Uri.parse(urlString);
+            // Alternatively, you can use Uri's methods to achieve the same
+            String path = uri.getPath();
+            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
+            // Create an instance of DatabaseHelper
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+
+            if (contentCurrentIndex <list.size()) {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        @SuppressLint("Range")
+                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                        @SuppressLint("Range")
+                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                        else{
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // Create an instance of FileDownloader
+                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                @Override
+                                public void onDownloadComplete(String filePath) {
+                                    // Create a VideoItem object
+                                    VideoItem videoItem = new VideoItem();
+                                    videoItem.setTitle(filenameFromUri);
+                                    videoItem.setVideo_url(item.getUrl());
+                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                    // Add the video to the database
+                                    long id = dbHelper.addVideo(videoItem);
+                                    Log.e("Tag","filenameid>>>"+id);
+                                    // Handle download completion
+                                    Log.d("TAG", "File downloaded: " + filePath);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    // Handle download error
+                                    Log.e("TAG", "Error downloading file: " + errorMessage);
+                                }
+
+                                @Override
+                                public void onDownloadStatus(boolean isDownloading) {
+                                    Log.e("TAG", "downloading status: " + isDownloading);
+                                    downloadStatus=isDownloading;
+                                }
+                            });
+
+                            fileDownloader.execute(item.getUrl());
+
+
+
+                        }
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+                else{
+                    // Create an instance of FileDownloader
+                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                        @Override
+                        public void onDownloadComplete(String filePath) {
+                            Log.e("Tag","filePath>>>"+filePath);
+                            // Create a VideoItem object
+                            VideoItem videoItem = new VideoItem();
+                            videoItem.setTitle(filenameFromUri);
+                            videoItem.setVideo_url(item.getUrl());
+                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                            // Add the video to the database
+                            long id = dbHelper.addVideo(videoItem);
+                            Log.e("Tag","firstfilenameid>>>"+id);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Handle download error
+                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                        }
+
+                        @Override
+                        public void onDownloadStatus(boolean isDownloading) {
+                            Log.e("TAG", "downloading status: " + isDownloading);
+                            downloadStatus=isDownloading;
+                        }
+                    });
+
+                    fileDownloader.execute(item.getUrl());
+
+
+                }
+            }
+
+            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
+
+            // Initialize ExoPlayer instance
+
+            player = new SimpleExoPlayer.Builder(this).build();
+
+            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
+                player.stop(); // Stop the player
+                player.release(); // Release the player
+                player = null; // Set player to null
+            }
+
+            try {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                    Log.e("Tag","filename>>>"+localFilePath);
+
+                    if (localFilePath==null){
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(item.getUrl())
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","Test>>>"+localFilePath);
+                    }else{
+                        mediaItem = null;
+                        mediaItem = new MediaItem.Builder()
+                                .setUri(Uri.parse("file://"+localFilePath))
+                                .setMimeType(MimeTypes.APPLICATION_MP4)
+                                .build();
+                        Log.e("Tag","test>>>1"+localFilePath);
+
+                    }
+
+                    cursor.close();
+                }
+                else{
+                    mediaItem = null;
+                    mediaItem = new MediaItem.Builder()
+                            .setUri(item.getUrl())
+                            .setMimeType(MimeTypes.APPLICATION_MP4)
+                            .build();
+                    Log.e("Tag","test>>>3");
+                }
+
+
+                // Create a MediaSource using ProgressiveMediaSource.Factory
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
+                MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(mediaItem);
+                // Assign the media source to the player and start preparing
+                player.setMediaSource(mediaSource);
+                player.setVolume(0f); // Mute the player
+                player.seekTo(0, 0L); // Seek to the beginning
+                player.prepare(); // Transition player to the prepared state
+                // Attach player listener
+                player.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                        if (playbackState == Player.STATE_READY && playWhenReady) {
+                            if (strech.equals("off")){
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                            }
+                            else{
+                                // Handle size changes if needed
+                                if (orientation.equals("90 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 90);
+                                }
+                                else if (orientation.equals("180 degrees")) {
+                                    playerView.getVideoSurfaceView().setRotation(180);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+                                else if (orientation.equals("270 degrees")) {
+                                    configureExoPlayerStretchVideoViewTransform(playerView.getVideoSurfaceView().getWidth(), playerView.getVideoSurfaceView().getHeight(), 270);
+                                }
+                                else {
+                                    playerView.getVideoSurfaceView().setRotation(0);
+                                    playerView.getVideoSurfaceView().setScaleX(1);
+                                    playerView.getVideoSurfaceView().setScaleY(1);
+                                }
+
+                            }
+                            //overLays(item);
+                            video_progress1.setVisibility(GONE);
+                            playerView.setVisibility(VISIBLE);
+
+
+                        }
+                    }
+                });
+
+                // Start playback
+                player.setPlayWhenReady(true);
+
+                // Attach the player to the PlayerView
+                playerView.setPlayer(player);
+
+                myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("Tag","videoView>>>5");
+                        playerView.setVisibility(GONE);
+                        videoView.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+
+                        releasePlayer();
+                        contentLay(list);
+
+                    }
+                };
+                handler.postDelayed(myRunnable, duration);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
+        }
+        *//*else if(item.getType().equals("video")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(VISIBLE);
+            video_progress.setVisibility(VISIBLE);
+
+            videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
+
+            if(videoView.getSurfaceTexture()!=null){
+                releaseMediaPlayer();
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
+            }
+
+            videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                @Override
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    // Release the MediaPlayer when the TextureView is destroyed
+                    releaseMediaPlayer();
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+
+                }
+            });
+
+
+        }*//*
+        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            iFrameLay(item.getUrl(),list,duration,item);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            clockiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+
+            overLays(item);
+
+            countDowniFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            webUriiFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+
+            webView_lay.setVisibility(VISIBLE);
+            overLays(item);
+            vimeoiFrameLay(item.getUrl(),list,item,duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(VISIBLE);
+            rssProgrss.setVisibility(VISIBLE);
+            overLays(item);
+
+            String rssFeedUrl = item.getUrl();
+
+            *//*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*//*
+
+            rssFeediFrameLay(item.getUrl(),list,item,duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
+            parentContentImage.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            terminalProgress.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            terminal_lay.setVisibility(VISIBLE);
+            terminalLogo.setVisibility(VISIBLE);
+            txtTerminal.setVisibility(VISIBLE);
+            *//*ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*//*
+
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
+                }
+                else {
+                    terminal_lay.setScaleX(1);
+                    terminal_lay.setScaleY(1);
+                    terminal_lay.setRotation(0);
+
+                }
+
+
+            }
+
+            Glide.with(getApplicationContext())
+                    .load(item.getLogo())
+                    .transform(new RotateTransformation(0))
+                    .error(R.drawable.neo_logo)
+                    .into(terminalLogo);
+
+
+            txtTerminal.setText(item.getMain_text_translation());
+
+
+
+            String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
+
+            // Parse the cleaned JSON array string into a JSONArray
+            JSONArray app_queue_departmentsArray = null;
+            try {
+                app_queue_departmentsArray = new JSONArray(cleanedJsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e("overlays","jsonArray>>>"+app_queue_departmentsArray);
+            // Now you can iterate through the elements of the array
+            terminalList.clear();
+            for (int i = 0; i < app_queue_departmentsArray.length(); i++) {
+                // Access each element using jsonArray.getString(i)
+                try {
+                    String departmentName = app_queue_departmentsArray.getString(i);
+                    //List<TerminalModel> items = new ArrayList<>();
+                    terminalList.add(new TerminalModel(R.drawable.ic_launcher_foreground, departmentName, item.getApp_id()));
+                    Log.e("overlays","terminalList>>>"+terminalList);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // Do something with the departmentName...
+            }
+            terminalAdapter = new TerminalAdapter(this, terminalList);
+            terminalView.setAdapter(terminalAdapter);
+            terminalAdapter.notifyDataSetChanged();
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            parentContentImage.setVisibility(GONE);
+            display_lay.setVisibility(VISIBLE);
+            clearTimeout4();
+            updateTime();
+            handler4.postDelayed(timeUpdater, 1000);
+
+           *//* ViewGroup.MarginLayoutParams params1 =
+                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
+            params1.setMargins(0, 0, 0, 0);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            displayLayWidth = displayMetrics.widthPixels;
+            displayLayHeight = displayMetrics.heightPixels;*//*
+
+            if (strech.equals("off")){
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+
+                }
+            }
+            else{
+                // Handle size changes if needed
+                if (orientation.equals("90 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
+                }
+                else if (orientation.equals("180 degrees")) {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(180);
+                }
+                else if (orientation.equals("270 degrees")) {
+                    configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 270);
+                }
+                else {
+                    display_lay.setScaleX(1);
+                    display_lay.setScaleY(1);
+                    display_lay.setRotation(0);
+                }
+
+
+            }
+
+            initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
+
+            if(item.getShow_news_channel().equals("2")){
+                displayOverlay.setVisibility(VISIBLE);
+            }else{
+                displayOverlay.setVisibility(GONE);
+            }
+
+            displayOverLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+
+
+        contentCurrentIndex++;
+        if (contentCurrentIndex >= list.size()) {
+            contentCurrentIndex = 0;
+        }*/
+
+
+    }
+
+    private boolean isTimeWithinRange(String startTime, String endTime, String currentTime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        try {
+            Date currentTimeDate = sdf.parse(currentTime);
+            Date startTimeDate = sdf.parse(startTime);
+            Date endTimeDate = sdf.parse(endTime);
+
+            return currentTimeDate.compareTo(startTimeDate) >= 0 && currentTimeDate.compareTo(endTimeDate) <= 0;
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void contentLayItem(ContentModel item, List<ContentModel> list, long duration) {
+        if (item.getType().equals("image")){
+            terminalLogo.setVisibility(GONE);
+            txtTerminal.setVisibility(GONE);
+            terminal_lay.setVisibility(GONE);
+            parentVideoView.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            parentContentRssFeed.setVisibility(GONE);
+            webView_lay.setVisibility(GONE);
+            display_lay.setVisibility(GONE);
+            content_image.setImageBitmap(null);
+            content_image.destroyDrawingCache();
+            parentContentImage.setVisibility(VISIBLE);
+
+
+
+            if (orientation.equals("90 degrees")) {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(90))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else if (orientation.equals("180 degrees")) {
+                Glide.with(getApplicationContext())
+                        .load(item.getUrl())
+                        .error(R.drawable.neo_logo)
+                        .transform(new RotateTransformation(180))  // Rotate by 270 degrees
+                        .into(content_image);
+
+
+            }
+            else if (orientation.equals("270 degrees")) {
+
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(270))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+
+            }
+            else {
+                if (item.getUrl() != null) {
+                    Glide.with(getApplicationContext())
+                            .load(item.getUrl())
+                            .error(R.drawable.neo_logo)
+                            .transform(new RotateTransformation(0))  // Rotate by 270 degrees
+                            .into(content_image);
+                }
+            }
+
+
+            if (strech.equals("off")){
+                content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            }
+            else{
+                content_image.setScaleType(ImageView.ScaleType.FIT_XY);
+
+            }
+
+            overLays(item);
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, 10000);
         }
         else if(item.getType().equals("video")){
             terminalLogo.setVisibility(GONE);
@@ -2361,15 +4108,12 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
 
-
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
         }
-        Log.e("newDuration","duration>>>"+duration);
-        Log.e("newDuration","newDuration>>>"+newDuration);
-
     }
+
     private void overLays(ContentModel item) {
         ViewGroup.MarginLayoutParams params1 =
                 (ViewGroup.MarginLayoutParams)contentLay2.getLayoutParams();

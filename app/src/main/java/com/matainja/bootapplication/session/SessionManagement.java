@@ -166,13 +166,18 @@ public class SessionManagement {
     }
 
     //Session clear
-    public void clearSession(){
+    public void clearSlideItemSession(){
         Log.e("Tag","remove>>>2");
-        editor.remove(ORIENTATION);
-        editor.remove(STRECH);
         editor.remove("slideItem");
         editor.remove("displayrssfeed");
     // Apply the changes
+        editor.apply();
+    }
+    public void clearScheduleSlideItemSession(){
+        Log.e("Tag","remove>>>2");
+        editor.remove("scheduleSlideItem");
+        editor.remove("displayrssfeed");
+        // Apply the changes
         editor.apply();
     }
     public void clearRssFeedOverlaysSession(String laysId){

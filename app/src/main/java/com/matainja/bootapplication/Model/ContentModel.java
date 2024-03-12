@@ -29,6 +29,17 @@ public class ContentModel {
             feed_url,text;
     String days,time;
     String start_date, end_date;
+    Boolean is_schedulled_content;
+
+    public Boolean getIs_schedulled_content() {
+        return is_schedulled_content;
+    }
+
+    public void setIs_schedulled_content(Boolean is_schedulled_content) {
+        this.is_schedulled_content = is_schedulled_content;
+    }
+
+
 
     public String getStart_date() {
         return start_date;
@@ -545,7 +556,7 @@ public class ContentModel {
                         String display_id, String display_app_id, String history_translation,
                         String number_translation, String counter_translation,
                         String show_time, String show_history, String show_specific_screen, String show_news_channel, String screen_id,
-                        String feed_url, String text, String days, String time, String start_date, String end_date) {
+                        String feed_url, String text, String days, String time, String start_date, String end_date, Boolean is_schedulled_content) {
         this.type = type;
         this.url = url;
         this.duration = duration;
@@ -605,6 +616,7 @@ public class ContentModel {
         this.time=time;
         this.start_date=start_date;
         this.end_date=end_date;
+        this.is_schedulled_content = is_schedulled_content;
     }
 
     public String getType() {
