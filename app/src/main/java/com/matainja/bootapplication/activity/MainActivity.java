@@ -98,11 +98,14 @@ import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -2108,7 +2111,9 @@ public class MainActivity extends AppCompatActivity {
 
             // Initialize ExoPlayer instance
 
-            player = new SimpleExoPlayer.Builder(this).build();
+            player = new SimpleExoPlayer.Builder(this).setTrackSelector(new DefaultTrackSelector(this))
+                    .setLoadControl(new DefaultLoadControl())
+                    .build();
 
             if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
                 player.stop(); // Stop the player
@@ -3644,7 +3649,7 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
-        else if(item.getType().equals("video")){
+        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -3666,23 +3671,63 @@ public class MainActivity extends AppCompatActivity {
             String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
             // Create an instance of DatabaseHelper
             DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+            try {
+                if (contentCurrentIndex <list.size()) {
+                    Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        do {
+                            @SuppressLint("Range")
+                            String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                            @SuppressLint("Range")
+                            String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                            Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                            if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                            else{
+                                dbHelper.deleteVideoByTitle(localFileTitle);
+                                if(!downloadStatus){
+                                    // Create an instance of FileDownloader
+                                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                        @Override
+                                        public void onDownloadComplete(String filePath) {
+                                            // Create a VideoItem object
+                                            VideoItem videoItem = new VideoItem();
+                                            videoItem.setTitle(filenameFromUri);
+                                            videoItem.setVideo_url(item.getUrl());
+                                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                            // Add the video to the database
+                                            long id = dbHelper.addVideo(videoItem);
+                                            Log.e("Tag","filenameid>>>"+id);
+                                            // Handle download completion
+                                            Log.d("TAG", "File downloaded: " + filePath);
+                                        }
 
-            if (contentCurrentIndex <list.size()) {
-                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
-                if (cursor != null && cursor.moveToFirst()) {
-                    do {
-                        @SuppressLint("Range")
-                        String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
-                        @SuppressLint("Range")
-                        String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
-                        Log.e("Tag","localFileTitle>>>"+localFileTitle);
-                        if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
-                        else{
-                            dbHelper.deleteVideoByTitle(localFileTitle);
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            // Handle download error
+                                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                                        }
+
+                                        @Override
+                                        public void onDownloadStatus(boolean isDownloading) {
+                                            Log.e("TAG", "downloading status: " + isDownloading);
+                                            downloadStatus=isDownloading;
+                                        }
+                                    });
+
+                                    fileDownloader.execute(item.getUrl());
+                                }
+                            }
+                        }
+                        while (cursor.moveToNext());
+                        cursor.close();
+                    }
+                    else{
+                        if(!downloadStatus){
                             // Create an instance of FileDownloader
                             FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
                                 @Override
                                 public void onDownloadComplete(String filePath) {
+                                    Log.e("Tag","filePath>>>"+filePath);
                                     // Create a VideoItem object
                                     VideoItem videoItem = new VideoItem();
                                     videoItem.setTitle(filenameFromUri);
@@ -3690,9 +3735,7 @@ public class MainActivity extends AppCompatActivity {
                                     videoItem.setVideo_path(filePath); // Set local file path after downloading
                                     // Add the video to the database
                                     long id = dbHelper.addVideo(videoItem);
-                                    Log.e("Tag","filenameid>>>"+id);
-                                    // Handle download completion
-                                    Log.d("TAG", "File downloaded: " + filePath);
+                                    Log.e("Tag","firstfilenameid>>>"+id);
                                 }
 
                                 @Override
@@ -3709,64 +3752,33 @@ public class MainActivity extends AppCompatActivity {
                             });
 
                             fileDownloader.execute(item.getUrl());
-
-
-
                         }
-                    } while (cursor.moveToNext());
-                    cursor.close();
+
+                    }
                 }
-                else{
-                    // Create an instance of FileDownloader
-                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
-                        @Override
-                        public void onDownloadComplete(String filePath) {
-                            Log.e("Tag","filePath>>>"+filePath);
-                            // Create a VideoItem object
-                            VideoItem videoItem = new VideoItem();
-                            videoItem.setTitle(filenameFromUri);
-                            videoItem.setVideo_url(item.getUrl());
-                            videoItem.setVideo_path(filePath); // Set local file path after downloading
-                            // Add the video to the database
-                            long id = dbHelper.addVideo(videoItem);
-                            Log.e("Tag","firstfilenameid>>>"+id);
-                        }
 
-                        @Override
-                        public void onError(String errorMessage) {
-                            // Handle download error
-                            Log.e("TAG", "Error downloading file: " + errorMessage);
-                        }
+                //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
-                        @Override
-                        public void onDownloadStatus(boolean isDownloading) {
-                            Log.e("TAG", "downloading status: " + isDownloading);
-                            downloadStatus=isDownloading;
-                        }
-                    });
+                // Initialize ExoPlayer instance
+                player = new SimpleExoPlayer.Builder(this).build();
 
-                    fileDownloader.execute(item.getUrl());
-
-
+                if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
+                    player.stop(); // Stop the player
+                    player.release(); // Release the player
+                    player = null; // Set player to null
                 }
+
             }
-
-            //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
-
-            // Initialize ExoPlayer instance
-
-            player = new SimpleExoPlayer.Builder(this).build();
-
-            if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
-                player.stop(); // Stop the player
-                player.release(); // Release the player
-                player = null; // Set player to null
+            catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
             }
 
             try {
                 Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
-
                 if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
                     @SuppressLint("Range")
                     String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
                     Log.e("Tag","filename>>>"+localFilePath);
@@ -3778,13 +3790,32 @@ public class MainActivity extends AppCompatActivity {
                                 .setMimeType(MimeTypes.APPLICATION_MP4)
                                 .build();
                         Log.e("Tag","Test>>>"+localFilePath);
-                    }else{
-                        mediaItem = null;
-                        mediaItem = new MediaItem.Builder()
-                                .setUri(Uri.parse("file://"+localFilePath))
-                                .setMimeType(MimeTypes.APPLICATION_MP4)
-                                .build();
-                        Log.e("Tag","test>>>1"+localFilePath);
+                    }
+                    else{
+                        File file = new File(localFilePath);
+                        if(!file.exists()) {
+                            mediaItem = null;
+                            mediaItem = new MediaItem.Builder()
+                                    .setUri(item.getUrl())
+                                    .setMimeType(MimeTypes.APPLICATION_MP4)
+                                    .build();
+
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // File does not exist, handle the situation accordingly
+                            Log.e("Tag", "File does not exist: " + file.getAbsolutePath());
+                            // You can display an error message to the user or attempt to redownload the file
+                        } else {
+                            // File exists, proceed with your code
+                            mediaItem = null;
+                            mediaItem = new MediaItem.Builder()
+                                    .setUri(Uri.parse("file://"+localFilePath))
+                                    .setMimeType(MimeTypes.APPLICATION_MP4)
+                                    .build();
+                            Log.e("Tag","test>>>1"+localFilePath);
+                        }
+
+
+
 
                     }
 
@@ -3798,7 +3829,6 @@ public class MainActivity extends AppCompatActivity {
                             .build();
                     Log.e("Tag","test>>>3");
                 }
-
 
                 // Create a MediaSource using ProgressiveMediaSource.Factory
                 DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
@@ -3860,13 +3890,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
-
                 // Start playback
                 player.setPlayWhenReady(true);
-
                 // Attach the player to the PlayerView
                 playerView.setPlayer(player);
-
                 myRunnable = new Runnable() {
                     @Override
                     public void run() {
@@ -3884,8 +3911,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
                 handler.postDelayed(myRunnable, duration);
-
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
                 // Handle exception
             }
@@ -4246,6 +4273,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             handler.postDelayed(myRunnable, duration);
+        }
+        else {
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, 0);
         }
 
         contentCurrentIndex++;

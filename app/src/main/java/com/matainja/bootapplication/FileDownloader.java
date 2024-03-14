@@ -59,7 +59,7 @@ public class FileDownloader extends AsyncTask<String, Void, String> {
                 FileOutputStream outputStream = new FileOutputStream(file);
                 InputStream inputStream = connection.getInputStream();
 
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[2048];
                 int bytesRead;
 
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
