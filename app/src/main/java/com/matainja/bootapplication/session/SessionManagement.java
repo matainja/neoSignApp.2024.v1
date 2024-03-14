@@ -169,7 +169,6 @@ public class SessionManagement {
     public void clearSlideItemSession(){
         Log.e("Tag","remove>>>2");
         editor.remove("slideItem");
-        editor.remove("displayrssfeed");
     // Apply the changes
         editor.apply();
     }
@@ -183,6 +182,12 @@ public class SessionManagement {
     public void clearRssFeedOverlaysSession(String laysId){
         Log.e("Tag","remove>>>1");
         editor.remove("rssfeed"+laysId);
+        // Apply the changes
+        editor.apply();
+    }
+    public void cleardisplayrssfeedOverlaysSession(){
+        Log.e("Tag","remove>>>1");
+        editor.remove("displayrssfeed");
         // Apply the changes
         editor.apply();
     }

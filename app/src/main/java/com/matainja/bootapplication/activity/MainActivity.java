@@ -188,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
     String countdownText;
     String orientation="Landscape";
     String strech="off";
+    int is_time_changed;
     String translationString;
     private Switch rootView1;
     private Switch rootView2;
@@ -1235,6 +1236,8 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject content = jsonObject.getJSONObject("content") ;
                             Boolean status1 = content.getBoolean("status");
                             if(status1){
+                                is_time_changed = content.getInt("is_time_changed");
+                                Log.e("Tag","is_time_changed>>>"+is_time_changed);
                                 String orientations = content.getString("orientation");
                                 String stretch = content.getString("stretch");
                                 sessionManagement.createStrechSession(stretch);
@@ -1253,30 +1256,35 @@ public class MainActivity extends AppCompatActivity {
                                 Log.e("Tag","scheduled_data>>>"+scheduled_data);*/
 
                                 if(dataArray.length()>0){
-                                    File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-                                    if (directory.exists()) {
-                                        File[] files = directory.listFiles();
-                                        if (files != null) {
-                                            for (File file : files) {
-                                                boolean isDeleted = file.delete();
-                                                if (!isDeleted) {
-                                                    Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
+                                    if (is_time_changed==0){
+                                        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+                                        if (directory.exists()) {
+                                            File[] files = directory.listFiles();
+                                            if (files != null) {
+                                                for (File file : files) {
+                                                    boolean isDeleted = file.delete();
+                                                    if (!isDeleted) {
+                                                        Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
+                                                    }
                                                 }
                                             }
-                                        }
-                                        boolean isDeleted = directory.delete();
-                                        if (isDeleted) {
-                                            Log.d("TAG", "Directory deleted successfully");
+                                            boolean isDeleted = directory.delete();
+                                            if (isDeleted) {
+                                                Log.d("TAG", "Directory deleted successfully");
+                                            } else {
+                                                Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
+                                            }
                                         } else {
-                                            Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
+                                            Log.d("TAG", "Directory doesn't exist");
                                         }
-                                    } else {
-                                        Log.d("TAG", "Directory doesn't exist");
+
+                                        // Create an instance of DatabaseHelper
+                                        DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+                                        dbHelper.deleteAllVideos();
                                     }
 
-                                    // Create an instance of DatabaseHelper
-                                    DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
-                                    dbHelper.deleteAllVideos();
+
+
 
 
 
@@ -1332,7 +1340,10 @@ public class MainActivity extends AppCompatActivity {
                                             laysContent=overlays.getString("content");
                                             laysRssInfo=overlays.getString("rssinfo");
                                             laysDeleted=overlays.getString("is_deleted");
-                                            sessionManagement.clearRssFeedOverlaysSession(laysId);
+                                            if (is_time_changed==0){
+                                                sessionManagement.clearRssFeedOverlaysSession(laysId);
+                                            }
+
                                             Log.e("overlays","laysContentType>>>"+laysContentType);
                                         }
 
@@ -1410,6 +1421,9 @@ public class MainActivity extends AppCompatActivity {
                                                 show_time,show_history,show_specific_screen,show_news_channel,screen_id,
                                                 feed_url,text,days,time,start_date,end_date,is_schedulled_content
                                         ));
+                                        if (is_time_changed==0){
+                                            sessionManagement.cleardisplayrssfeedOverlaysSession();
+                                        }
                                         sessionManagement.clearSlideItemSession();
                                         sessionManagement.createContentDataSession(newSlideItems);
                                     }
@@ -2659,7 +2673,115 @@ public class MainActivity extends AppCompatActivity {
                 String today = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(calendar.getTime()).toLowerCase(); // Get the current day in lowercase
                 Log.e("JSON Data", "today" + today);
                 // Check if today is in the days array
-                if (list.get(contentCurrentIndex).getDays().contains(today)) {
+                if (jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
+                    if (list.get(contentCurrentIndex).getDays().contains(today)) {
+                        String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+                        boolean contentShown = false;
+                        for (int i = 0; i < jsonTimeArray.length(); i++) {
+                            JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
+                            String startTime = jsonObject.getString("start_time");
+                            String endTime = jsonObject.getString("end_time");
+
+                            if (isTimeWithinRange(startTime, endTime, currentTime)) {
+                                contentShown = true;
+                                break;
+                            }
+                        }
+
+                        if (contentShown) {
+                                // Show content
+                                ContentModel item = list.get(contentCurrentIndex);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                Log.e("currentDate","contentLayItem>>>1");
+                                contentLayItem(item,list,duration);
+                            }
+                        else {
+                                // Do not show content
+                        }
+                    }
+                    else{
+                        ContentModel item = list.get(contentCurrentIndex);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        Log.e("currentDate","contentLayItem>>>5");
+                        contentLayItem(item,list,0);
+                    }
+                }
+                else if(jsonDaysArray.length() == 0 && jsonTimeArray.length()>0){
+                    String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+                    boolean contentShown = false;
+                    for (int i = 0; i < jsonTimeArray.length(); i++) {
+                        JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
+                        String startTime = jsonObject.getString("start_time");
+                        String endTime = jsonObject.getString("end_time");
+
+                        if (isTimeWithinRange(startTime, endTime, currentTime)) {
+                            contentShown = true;
+                            break;
+                        }
+                    }
+
+                    if (contentShown) {
+                        // Show content
+                        ContentModel item = list.get(contentCurrentIndex);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        Log.e("currentDate","contentLayItem>>>2");
+                        contentLayItem(item,list,duration);
+                    }
+                    else {
+                        // Do not show content
+                        ContentModel item = list.get(contentCurrentIndex);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        Log.e("currentDate","contentLayItem>>>6");
+                        contentLayItem(item,list,0);
+
+                    }
+
+                }
+                else if(jsonDaysArray.length() > 0 && jsonTimeArray.length()==0){
+                    if (list.get(contentCurrentIndex).getDays().contains(today)){
+                        // Show content
+                        ContentModel item = list.get(contentCurrentIndex);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        Log.e("currentDate","contentLayItem>>>3");
+                        contentLayItem(item,list,duration);
+                    }
+                    else{
+                        ContentModel item = list.get(contentCurrentIndex);
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        Log.e("currentDate","contentLayItem>>>7");
+                        contentLayItem(item,list,0);
+                    }
+                }
+                else{
+                    ContentModel item = list.get(contentCurrentIndex);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    Log.e("currentDate","contentLayItem>>>4");
+                    contentLayItem(item,list,duration);
+                }
+
+
+                /*if (list.get(contentCurrentIndex).getDays().contains(today)) {
                     if(jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
                         String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
                         boolean contentShown = false;
@@ -2699,7 +2821,7 @@ public class MainActivity extends AppCompatActivity {
                     parentBottomOverlay.setVisibility(GONE);
                     Log.e("currentDate","contentLayItem>>>2");
                     contentLayItem(item,list,duration);
-                }
+                }*/
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -3417,7 +3539,25 @@ public class MainActivity extends AppCompatActivity {
             Date startTimeDate = sdf.parse(startTime);
             Date endTimeDate = sdf.parse(endTime);
 
-            return currentTimeDate.compareTo(startTimeDate) >= 0 && currentTimeDate.compareTo(endTimeDate) <= 0;
+            // Case 1: Start time equals end time
+            if (startTimeDate.compareTo(endTimeDate) == 0) {
+                // If current time is equal to start time, it's within range
+                return currentTimeDate.compareTo(startTimeDate) == 0;
+            }
+
+            // Case 2: Start time is greater than end time
+            else if (startTimeDate.compareTo(endTimeDate) > 0) {
+                // If current time is after start time or before end time, it's within range
+                return currentTimeDate.compareTo(startTimeDate) >= 0 || currentTimeDate.compareTo(endTimeDate) <= 0;
+            }
+
+            // Case 3: Normal case where start time is less than end time
+            else {
+                // If current time is between start time and end time, it's within range
+                return currentTimeDate.compareTo(startTimeDate) >= 0 && currentTimeDate.compareTo(endTimeDate) <= 0;
+            }
+
+            //return currentTimeDate.compareTo(startTimeDate) >= 0 && currentTimeDate.compareTo(endTimeDate) <= 0;
 
         } catch (ParseException e) {
             e.printStackTrace();
@@ -3502,7 +3642,7 @@ public class MainActivity extends AppCompatActivity {
                     contentLay(list);
                 }
             };
-            handler.postDelayed(myRunnable, 10000);
+            handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video")){
             terminalLogo.setVisibility(GONE);
@@ -5415,10 +5555,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
     private void configureOverlayStretchTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         contentLay2.setRotation(rotationDegrees);
-
+        if (contentLay2.getWidth() == 0 || contentLay2.getHeight() == 0) {
+            // Handle the case where width or height is zero
+            return;
+        }
         // Calculate the scale factors to fill the entire screen
         float scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
         float scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
@@ -5431,7 +5576,10 @@ public class MainActivity extends AppCompatActivity {
     private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         myWebView.setRotation(rotationDegrees);
-
+        if (myWebView.getWidth() == 0 || myWebView.getHeight() == 0) {
+            // Handle the case where width or height is zero
+            return;
+        }
         // Calculate the scale factors to fill the entire screen
         float scaleX = (float) myWebView.getHeight() / myWebView.getWidth();
         float scaleY = (float) myWebView.getWidth() / myWebView.getHeight();
@@ -5443,7 +5591,10 @@ public class MainActivity extends AppCompatActivity {
     private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         playerView.getVideoSurfaceView().setRotation(rotationDegrees);
-
+        if (playerView.getVideoSurfaceView().getWidth() == 0 || playerView.getVideoSurfaceView().getHeight() == 0) {
+            // Handle the case where width or height is zero
+            return;
+        }
         // Calculate the scale factors to fill the entire screen
         float scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
         float scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
@@ -5453,6 +5604,7 @@ public class MainActivity extends AppCompatActivity {
         playerView.getVideoSurfaceView().setScaleY(scaleY);
 
     }
+
     private void releasePlayer() {
         if (player != null) {
             player.stop();
