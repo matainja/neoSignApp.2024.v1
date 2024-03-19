@@ -291,28 +291,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       /* File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    boolean isDeleted = file.delete();
-                    if (!isDeleted) {
-                        Log.e("TAG", "Failed to delete file: " + file.getAbsolutePath());
-                    }
-                }
-            }
-            boolean isDeleted = directory.delete();
-            if (isDeleted) {
-                Log.d("TAG", "Directory deleted successfully");
-            } else {
-                Log.e("TAG", "Failed to delete directory: " + directory.getAbsolutePath());
-            }
-        } else {
-            Log.d("TAG", "Directory doesn't exist");
-        }*/
-        initSession();
 
+        initSession();
+        //checkPermissions();
 
 
 
@@ -324,6 +305,8 @@ public class MainActivity extends AppCompatActivity {
                 getPermission1();
             }
         }*/
+
+        checkPermissions();
 
         //accessAllPermission();
 
@@ -2655,6 +2638,15 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("currentDate","contentLayItem>>>");
                     contentLayItem(item,list,duration);
                 }
+                else{
+                    ContentModel item = list.get(contentCurrentIndex);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    Log.e("currentDate","contentLayItem>>>9");
+                    contentLayItem(item,list,0);
+                }
 
 
 
@@ -2704,7 +2696,14 @@ public class MainActivity extends AppCompatActivity {
                                 contentLayItem(item,list,duration);
                             }
                         else {
-                                // Do not show content
+                            // Do not show content
+                            ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>8");
+                            contentLayItem(item,list,0);
                         }
                     }
                     else{
@@ -7999,6 +7998,25 @@ public class MainActivity extends AppCompatActivity {
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
         }
+        else if (requestCode == PERMISSION_CALLBACK_CONSTANT) {
+            boolean allPermissionsGranted = true;
+            for (int result : grantResults) {
+                Log.e("Tag","result>>>"+result);
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false;
+                    break;
+                }
+            }
+            if (allPermissionsGranted) {
+                // All permissions granted, proceed with your logic
+                // For example, you can call a method here to start using the granted permissions
+            } else {
+                // Permission denied, handle accordingly
+                // You can show another dialog explaining the need for permissions
+                // or disable functionality that requires permissions
+                showPermissionExplanationDialog(permissions);
+            }
+        }
 
 
 
@@ -8264,86 +8282,151 @@ public class MainActivity extends AppCompatActivity {
         );
         return imageFile;
     }
-    private void getPermission() {
-        if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, permissionsRequired[1]) != PackageManager.PERMISSION_GRANTED
-                ) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0]) ||
-                    ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[1])) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Need Multiple Permissions");
-                builder.setMessage("This app needs Media Storage permissions.");
-                builder.setPositiveButton("Grant", (dialog, which) -> {
-                    dialog.cancel();
-                    ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
-                });
-                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-                builder.show();
+   /* private void getPermission() {
+        boolean allPermissionsGranted = true;
+        for (String permission : permissionsRequired) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                allPermissionsGranted = false;
+                break;
             }
-            else if (permissionStatus.getBoolean(permissionsRequired[0], false)) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Need Permissions");
-                builder.setMessage("This app needs Media Storage permissions.");
-                builder.setPositiveButton("Grant", (dialog, which) -> {
-                    dialog.cancel();
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                    intent.setData(uri);
-                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
-                    Toast.makeText(this, "Go to Permissions to Grant Media Storage", Toast.LENGTH_LONG).show();
-                });
-                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-                builder.show();
-            }
-            else {
-                ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
-            }
-
-            SharedPreferences.Editor editor = permissionStatus.edit();
-            editor.putBoolean(permissionsRequired[0], true);
-            editor.apply();
         }
+        if (!allPermissionsGranted){
+            if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(this, permissionsRequired[1]) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.e("Tag","result>>>1");
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0]) ||
+                        ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[1])) {
+                    Log.e("Tag","result>>>2");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Need Multiple Permissions");
+                    builder.setMessage("This app needs Media Storage permissions.");
+                    builder.setPositiveButton("Grant", (dialog, which) -> {
+                        dialog.cancel();
+                        ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+                    });
+                    builder.setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss(); // Dismiss the dialog
+                        //openAppSettings(); // Open app settings
+                    });
+                    builder.show();
+                }
+                else {
+                    Log.e("Tag","result>>>3");
+                    ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+                }
+
+            }
+        }
+
     }
     private void getPermission1() {
-        if (ContextCompat.checkSelfPermission(this, permissionsRequired1[0]) != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired1[0])) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Need  Permissions");
-                builder.setMessage("This app needs Media Storage permissions.");
-                builder.setPositiveButton("Grant", (dialog, which) -> {
-                    dialog.cancel();
-                    ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
-                });
-                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-                builder.show();
+        boolean allPermissionsGranted = true;
+        for (String permission : permissionsRequired) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                allPermissionsGranted = false;
+                break;
             }
-            else if (permissionStatus.getBoolean(permissionsRequired1[0], false)) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Need Permissions");
-                builder.setMessage("This app needs Media Storage permissions.");
-                builder.setPositiveButton("Grant", (dialog, which) -> {
-                    dialog.cancel();
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                    intent.setData(uri);
-                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
-                    Toast.makeText(this, "Go to Permissions to GrantMedia Storage", Toast.LENGTH_LONG).show();
-                });
-                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-                builder.show();
-            }
-            else {
-                ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
-            }
-            SharedPreferences.Editor editor = permissionStatus.edit();
-            editor.putBoolean(permissionsRequired1[0], true);
-            editor.apply();
         }
+        if (!allPermissionsGranted){
+            if (ContextCompat.checkSelfPermission(this, permissionsRequired1[0]) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("Tag","result>>>4");
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired1[0])) {
+                    Log.e("Tag","result>>>5");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Need  Permissions");
+                    builder.setMessage("This app needs Media Storage permissions.");
+                    builder.setPositiveButton("Grant", (dialog, which) -> {
+                        dialog.cancel();
+                        ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
+                    });
+                    builder.setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss(); // Dismiss the dialog
+                        //openAppSettings(); // Open app settings
+                    });
+                    builder.show();
+                }
+                else {
+                    Log.e("Tag","result>>>6");
+                    ActivityCompat.requestPermissions(this, permissionsRequired1, PERMISSION_CALLBACK_CONSTANT);
+                }
+
+
+            }
+        }
+
+    }*/
+
+
+    private void checkPermissions() {
+        String[] permissionsRequired;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissionsRequired = new String[]{
+                    Manifest.permission.READ_MEDIA_VIDEO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+        } else {
+            permissionsRequired = new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+        }
+
+        boolean allPermissionsGranted = true;
+        for (String permission : permissionsRequired) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                allPermissionsGranted = false;
+                break;
+            }
+        }
+        if (!allPermissionsGranted) {
+            if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0])) {
+                    // Show rationale if needed
+                    showPermissionRationaleDialog(permissionsRequired);
+                } else {
+                    // Request permission
+                    ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+                }
+            }
+        }
+
+
     }
+
+    private void showPermissionRationaleDialog(final String[] permissionsRequired) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Need Permission");
+        builder.setMessage("This app needs storage permission to function properly.");
+        builder.setPositiveButton("Grant", (dialog, which) -> {
+            dialog.dismiss();
+            ActivityCompat.requestPermissions(MainActivity.this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+    private void showPermissionExplanationDialog(final String[] permissions) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permission Required");
+        builder.setMessage("This app requires storage permission to function properly. Please grant the permission.");
+        builder.setPositiveButton("Grant", (dialog, which) -> {
+            dialog.dismiss(); // Dismiss the dialog
+            // Request permission again
+            openAppSettings();
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            dialog.dismiss(); // Dismiss the dialog
+            //openAppSettings(); // Open app settings
+        });
+        builder.show();
+    }
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
