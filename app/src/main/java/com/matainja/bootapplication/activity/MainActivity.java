@@ -98,6 +98,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.MediaItem;
@@ -150,6 +151,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -170,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
     Switch keepOnTopSwitch;
     TextView auto_start,auto_start_title;
     PowerManager.WakeLock powerLatch;
+
     SessionManagement sessionManagement;
     SharedPreferences sharedPreferences;
     public static final String MyPREFERENCES = "MyPrefs" ;
@@ -667,7 +670,9 @@ public class MainActivity extends AppCompatActivity {
         powerLatch = powerManager.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
                         PowerManager.ACQUIRE_CAUSES_WAKEUP, "Lock");
-        if (isWakeUP){
+        boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
+
+        /*if (isWakeUP){
             keepAwakeSwitch.setChecked(true);
             //This code holds the CPU
             //powerLatch.acquire(24*60*60*1000L);
@@ -749,10 +754,123 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog alert = builder.create();
                 alert.show();
             }
+        });*/
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (isPowerSavingEnabled){
+                keepAwakeSwitch.setChecked(true);
+                //This code holds the CPU
+                //powerLatch.acquire(24*60*60*1000L);
+                powerLatch.acquire();
+                sessionManagement.createWakeupSession(true);
+            }
+            else{
+                keepAwakeSwitch.setChecked(false);
+                //This code holds the CPU
+                if (powerLatch.isHeld()){
+                    powerLatch.release();
+                    sessionManagement.createWakeupSession(false);
+                }
+            }
+        }
+        else {
+            if (isWakeUP){
+                keepAwakeSwitch.setChecked(true);
+                //This code holds the CPU
+                //powerLatch.acquire(24*60*60*1000L);
+                powerLatch.acquire();
+                sessionManagement.createWakeupSession(true);
+            }
+            else{
+                keepAwakeSwitch.setChecked(false);
+                //This code holds the CPU
+                if (powerLatch.isHeld()){
+                    powerLatch.release();
+                    sessionManagement.createWakeupSession(false);
+                }
+            }
+        }
+
+
+
+        keepAwakeSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Intent intent = new Intent();
+                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                    startActivity(intent);
+                } else {
+                    if (keepAwakeSwitch.isChecked()){
+                        //This code holds the CPU
+                        powerLatch.acquire();
+                        sessionManagement.createWakeupSession(true);
+                    }else{
+                        //This code holds the CPU
+                        if (powerLatch.isHeld()){
+                            powerLatch.release();
+                            sessionManagement.createWakeupSession(false);
+                        }
+
+                    }
+                }
+            }
         });
 
+        parent_keep_awake.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                sessionManagement = new SessionManagement(MainActivity.this);
+
+                HashMap<String, String> getUserDetails = new HashMap<String, String>();
+                getUserDetails = sessionManagement.getWakeupDetails();
+                isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
 
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.app_name);
+                builder.setIcon(R.mipmap.neo_app_icon);
+                builder.setMessage("Do you want to change Keep Awake status?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                                    startActivity(intent);
+                                } else {
+                                    if (isWakeUP){
+                                        keepAwakeSwitch.setChecked(false);
+                                        //This code holds the CPU
+                                        if (powerLatch.isHeld()){
+                                            powerLatch.release();
+                                            sessionManagement.createWakeupSession(false);
+                                        }
+
+                                    }
+                                    else{
+                                        keepAwakeSwitch.setChecked(true);
+                                        //This code holds the CPU
+                                        //powerLatch.acquire(24*60*60*1000L);
+                                        powerLatch.acquire();
+                                        sessionManagement.createWakeupSession(true);
+                                    }
+
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
 
 
 
@@ -812,6 +930,16 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
         });
+    }
+
+    public static boolean isPowerSavingModeEnabled(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            if (powerManager != null) {
+                return powerManager.isPowerSaveMode();
+            }
+        }
+        return false;
     }
     public void broadcastIntent() {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -904,6 +1032,7 @@ public class MainActivity extends AppCompatActivity {
             //parentInternetLay.setVisibility(VISIBLE);
             showSnack();
         }
+
 
 
 
@@ -1972,9 +2101,24 @@ public class MainActivity extends AppCompatActivity {
             //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
             // Initialize ExoPlayer instance
-            DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
+            DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
+            trackSelector.setParameters(trackSelector.buildUponParameters()
+                    .setPreferredAudioMimeTypes(String.valueOf(Collections.singletonList(MimeTypes.AUDIO_AAC)))
+                    .setPreferredTextLanguage("en")
+                    .setPreferredTextRoleFlags(C.ROLE_FLAG_SUBTITLE)
+                    .setRendererDisabled(C.TRACK_TYPE_VIDEO, false)
+                    );
+
+            // Initialize ExoPlayer instance with software decoder
+            player = new SimpleExoPlayer.Builder(this)
+                    .setTrackSelector(trackSelector)
+                    .build();
+
+
+
+            /*DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
             renderersFactory.setEnableDecoderFallback(true);
-            player = new SimpleExoPlayer.Builder(this, renderersFactory).build();
+            player = new SimpleExoPlayer.Builder(this, renderersFactory).build();*/
             /*player = new SimpleExoPlayer.Builder(this).setTrackSelector(new DefaultTrackSelector(this))
                     .setLoadControl(new DefaultLoadControl())
                     .build();*/
@@ -1994,14 +2138,14 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("Tag","filename>>>"+localFilePath);
 
                     if (localFilePath==null){
-                        mediaItem = null;
+                        //mediaItem = null;
                         mediaItem = new MediaItem.Builder()
                                 .setUri(item.getUrl())
                                 .setMimeType(MimeTypes.APPLICATION_MP4)
                                 .build();
                         Log.e("Tag","Test>>>"+localFilePath);
                     }else{
-                        mediaItem = null;
+                        //mediaItem = null;
                         mediaItem = new MediaItem.Builder()
                                 .setUri(Uri.parse("file://"+localFilePath))
                                 .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -2013,7 +2157,7 @@ public class MainActivity extends AppCompatActivity {
                     cursor.close();
                 }
                 else{
-                    mediaItem = null;
+                    //mediaItem = null;
                     mediaItem = new MediaItem.Builder()
                             .setUri(item.getUrl())
                             .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -2940,9 +3084,22 @@ public class MainActivity extends AppCompatActivity {
                 //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
                 // Initialize ExoPlayer instance
-                DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
+                DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
+                trackSelector.setParameters(trackSelector.buildUponParameters()
+                        .setPreferredAudioMimeTypes(String.valueOf(Collections.singletonList(MimeTypes.AUDIO_AAC)))
+                        .setPreferredTextLanguage("en")
+                        .setPreferredTextRoleFlags(C.ROLE_FLAG_SUBTITLE)
+                        .setRendererDisabled(C.TRACK_TYPE_VIDEO, false)
+                );
+
+                // Initialize ExoPlayer instance with software decoder
+                player = new SimpleExoPlayer.Builder(this)
+                        .setTrackSelector(trackSelector)
+                        .build();
+
+                /*DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
                 renderersFactory.setEnableDecoderFallback(true);
-                player = new SimpleExoPlayer.Builder(this, renderersFactory).build();
+                player = new SimpleExoPlayer.Builder(this, renderersFactory).build();*/
                 //player = new SimpleExoPlayer.Builder(this).build();
 
                 if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
@@ -2967,7 +3124,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("Tag","filename>>>"+localFilePath);
 
                     if (localFilePath==null){
-                        mediaItem = null;
+                        //mediaItem = null;
                         mediaItem = new MediaItem.Builder()
                                 .setUri(item.getUrl())
                                 .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -2977,7 +3134,7 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         File file = new File(localFilePath);
                         if(!file.exists()) {
-                            mediaItem = null;
+                            //mediaItem = null;
                             mediaItem = new MediaItem.Builder()
                                     .setUri(item.getUrl())
                                     .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -2989,7 +3146,7 @@ public class MainActivity extends AppCompatActivity {
                             // You can display an error message to the user or attempt to redownload the file
                         } else {
                             // File exists, proceed with your code
-                            mediaItem = null;
+                            //mediaItem = null;
                             mediaItem = new MediaItem.Builder()
                                     .setUri(Uri.parse("file://"+localFilePath))
                                     .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -3005,7 +3162,7 @@ public class MainActivity extends AppCompatActivity {
                     cursor.close();
                 }
                 else{
-                    mediaItem = null;
+                    //mediaItem = null;
                     mediaItem = new MediaItem.Builder()
                             .setUri(item.getUrl())
                             .setMimeType(MimeTypes.APPLICATION_MP4)
@@ -6996,7 +7153,7 @@ public class MainActivity extends AppCompatActivity {
                                 AlertDialog alert = builder.create();
                                 alert.show();
                             }
-                            else if (keepAwakeSwitch.isFocusable()){
+                            /*else if (keepAwakeSwitch.isFocusable()){
                                 sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
                                 sessionManagement = new SessionManagement(MainActivity.this);
 
@@ -7030,6 +7187,77 @@ public class MainActivity extends AppCompatActivity {
                                                     powerLatch.acquire();
                                                     sessionManagement.createWakeupSession(true);
                                                 }
+
+
+
+                                            }
+                                        })
+                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                                AlertDialog alert = builder.create();
+                                alert.show();
+
+                            }*/
+                            else if (keepAwakeSwitch.isFocusable()){
+                                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+                                sessionManagement = new SessionManagement(MainActivity.this);
+
+                                HashMap<String, String> getUserDetails = new HashMap<String, String>();
+                                getUserDetails = sessionManagement.getWakeupDetails();
+                                isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
+
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setTitle(R.string.app_name);
+                                builder.setIcon(R.mipmap.neo_app_icon);
+                                builder.setMessage("Do you want to change Keep Awake status?")
+                                        .setCancelable(false)
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                                    Intent intent = new Intent();
+                                                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                                                    startActivity(intent);
+                                                } else {
+                                                    if (isWakeUP){
+                                                        keepAwakeSwitch.setChecked(false);
+                                                        //This code holds the CPU
+                                                        if (powerLatch.isHeld()){
+                                                            powerLatch.release();
+                                                            sessionManagement.createWakeupSession(false);
+                                                        }
+
+                                                    }
+                                                    else{
+                                                        keepAwakeSwitch.setChecked(true);
+                                                        //This code holds the CPU
+                                                        //powerLatch.acquire(24*60*60*1000L);
+                                                        powerLatch.acquire();
+                                                        sessionManagement.createWakeupSession(true);
+                                                    }
+                                                }
+
+                                                /*if (isWakeUP){
+                                                    keepAwakeSwitch.setChecked(false);
+                                                    //This code holds the CPU
+                                                    if (powerLatch.isHeld()){
+                                                        powerLatch.release();
+                                                        sessionManagement.createWakeupSession(false);
+                                                    }
+
+                                                }
+                                                else{
+                                                    keepAwakeSwitch.setChecked(true);
+                                                    //This code holds the CPU
+                                                    //powerLatch.acquire(24*60*60*1000L);
+                                                    powerLatch.acquire();
+                                                    sessionManagement.createWakeupSession(true);
+                                                }*/
 
 
 
