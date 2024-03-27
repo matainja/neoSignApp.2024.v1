@@ -100,7 +100,6 @@ import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
@@ -294,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
     };
     private SharedPreferences permissionStatus = null;
     private final int PERMISSION_CALLBACK_CONSTANT = 100;
+    private final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 102;
     private final int REQUEST_PERMISSION_SETTING = 101;
     TranslateAnimation marqueeAnimation;
     TranslateAnimation marqueeAnimation1;
@@ -453,6 +453,7 @@ public class MainActivity extends AppCompatActivity {
         parentInternetLay.setVisibility(GONE);
         slideShowCallCount=0;
         initPairing(pairCode);
+        //checkStoragePermissions(pairCode);
 
 
         parent_exit.setOnClickListener(new View.OnClickListener() {
@@ -532,7 +533,7 @@ public class MainActivity extends AppCompatActivity {
                                 parentInternetLay.setVisibility(GONE);
                                 slideShowCallCount=0;
                                 initPairing(pairCode);
-
+                                //checkStoragePermissions(pairCode);
 
                             }
                         })
@@ -1010,37 +1011,6 @@ public class MainActivity extends AppCompatActivity {
                 parentPairing.setVisibility(VISIBLE);
             }
         }
-
-        /*if(isNetworkAvailable()){
-            Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
-            StringRequest getRequest = new StringRequest(Request.Method.GET,
-                    "https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin",
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.e("TAG","response>>>"+response);
-
-
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                            Log.e("Error", "-----VollyError----: "+error.getMessage());
-                        }
-                    });
-            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-            requestQueue.add(getRequest);
-            getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-            );
-        }
-        else{
-            //parentInternetLay.setVisibility(VISIBLE);
-            showSnack();
-        }*/
 
         if(isNetworkAvailable()){
             Log.e("TAG","----API-response--------"+"https://app.neosign.tv/api/pair-screen/"+ pairCode +"?browser=Mozilla%20Firefox&deviceTimezone=Europe/Berlin");
@@ -2781,7 +2751,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
-                // Initialize ExoPlayer instance
+                /*// Initialize ExoPlayer instance
                 DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
                 trackSelector.setParameters(trackSelector.buildUponParameters()
                         .setPreferredAudioMimeTypes(String.valueOf(Collections.singletonList(MimeTypes.AUDIO_AAC)))
@@ -2793,11 +2763,11 @@ public class MainActivity extends AppCompatActivity {
                 // Initialize ExoPlayer instance with software decoder
                 player = new SimpleExoPlayer.Builder(this)
                         .setTrackSelector(trackSelector)
-                        .build();
+                        .build();*/
 
-                /*DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
+                DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
                 renderersFactory.setEnableDecoderFallback(true);
-                player = new SimpleExoPlayer.Builder(this, renderersFactory).build();*/
+                player = new SimpleExoPlayer.Builder(this, renderersFactory).build();
                 //player = new SimpleExoPlayer.Builder(this).build();
 
                 if (player != null && player.getPlaybackState() != Player.STATE_IDLE) {
@@ -2842,7 +2812,8 @@ public class MainActivity extends AppCompatActivity {
                             // File does not exist, handle the situation accordingly
                             Log.e("Tag", "File does not exist: " + file.getAbsolutePath());
                             // You can display an error message to the user or attempt to redownload the file
-                        } else {
+                        }
+                        else {
                             // File exists, proceed with your code
                             //mediaItem = null;
                             mediaItem = new MediaItem.Builder()
@@ -2851,10 +2822,6 @@ public class MainActivity extends AppCompatActivity {
                                     .build();
                             Log.e("Tag","test>>>1"+localFilePath);
                         }
-
-
-
-
                     }
 
                     cursor.close();
@@ -7052,6 +7019,7 @@ public class MainActivity extends AppCompatActivity {
                                                 parentInternetLay.setVisibility(GONE);
                                                 slideShowCallCount=0;
                                                 initPairing(pairCode);
+                                                //checkStoragePermissions(pairCode);
                                             }
                                         })
                                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -7107,6 +7075,16 @@ public class MainActivity extends AppCompatActivity {
             intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
+        }
+        else if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, proceed with your operation
+                // Example: accessStorage();
+                initPairing(pairCode);
+            } else {
+                // Permission denied, handle accordingly (e.g., show a message or disable functionality)
+                showPermissionExplanationDialog();
+            }
         }
         /*else if (requestCode == PERMISSION_CALLBACK_CONSTANT) {
             boolean allPermissionsGranted = true;
@@ -7256,7 +7234,8 @@ public class MainActivity extends AppCompatActivity {
 
             }else{
                 slideShowCallCount=0;
-                initPairing(pairCode);
+               initPairing(pairCode);
+                //checkStoragePermissions(pairCode);
             }
 
         }
@@ -7503,6 +7482,27 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void checkStoragePermissions(String pairCode){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted, request it
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        READ_EXTERNAL_STORAGE_REQUEST_CODE);
+            } else {
+                // Permission already granted, proceed with your operation
+                // Example: accessStorage();
+                initPairing(pairCode);
+            }
+        } else {
+            // Runtime permissions not required for Android versions below Marshmallow
+            // Proceed with your operation
+            // Example: accessStorage();
+            initPairing(pairCode);
+        }
+    }
+
     private void showPermissionRationaleDialog(final String[] permissionsRequired) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Need Permission");
@@ -7514,7 +7514,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
-    private void showPermissionExplanationDialog(final String[] permissions) {
+    private void showPermissionExplanationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Permission Required");
         builder.setMessage("This app requires storage permission to function properly. Please grant the permission.");

@@ -98,10 +98,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.close();
     }
-    public void deleteAllVideos() {
+    /*public void deleteAllVideos() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_VIDEOS, null, null);
         db.close();
+    }*/
+    public void deleteAllVideos() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Check if there are any records in the TABLE_VIDEOS
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_VIDEOS, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int count = cursor.getInt(0); // Getting count of records
+
+            // Close the cursor after getting the count
+            cursor.close();
+
+            // If there are records, delete them
+            if (count > 0) {
+                db.delete(TABLE_VIDEOS, null, null);
+            }
+        }
+
+        // Close the database connection
+        db.close();
     }
+
 
 }
