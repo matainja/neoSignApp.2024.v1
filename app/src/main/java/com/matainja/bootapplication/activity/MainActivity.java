@@ -232,6 +232,9 @@ public class MainActivity extends AppCompatActivity {
     Handler handler4;
     int currentIndex;
     int contentCurrentIndex=0;
+    int globalcontentCurrentIndex=0;
+    ArrayList<Integer> indicesList = new ArrayList<>();
+
     int slideShowCallCount=0;
     int rssContentCurrentIndex=0;
     int rssSlideShowCallCount=0;
@@ -297,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
     private final int REQUEST_PERMISSION_SETTING = 101;
     TranslateAnimation marqueeAnimation;
     TranslateAnimation marqueeAnimation1;
+    Boolean scheduledExist=false;
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -995,6 +999,7 @@ public class MainActivity extends AppCompatActivity {
                 rssSlideShowCallCount=0;
                 overlayRssSlideShowCallCount=0;
                 displayOverlayRssSlideShowCallCount=0;
+                indicesList.clear();
                 contentLay(list);
             }
             else{
@@ -2289,6 +2294,7 @@ public class MainActivity extends AppCompatActivity {
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
+            indicesList.clear();
         }
         Log.e("newDuration","duration>>>"+duration);
         Log.e("newDuration","newDuration>>>"+newDuration);
@@ -2304,7 +2310,7 @@ public class MainActivity extends AppCompatActivity {
         strech=getStrechsDetails.get(STRECH);
         slideShowCallCount++;
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
-
+        Log.e("duration","duration>>>"+duration);
         if (list.get(contentCurrentIndex).getIs_schedulled_content()){
             try {
                 Calendar currentTime = Calendar.getInstance();
@@ -2320,49 +2326,121 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("startDate","startDate>>>"+startDate);
                 Log.e("endDate","endDate>>>"+endDate);
+                Log.e("indicesList","indicesList>>>"+indicesList);
                 if(currentDate.after(startDate) && currentDate.before(endDate)){
                     ContentModel item = list.get(contentCurrentIndex);
                     parentTopOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
+                    Log.e("currentDate","scheduledExist>>>0"+scheduledExist);
                     Log.e("currentDate","contentLayItem>>>");
+
+                    indicesList.add(contentCurrentIndex);
+
                     contentLayItem(item,list,duration);
                 }
                 else{
-                    ContentModel item = list.get(contentCurrentIndex);
+                   /* ContentModel item = list.get(contentCurrentIndex);
                     parentTopOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
-                    Log.e("currentDate","contentLayItem>>>9");
-                    contentLayItem(item,list,0);
+                    Log.e("currentDate","scheduledExist>>>00"+scheduledExist);
+                    Log.e("currentDate","contentLayItem>>>9");*/
+                    ContentModel item = list.get(contentCurrentIndex);
+                    if(indicesList.size()>0){
+                        indicesList.remove(contentCurrentIndex);
+                    }
+
+
+                    skipContentLayItem(item,list,0);
                 }
-
-
-
-            } catch (ParseException e) {
+            }
+            catch (ParseException e) {
                 e.printStackTrace();
             }
         }
         else{
-            Log.e("getTime","getTime>>>"+list.get(contentCurrentIndex).getTime());
-            Log.e("getDays","getDays>>>"+list.get(contentCurrentIndex).getDays());
-            String jsonTimeString = list.get(contentCurrentIndex).getTime();
-            String jsonDaysString = list.get(contentCurrentIndex).getDays();
-            try {
-                JSONArray jsonDaysArray = new JSONArray(jsonDaysString);
-                Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray);
-                Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray.length());
-                // Parse the JSON string
-                JSONArray jsonTimeArray = new JSONArray(jsonTimeString);
-                Log.e("JSON Data", "jsonTimeArray" + jsonTimeArray);
-                Calendar calendar = Calendar.getInstance();
-                String today = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(calendar.getTime()).toLowerCase(); // Get the current day in lowercase
-                Log.e("JSON Data", "today" + today);
-                // Check if today is in the days array
-                if (jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
-                    if (list.get(contentCurrentIndex).getDays().contains(today)) {
+            if(indicesList.size()>0){
+                ContentModel item = list.get(contentCurrentIndex);
+                skipContentLayItem(item,list,duration);
+                /*ContentModel item = list.get(contentCurrentIndex);
+                parentTopOverlay.setVisibility(GONE);
+                parentLeftOverlay.setVisibility(GONE);
+                parentRightOverlay.setVisibility(GONE);
+                parentBottomOverlay.setVisibility(GONE);
+
+                Log.e("currentDate","scheduledExist>>>000"+scheduledExist);
+                contentLayItem(item,list,0);*/
+            }else{
+                Log.e("currentDate","scheduledExist>>>2"+scheduledExist);
+                Log.e("getTime","getTime>>>"+list.get(contentCurrentIndex).getTime());
+                Log.e("getDays","getDays>>>"+list.get(contentCurrentIndex).getDays());
+                String jsonTimeString = list.get(contentCurrentIndex).getTime();
+                String jsonDaysString = list.get(contentCurrentIndex).getDays();
+                try {
+                    JSONArray jsonDaysArray = new JSONArray(jsonDaysString);
+                    Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray);
+                    Log.e("JSON Data", "jsonDaysArray" + jsonDaysArray.length());
+                    // Parse the JSON string
+                    JSONArray jsonTimeArray = new JSONArray(jsonTimeString);
+                    Log.e("JSON Data", "jsonTimeArray" + jsonTimeArray);
+                    Calendar calendar = Calendar.getInstance();
+                    String today = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(calendar.getTime()).toLowerCase(); // Get the current day in lowercase
+                    Log.e("JSON Data", "today" + today);
+                    // Check if today is in the days array
+                    if (jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
+                        if (list.get(contentCurrentIndex).getDays().contains(today)) {
+                            String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+                            boolean contentShown = false;
+                            for (int i = 0; i < jsonTimeArray.length(); i++) {
+                                JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
+                                String startTime = jsonObject.getString("start_time");
+                                String endTime = jsonObject.getString("end_time");
+
+                                if (isTimeWithinRange(startTime, endTime, currentTime)) {
+                                    contentShown = true;
+                                    break;
+                                }
+                            }
+
+                            if (contentShown) {
+                                // Show content
+                                ContentModel item = list.get(contentCurrentIndex);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                Log.e("currentDate","contentLayItem>>>1");
+                                contentLayItem(item,list,duration);
+                            }
+                            else {
+                                // Do not show content
+                                /*ContentModel item = list.get(contentCurrentIndex);
+                                parentTopOverlay.setVisibility(GONE);
+                                parentLeftOverlay.setVisibility(GONE);
+                                parentRightOverlay.setVisibility(GONE);
+                                parentBottomOverlay.setVisibility(GONE);
+                                Log.e("currentDate","contentLayItem>>>8");
+                                contentLayItem(item,list,0);*/
+                                ContentModel item = list.get(contentCurrentIndex);
+                                skipContentLayItem(item,list,0);
+                            }
+                        }
+                        else{
+                           /* ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>5");
+                            contentLayItem(item,list,0);*/
+                            ContentModel item = list.get(contentCurrentIndex);
+                            skipContentLayItem(item,list,0);
+                        }
+                    }
+                    else if(jsonDaysArray.length() == 0 && jsonTimeArray.length()>0){
                         String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
                         boolean contentShown = false;
                         for (int i = 0; i < jsonTimeArray.length(); i++) {
@@ -2377,24 +2455,51 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         if (contentShown) {
-                                // Show content
-                                ContentModel item = list.get(contentCurrentIndex);
-                                parentTopOverlay.setVisibility(GONE);
-                                parentLeftOverlay.setVisibility(GONE);
-                                parentRightOverlay.setVisibility(GONE);
-                                parentBottomOverlay.setVisibility(GONE);
-                                Log.e("currentDate","contentLayItem>>>1");
-                                contentLayItem(item,list,duration);
-                            }
-                        else {
-                            // Do not show content
+                            // Show content
                             ContentModel item = list.get(contentCurrentIndex);
                             parentTopOverlay.setVisibility(GONE);
                             parentLeftOverlay.setVisibility(GONE);
                             parentRightOverlay.setVisibility(GONE);
                             parentBottomOverlay.setVisibility(GONE);
-                            Log.e("currentDate","contentLayItem>>>8");
-                            contentLayItem(item,list,0);
+                            Log.e("currentDate","contentLayItem>>>2");
+                            contentLayItem(item,list,duration);
+                        }
+                        else {
+                            // Do not show content
+                            /*ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>6");
+                            contentLayItem(item,list,0);*/
+                            ContentModel item = list.get(contentCurrentIndex);
+                            skipContentLayItem(item,list,0);
+
+                        }
+
+                    }
+                    else if(jsonDaysArray.length() > 0 && jsonTimeArray.length()==0){
+                        if (list.get(contentCurrentIndex).getDays().contains(today)){
+                            // Show content
+                            ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>3");
+                            contentLayItem(item,list,duration);
+                        }
+                        else{
+                            /*ContentModel item = list.get(contentCurrentIndex);
+                            parentTopOverlay.setVisibility(GONE);
+                            parentLeftOverlay.setVisibility(GONE);
+                            parentRightOverlay.setVisibility(GONE);
+                            parentBottomOverlay.setVisibility(GONE);
+                            Log.e("currentDate","contentLayItem>>>7");
+                            contentLayItem(item,list,0);*/
+                            ContentModel item = list.get(contentCurrentIndex);
+                            skipContentLayItem(item,list,0);
                         }
                     }
                     else{
@@ -2403,77 +2508,9 @@ public class MainActivity extends AppCompatActivity {
                         parentLeftOverlay.setVisibility(GONE);
                         parentRightOverlay.setVisibility(GONE);
                         parentBottomOverlay.setVisibility(GONE);
-                        Log.e("currentDate","contentLayItem>>>5");
-                        contentLayItem(item,list,0);
-                    }
-                }
-                else if(jsonDaysArray.length() == 0 && jsonTimeArray.length()>0){
-                    String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-                    boolean contentShown = false;
-                    for (int i = 0; i < jsonTimeArray.length(); i++) {
-                        JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
-                        String startTime = jsonObject.getString("start_time");
-                        String endTime = jsonObject.getString("end_time");
-
-                        if (isTimeWithinRange(startTime, endTime, currentTime)) {
-                            contentShown = true;
-                            break;
-                        }
-                    }
-
-                    if (contentShown) {
-                        // Show content
-                        ContentModel item = list.get(contentCurrentIndex);
-                        parentTopOverlay.setVisibility(GONE);
-                        parentLeftOverlay.setVisibility(GONE);
-                        parentRightOverlay.setVisibility(GONE);
-                        parentBottomOverlay.setVisibility(GONE);
-                        Log.e("currentDate","contentLayItem>>>2");
+                        Log.e("currentDate","contentLayItem>>>4");
                         contentLayItem(item,list,duration);
                     }
-                    else {
-                        // Do not show content
-                        ContentModel item = list.get(contentCurrentIndex);
-                        parentTopOverlay.setVisibility(GONE);
-                        parentLeftOverlay.setVisibility(GONE);
-                        parentRightOverlay.setVisibility(GONE);
-                        parentBottomOverlay.setVisibility(GONE);
-                        Log.e("currentDate","contentLayItem>>>6");
-                        contentLayItem(item,list,0);
-
-                    }
-
-                }
-                else if(jsonDaysArray.length() > 0 && jsonTimeArray.length()==0){
-                    if (list.get(contentCurrentIndex).getDays().contains(today)){
-                        // Show content
-                        ContentModel item = list.get(contentCurrentIndex);
-                        parentTopOverlay.setVisibility(GONE);
-                        parentLeftOverlay.setVisibility(GONE);
-                        parentRightOverlay.setVisibility(GONE);
-                        parentBottomOverlay.setVisibility(GONE);
-                        Log.e("currentDate","contentLayItem>>>3");
-                        contentLayItem(item,list,duration);
-                    }
-                    else{
-                        ContentModel item = list.get(contentCurrentIndex);
-                        parentTopOverlay.setVisibility(GONE);
-                        parentLeftOverlay.setVisibility(GONE);
-                        parentRightOverlay.setVisibility(GONE);
-                        parentBottomOverlay.setVisibility(GONE);
-                        Log.e("currentDate","contentLayItem>>>7");
-                        contentLayItem(item,list,0);
-                    }
-                }
-                else{
-                    ContentModel item = list.get(contentCurrentIndex);
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    Log.e("currentDate","contentLayItem>>>4");
-                    contentLayItem(item,list,duration);
-                }
 
 
                 /*if (list.get(contentCurrentIndex).getDays().contains(today)) {
@@ -2518,14 +2555,13 @@ public class MainActivity extends AppCompatActivity {
                     contentLayItem(item,list,duration);
                 }*/
 
-            } catch (JSONException e) {
-                e.printStackTrace();
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
         }
-
-
-
     }
 
     private boolean isTimeWithinRange(String startTime, String endTime, String currentTime) {
@@ -3295,6 +3331,119 @@ public class MainActivity extends AppCompatActivity {
 
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
+            contentCurrentIndex = 0;
+            indicesList.clear();
+
+        }
+    }
+    private void skipContentLayItem(ContentModel item, List<ContentModel> list, long duration) {
+        if (item.getType().equals("image")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
+                myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        contentLay(list);
+                    }
+                };
+                handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Clock")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("WebUrl")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("Vimeo")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("terminalApp")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else if(item.getType().equals("app")&&item.getExtention().equals("displayApp")){
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+        else {
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+        }
+
+        contentCurrentIndex++;
+        if (contentCurrentIndex >= list.size()) {
+            indicesList.clear();
             contentCurrentIndex = 0;
         }
     }
@@ -4274,9 +4423,16 @@ public class MainActivity extends AppCompatActivity {
                     String rssinfo = contentModel.getLaysRssInfo();
                     String[] rssinfoArray = rssinfo.split(",");
                     List<String> rssinfoList = Arrays.asList(rssinfoArray);
-                    Log.e("Tag","date>>>>"+item.getDate());
+                    Log.e("Tag","rssinfoList>>>>"+rssinfoList);
 
-                    ovelaytext=item.getDate();
+                    //ovelaytext=item.getDate();
+                    ovelaytext="";
+
+                    if (rssinfoList.contains("3")) {
+                        String text = item.getDate();
+
+                        ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
+                    }
 
                     if (rssinfoList.contains("1")) {
                         String text = item.getTitle();
@@ -7545,6 +7701,7 @@ public class MainActivity extends AppCompatActivity {
         clearTimeout2();
         clearTimeout3();
         clearTimeout4();
+        indicesList.clear();
         unregisterReceiver(MyReceiver);
     }
 
