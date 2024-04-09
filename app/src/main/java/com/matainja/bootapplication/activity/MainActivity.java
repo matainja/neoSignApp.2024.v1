@@ -17,6 +17,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,6 +25,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -309,6 +311,15 @@ public class MainActivity extends AppCompatActivity {
 
 
         initSession();
+        boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
+        if(isPowerSavingEnabled){
+
+        }else{
+            if(isBatterySaverSettingsAvailable(this)){
+                enableBatterySaverMode();
+            }
+
+        }
         //checkPermissions();
 
 
@@ -559,6 +570,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+
         View decorView = getWindow().getDecorView();
         int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -684,7 +697,7 @@ public class MainActivity extends AppCompatActivity {
         powerLatch = powerManager.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
                         PowerManager.ACQUIRE_CAUSES_WAKEUP, "Lock");
-        boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
+
 
         if (isWakeUP){
             keepAwakeSwitch.setChecked(true);
@@ -944,6 +957,55 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
         });
+    }
+    public boolean isBatterySaverSettingsAvailable(Context context) {
+        Intent intent = new Intent(Intent.ACTION_POWER_USAGE_SUMMARY);
+        PackageManager pm = context.getPackageManager();
+        List<ResolveInfo> resolveInfos = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        return resolveInfos.size() > 0;
+    }
+
+    private void enableBatterySaverMode() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(R.string.app_name);
+        builder.setIcon(R.mipmap.neo_app_icon);
+        builder.setMessage("You have needed to allow battery saver mode for app functionality.")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        enableBatterySaver();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+    }
+    public void enableBatterySaver() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (powerManager != null && !powerManager.isPowerSaveMode()) {
+                try {
+                    // Battery saver mode is not currently enabled, prompt the user to enable it
+                    Intent intent = new Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS);
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    // Battery saver settings activity not found
+                    Toast.makeText(this, "Battery saver settings not available on this device", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // Battery saver mode is already enabled
+                //Toast.makeText(this, "Battery saver mode is already enabled", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // Battery saver mode is not supported on versions prior to Lollipop MR1
+            Toast.makeText(this, "Battery saver mode is not supported on this device", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static boolean isPowerSavingModeEnabled(Context context) {
@@ -4338,7 +4400,7 @@ public class MainActivity extends AppCompatActivity {
         final int screenWidth = getResources().getDisplayMetrics().widthPixels;
         final int textWidth = (int) textOverlay.getPaint().measureText(textOverlay.getText().toString());
 
-        float speedFactor = 0.1f; // Adjust this value to change animation speed
+        float speedFactor = 0.15f; // Adjust this value to change animation speed
 
         int animationDuration = (int) ((screenWidth + textWidth) / speedFactor);
 
