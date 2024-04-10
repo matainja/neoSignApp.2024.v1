@@ -303,6 +303,8 @@ public class MainActivity extends AppCompatActivity {
     TranslateAnimation marqueeAnimation;
     TranslateAnimation marqueeAnimation1;
     Boolean scheduledExist=false;
+    Uri videoUri = null;
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -311,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         initSession();
-        boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
+        /*boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
         if(isPowerSavingEnabled){
 
         }else{
@@ -319,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
                 enableBatterySaverMode();
             }
 
-        }
+        }*/
         //checkPermissions();
 
 
@@ -570,6 +572,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        checkPermissions();
+
+
+
+
 
 
         View decorView = getWindow().getDecorView();
@@ -980,6 +988,7 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
+                        enableBatterySaverMode();
                     }
                 });
         AlertDialog alert = builder.create();
@@ -2739,7 +2748,7 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
-        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
+        /*else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -2849,7 +2858,8 @@ public class MainActivity extends AppCompatActivity {
 
                 //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
-                /*// Initialize ExoPlayer instance
+                *//*
+                // Initialize ExoPlayer instance
                 DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
                 trackSelector.setParameters(trackSelector.buildUponParameters()
                         .setPreferredAudioMimeTypes(String.valueOf(Collections.singletonList(MimeTypes.AUDIO_AAC)))
@@ -2861,7 +2871,8 @@ public class MainActivity extends AppCompatActivity {
                 // Initialize ExoPlayer instance with software decoder
                 player = new SimpleExoPlayer.Builder(this)
                         .setTrackSelector(trackSelector)
-                        .build();*/
+                        .build();
+                *//*
 
                 DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
                 renderersFactory.setEnableDecoderFallback(true);
@@ -3020,8 +3031,8 @@ public class MainActivity extends AppCompatActivity {
                 // Handle exception
             }
 
-        }
-        /*else if(item.getType().equals("video")){
+        }*/
+        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -3029,21 +3040,172 @@ public class MainActivity extends AppCompatActivity {
             parentContentRssFeed.setVisibility(GONE);
             parentContentImage.setVisibility(GONE);
             display_lay.setVisibility(GONE);
+            parentVlcVideoView.setVisibility(GONE);
+            video_progress1.setVisibility(GONE);
             parentVideoView.setVisibility(VISIBLE);
             video_progress.setVisibility(VISIBLE);
+            overLays(item);
+
+            String urlString = item.getUrl();
+            Uri uri = Uri.parse(urlString);
+            // Alternatively, you can use Uri's methods to achieve the same
+            String path = uri.getPath();
+            String filenameFromUri = path.substring(path.lastIndexOf('/') + 1);
+            // Create an instance of DatabaseHelper
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+            try {
+                if (contentCurrentIndex <list.size()) {
+                    Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        do {
+                            @SuppressLint("Range")
+                            String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                            @SuppressLint("Range")
+                            String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                            Log.e("Tag","localFileTitle>>>"+localFileTitle);
+                            if(filenameFromUri.equals(localFileTitle) && localFilePath != null){}
+                            else{
+                                dbHelper.deleteVideoByTitle(localFileTitle);
+                                if(!downloadStatus){
+                                    // Create an instance of FileDownloader
+                                    FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                        @Override
+                                        public void onDownloadComplete(String filePath) {
+                                            // Create a VideoItem object
+                                            VideoItem videoItem = new VideoItem();
+                                            videoItem.setTitle(filenameFromUri);
+                                            videoItem.setVideo_url(item.getUrl());
+                                            videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                            // Add the video to the database
+                                            long id = dbHelper.addVideo(videoItem);
+                                            Log.e("Tag","filenameid>>>"+id);
+                                            // Handle download completion
+                                            Log.d("TAG", "File downloaded: " + filePath);
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            // Handle download error
+                                            Log.e("TAG", "Error downloading file: " + errorMessage);
+                                        }
+
+                                        @Override
+                                        public void onDownloadStatus(boolean isDownloading) {
+                                            Log.e("TAG", "downloading status: " + isDownloading);
+                                            downloadStatus=isDownloading;
+                                        }
+                                    });
+
+                                    fileDownloader.execute(item.getUrl());
+                                }
+                            }
+                        }
+                        while (cursor.moveToNext());
+                        cursor.close();
+                    }
+                    else{
+                        if(!downloadStatus){
+                            // Create an instance of FileDownloader
+                            FileDownloader fileDownloader = new FileDownloader(MainActivity.this, new FileDownloader.OnDownloadCompleteListener() {
+                                @Override
+                                public void onDownloadComplete(String filePath) {
+                                    Log.e("Tag","filePath>>>"+filePath);
+                                    // Create a VideoItem object
+                                    VideoItem videoItem = new VideoItem();
+                                    videoItem.setTitle(filenameFromUri);
+                                    videoItem.setVideo_url(item.getUrl());
+                                    videoItem.setVideo_path(filePath); // Set local file path after downloading
+                                    // Add the video to the database
+                                    long id = dbHelper.addVideo(videoItem);
+                                    Log.e("Tag","firstfilenameid>>>"+id);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    // Handle download error
+                                    Log.e("TAG", "Error downloading file: " + errorMessage);
+                                }
+
+                                @Override
+                                public void onDownloadStatus(boolean isDownloading) {
+                                    Log.e("TAG", "downloading status: " + isDownloading);
+                                    downloadStatus=isDownloading;
+                                }
+                            });
+
+                            fileDownloader.execute(item.getUrl());
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
+
+            try {
+                Cursor cursor = dbHelper.getVideoByTitle(filenameFromUri);
+                if (cursor != null && cursor.moveToFirst()) {
+                    @SuppressLint("Range")
+                    String localFileTitle = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_TITLE));
+                    @SuppressLint("Range")
+                    String localFilePath = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LOCAL_FILE_PATH));
+                    Log.e("Tag","filename>>>"+localFilePath);
+
+                    if (localFilePath==null){
+                        videoUri = Uri.parse(item.getUrl());
+                        Log.e("Tag","Test>>>"+localFilePath);
+                    }
+                    else{
+                        File file = new File(localFilePath);
+                        if(!file.exists()) {
+                            videoUri = Uri.parse(item.getUrl());
+                            dbHelper.deleteVideoByTitle(localFileTitle);
+                            // File does not exist, handle the situation accordingly
+                            Log.e("Tag", "File does not exist: " + file.getAbsolutePath());
+                            // You can display an error message to the user or attempt to redownload the file
+                        }
+                        else {
+                            videoUri = Uri.parse("file://"+localFilePath);
+                            // File exists, proceed with your code
+                            Log.e("Tag","test>>>1"+localFilePath);
+                        }
+                    }
+
+                    cursor.close();
+                }
+                else{
+                    videoUri = Uri.parse(item.getUrl());
+                    Log.e("Tag","test>>>3");
+                }
+
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                // Handle exception
+            }
+
+
+
+
+
+
 
             videoView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             Log.e("Tag","videoview0"+videoView.getSurfaceTexture());
 
             if(videoView.getSurfaceTexture()!=null){
                 releaseMediaPlayer();
-                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item);
+                initializeAndPrepareMediaPlayer2(item.getUrl(), duration, list,item, videoUri);
             }
 
+            //Uri finalVideoUri = videoUri;
             videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item);
+                    initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item, videoUri);
                 }
 
                 @Override
@@ -3067,7 +3229,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-        }*/
+        }
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
@@ -4749,7 +4911,31 @@ public class MainActivity extends AppCompatActivity {
     private void configureVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         videoView.setRotation(rotationDegrees);
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
 
+        if (videoView.getWidth() > 0 && videoView.getHeight() > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleY = (float) videoView.getWidth() / videoView.getHeight();
+            } else {
+                scaleX = (float) videoView.getHeight() / videoView.getWidth();
+            }
+        }
+        // Calculate the scale factors to fill the entire screen
+        //float scaleX = (float) videoView.getHeight() / videoView.getWidth();
+        //float scaleY = (float) videoView.getWidth() / videoView.getHeight();
+
+        // Apply the scaling to fill the entire screen
+        videoView.setScaleX(scaleX);
+        videoView.setScaleY(scaleY);
+    }
+    private void configureStrechVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Rotate the VideoView by 90 degrees
+        videoView.setRotation(rotationDegrees);
+        if (videoView.getWidth() == 0 || videoView.getHeight() == 0) {
+            // Handle the case where width or height is zero
+            return;
+        }
         // Calculate the scale factors to fill the entire screen
         float scaleX = (float) videoView.getHeight() / videoView.getWidth();
         float scaleY = (float) videoView.getWidth() / videoView.getHeight();
@@ -4898,12 +5084,13 @@ public class MainActivity extends AppCompatActivity {
             return Bitmap.createBitmap(toTransform, 0, 0, toTransform.getWidth(), toTransform.getHeight(), matrix, true);
         }
     }
-    private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
+    private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item, Uri videoUri) {
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
         try {
             // Set the data source to a sample video URL, replace with your own video source
-            mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
+            //mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
+            mediaPlayer.setDataSource(MainActivity.this, videoUri);
             // Prepare the MediaPlayer asynchronously
             mediaPlayer.prepareAsync();
             // Set the Surface for the MediaPlayer
@@ -4943,13 +5130,13 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         // Handle size changes if needed
                         if (orientation.equals("90 degrees")) {
-                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                            configureStrechVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
                         }
                         else if (orientation.equals("180 degrees")) {
                             configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
                         }
                         else if (orientation.equals("270 degrees")) {
-                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                            configureStrechVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
                         }
                         else {
                             configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
@@ -4974,8 +5161,9 @@ public class MainActivity extends AppCompatActivity {
                             parentLeftOverlay.setVisibility(GONE);
                             parentRightOverlay.setVisibility(GONE);
                             parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
                             mediaPlayer.stop();
+                            contentLay(list);
+
                         }
                     };
                     handler.postDelayed(myRunnable, duration);
@@ -4986,12 +5174,13 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list, ContentModel item) {
+    private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list, ContentModel item, Uri videoUri) {
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
         try {
             // Set the data source to a sample video URL, replace with your own video source
-            mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
+            //mediaPlayer.setDataSource(MainActivity.this, Uri.parse(videoUrl));
+            mediaPlayer.setDataSource(MainActivity.this, videoUri);
             // Prepare the MediaPlayer asynchronously
             mediaPlayer.prepareAsync();
             mediaPlayer.setSurface(new Surface(videoView.getSurfaceTexture()));
@@ -5026,13 +5215,13 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         // Handle size changes if needed
                         if (orientation.equals("90 degrees")) {
-                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
+                            configureStrechVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 90);
                         }
                         else if (orientation.equals("180 degrees")) {
                             configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 180);
                         }
                         else if (orientation.equals("270 degrees")) {
-                            configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
+                            configureStrechVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 270);
                         }
                         else {
                             configureVideoViewTransform(videoView.getWidth(), videoView.getHeight(), 0);
@@ -5057,8 +5246,9 @@ public class MainActivity extends AppCompatActivity {
                             parentLeftOverlay.setVisibility(GONE);
                             parentRightOverlay.setVisibility(GONE);
                             parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
                             mediaPlayer.stop();
+                            contentLay(list);
+
 
                         }
                     };
@@ -5074,7 +5264,6 @@ public class MainActivity extends AppCompatActivity {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
-
         }
     }
     private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
@@ -7298,33 +7487,12 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, proceed with your operation
                 // Example: accessStorage();
-                initPairing(pairCode);
+
             } else {
                 // Permission denied, handle accordingly (e.g., show a message or disable functionality)
                 showPermissionExplanationDialog();
             }
         }
-        /*else if (requestCode == PERMISSION_CALLBACK_CONSTANT) {
-            boolean allPermissionsGranted = true;
-            for (int result : grantResults) {
-                Log.e("Tag","result>>>"+result);
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    allPermissionsGranted = false;
-                    break;
-                }
-            }
-            if (allPermissionsGranted) {
-                // All permissions granted, proceed with your logic
-                // For example, you can call a method here to start using the granted permissions
-            } else {
-                // Permission denied, handle accordingly
-                // You can show another dialog explaining the need for permissions
-                // or disable functionality that requires permissions
-                showPermissionExplanationDialog(permissions);
-            }
-        }*/
-
-
 
     }
     @Override
@@ -7670,7 +7838,6 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissionsRequired = new String[]{
                     Manifest.permission.READ_MEDIA_VIDEO,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
             };
         } else {
             permissionsRequired = new String[]{
@@ -7681,45 +7848,45 @@ public class MainActivity extends AppCompatActivity {
         boolean allPermissionsGranted = true;
         for (String permission : permissionsRequired) {
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("Tag","Battery>>>0");
                 allPermissionsGranted = false;
                 break;
             }
         }
         if (!allPermissionsGranted) {
+            Log.e("Tag","Battery>>>1");
             if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0])) {
                     // Show rationale if needed
                     showPermissionRationaleDialog(permissionsRequired);
                 } else {
+                    showPermissionExplanationDialog();
                     // Request permission
-                    ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+                    //ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
                 }
             }
-        }
+        }else{
+            Log.e("Tag","Battery>>>2");
+            boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
+            if(isPowerSavingEnabled){
+                Log.e("Tag","Battery>>>3");
+            }else{
+                Log.e("Tag","Battery>>>4");
+                if(isBatterySaverSettingsAvailable(this)){
+                    Log.e("Tag","Battery>>>5");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+                        Log.e("Tag","Battery>>>6");
+                        enableBatterySaverMode();
+                    }
 
+                }
 
-    }
-
-    private void checkStoragePermissions(String pairCode){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                // Permission is not granted, request it
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        READ_EXTERNAL_STORAGE_REQUEST_CODE);
-            } else {
-                // Permission already granted, proceed with your operation
-                // Example: accessStorage();
-                initPairing(pairCode);
             }
-        } else {
-            // Runtime permissions not required for Android versions below Marshmallow
-            // Proceed with your operation
-            // Example: accessStorage();
-            initPairing(pairCode);
         }
+
+
     }
+
 
     private void showPermissionRationaleDialog(final String[] permissionsRequired) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -7729,7 +7896,11 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
             ActivityCompat.requestPermissions(MainActivity.this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            dialog.dismiss();
+            openAppSettings();
+        });
+
         builder.show();
     }
     private void showPermissionExplanationDialog() {
@@ -7743,7 +7914,7 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> {
             dialog.dismiss(); // Dismiss the dialog
-            //openAppSettings(); // Open app settings
+            openAppSettings(); // Open app settings
         });
         builder.show();
     }
