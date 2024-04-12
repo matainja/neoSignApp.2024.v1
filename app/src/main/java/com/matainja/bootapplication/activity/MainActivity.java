@@ -7483,7 +7483,7 @@ public class MainActivity extends AppCompatActivity {
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
         }
-        else if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE) {
+        else if (requestCode == PERMISSION_CALLBACK_CONSTANT) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, proceed with your operation
                 // Example: accessStorage();
@@ -7894,7 +7894,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("This app needs storage permission to function properly.");
         builder.setPositiveButton("Grant", (dialog, which) -> {
             dialog.dismiss();
-            ActivityCompat.requestPermissions(MainActivity.this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
+            openAppSettings();
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> {
             dialog.dismiss();
