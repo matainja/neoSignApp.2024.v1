@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        checkPermissions();
+        //checkPermissions();
 
 
 
@@ -3755,10 +3755,10 @@ public class MainActivity extends AppCompatActivity {
 
                     setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                     setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                    parentTopOverlay.setVisibility(GONE);
+                   /* parentTopOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(VISIBLE);
+                    parentRightOverlay.setVisibility(VISIBLE);*/
                 }
                 else if(item.getLaysType().equals("Left")){
                     String colorCode = item.getLaysBgColor();
@@ -3778,10 +3778,10 @@ public class MainActivity extends AppCompatActivity {
                     textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                     setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                    parentTopOverlay.setVisibility(GONE);
+                    /*parentTopOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(VISIBLE);
+                    parentLeftOverlay.setVisibility(VISIBLE);*/
                 }
                 else if(item.getLaysType().equals("Top")){
                     String colorCode = item.getLaysBgColor();
@@ -3799,10 +3799,10 @@ public class MainActivity extends AppCompatActivity {
                     textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                     textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                    parentLeftOverlay.setVisibility(GONE);
+                    /*parentLeftOverlay.setVisibility(GONE);
                     parentBottomOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
-                    parentTopOverlay.setVisibility(VISIBLE);
+                    parentTopOverlay.setVisibility(VISIBLE);*/
                 }
                 else if(item.getLaysType().equals("Bottom")){
                     String colorCode = item.getLaysBgColor();
@@ -3820,10 +3820,10 @@ public class MainActivity extends AppCompatActivity {
                     textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                     textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                    parentTopOverlay.setVisibility(GONE);
+                    /*parentTopOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(VISIBLE);
+                    parentBottomOverlay.setVisibility(VISIBLE);*/
                 }
 
 
@@ -3842,6 +3842,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
                 if(isNetworkAvailable()){
+                    // Create a custom SSL socket factory that trusts all certificates
+                    SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
+
+                    // Set the custom SSL socket factory on Volley's HurlStack
+                    HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
+
                     StringRequest getRequest = new StringRequest(Request.Method.GET,
                             apiUrlWithParams,
                             new Response.Listener<String>() {
@@ -3900,7 +3906,7 @@ public class MainActivity extends AppCompatActivity {
                                     Log.e("Error", "-----VollyError----: "+error.getMessage());
                                 }
                             });
-                    RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                    RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
                     requestQueue.add(getRequest);
                     getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -4119,7 +4125,8 @@ public class MainActivity extends AppCompatActivity {
                  }
              }
              else{
-
+                 overlayRssSlideShowCallCount=0;
+                 clearTimeout2();
                  if (item.getLaysContentType().equals("RSS feed")){
                      if(item.getLaysType().equals("Right")){
                          String colorCode = item.getLaysBgColor();
@@ -4141,10 +4148,10 @@ public class MainActivity extends AppCompatActivity {
 
                          setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                          setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                         parentTopOverlay.setVisibility(GONE);
+                         /*parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(VISIBLE);
+                         parentRightOverlay.setVisibility(VISIBLE);*/
                      }
                      else if(item.getLaysType().equals("Left")){
                          String colorCode = item.getLaysBgColor();
@@ -4164,10 +4171,10 @@ public class MainActivity extends AppCompatActivity {
                          textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                          setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                          setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                         parentTopOverlay.setVisibility(GONE);
+                        /* parentTopOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(VISIBLE);
+                         parentLeftOverlay.setVisibility(VISIBLE);*/
                      }
                      else if(item.getLaysType().equals("Top")){
                          String colorCode = item.getLaysBgColor();
@@ -4185,10 +4192,10 @@ public class MainActivity extends AppCompatActivity {
                          textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                          textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                          setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                         parentLeftOverlay.setVisibility(GONE);
+                         /*parentLeftOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
-                         parentTopOverlay.setVisibility(VISIBLE);
+                         parentTopOverlay.setVisibility(VISIBLE);*/
                      }
                      else if(item.getLaysType().equals("Bottom")){
                          String colorCode = item.getLaysBgColor();
@@ -4206,10 +4213,10 @@ public class MainActivity extends AppCompatActivity {
                          textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                          textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                          setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                         parentTopOverlay.setVisibility(GONE);
+                         /*parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(VISIBLE);
+                         parentBottomOverlay.setVisibility(VISIBLE);*/
                      }
 
 
@@ -4228,6 +4235,12 @@ public class MainActivity extends AppCompatActivity {
                      Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
                      if(isNetworkAvailable()){
+                         // Create a custom SSL socket factory that trusts all certificates
+                         SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
+
+                         // Set the custom SSL socket factory on Volley's HurlStack
+                         HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
+
                          StringRequest getRequest = new StringRequest(Request.Method.GET,
                                  apiUrlWithParams,
                                  new Response.Listener<String>() {
@@ -4285,7 +4298,7 @@ public class MainActivity extends AppCompatActivity {
                                          Log.e("Error", "-----VollyError----: "+error.getMessage());
                                      }
                                  });
-                         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
                          requestQueue.add(getRequest);
                          getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                                  DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -4465,6 +4478,12 @@ public class MainActivity extends AppCompatActivity {
             Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
             if(isNetworkAvailable()){
+                // Create a custom SSL socket factory that trusts all certificates
+                SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
+
+                // Set the custom SSL socket factory on Volley's HurlStack
+                HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
+
                 StringRequest getRequest = new StringRequest(Request.Method.GET,
                         apiUrlWithParams,
                         new Response.Listener<String>() {
@@ -4522,7 +4541,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.e("Error", "-----VollyError----: "+error.getMessage());
                             }
                         });
-                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
                 requestQueue.add(getRequest);
                 getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -4687,11 +4706,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if(contentModel.getLaysType().equals("Right")){
                     Log.e("Tag","testingRight>>>9");
+                    parentTopOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(VISIBLE);
                     textRightOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textRightOverlay, ovelaytext);
                 }
                 else if(contentModel.getLaysType().equals("Left")){
                     Log.e("Tag","testingLeft>>>9");
+                    parentTopOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(VISIBLE);
                     textLeftOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textLeftOverlay, ovelaytext);
 
@@ -4699,6 +4726,11 @@ public class MainActivity extends AppCompatActivity {
                 else if(contentModel.getLaysType().equals("Top")){
 
                     Log.e("Tag","testingTop>>>9"+ovelaytext);
+
+                    parentBottomOverlay.setVisibility(GONE);
+                    parentRightOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentTopOverlay.setVisibility(VISIBLE);
                     textTopOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textTopOverlay, ovelaytext);
 
@@ -4707,6 +4739,11 @@ public class MainActivity extends AppCompatActivity {
 
 
                     Log.e("Tag","testingBottom>>>9");
+
+                    parentRightOverlay.setVisibility(GONE);
+                    parentLeftOverlay.setVisibility(GONE);
+                    parentTopOverlay.setVisibility(GONE);
+                    parentBottomOverlay.setVisibility(VISIBLE);
                     textBottomOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textBottomOverlay, ovelaytext);
                 }
@@ -6651,6 +6688,12 @@ public class MainActivity extends AppCompatActivity {
         Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
         if(isNetworkAvailable()){
+            // Create a custom SSL socket factory that trusts all certificates
+            SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
+
+            // Set the custom SSL socket factory on Volley's HurlStack
+            HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
+
             StringRequest getRequest = new StringRequest(Request.Method.GET,
                     apiUrlWithParams,
                     new Response.Listener<String>() {
@@ -6720,7 +6763,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("Error", "-----VollyError----: "+error.getMessage());
                         }
                     });
-            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
             requestQueue.add(getRequest);
             getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
                     DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
