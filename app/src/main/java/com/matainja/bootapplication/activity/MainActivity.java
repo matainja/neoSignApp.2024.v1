@@ -121,6 +121,7 @@ import com.matainja.bootapplication.Adapter.DisplayAdapter;
 import com.matainja.bootapplication.Adapter.TerminalAdapter;
 import com.matainja.bootapplication.DabaseHelper.DatabaseHelper;
 import com.matainja.bootapplication.FileDownloader;
+import com.matainja.bootapplication.Logger;
 import com.matainja.bootapplication.Model.ContentModel;
 import com.matainja.bootapplication.Model.DisplayDataModel;
 import com.matainja.bootapplication.Model.RSSModel;
@@ -313,6 +314,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         initSession();
+
+
+
         /*boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
         if(isPowerSavingEnabled){
 
@@ -459,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
             pairCode=pairCode.toUpperCase();
             // Update the TextView with the random number and text
             pairingCode.setText(pairCode);
-            sessionManagement.createPairingSession(pairCode);
+            sessionManagement.createPairingSession(pairingStatus);
         }
         else{
             // Update the TextView with the random number and text
@@ -573,8 +577,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        //checkPermissions();
-
+        checkPermissions();
+        //Logger function initialisation
+        new Logger().startLogging(this);
 
 
 
