@@ -15,7 +15,7 @@
         android:progress="0"
         android:max="100"
         android:layout_gravity="center"
-    />
+        />
 
     <LinearLayout
         android:id="@+id/parentInternetLay"
@@ -117,14 +117,14 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:visibility="visible"/>
-        <!--<VideoView
-            android:id="@+id/videoView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:orientation="horizontal"
-            android:visibility="visible"
-            />-->
+        <!--  <VideoView
+              android:id="@+id/videoView"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_centerInParent="true"
+              android:orientation="horizontal"
+              android:visibility="visible"
+              />-->
         <ProgressBar
             android:id="@+id/video_progress"
             android:layout_width="40dp"
@@ -491,17 +491,17 @@
 
                     </HorizontalScrollView>
 
-                   <!-- <TextView
-                        android:text=""
-                        android:id="@+id/textdisplayOverlay"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="marquee"
-                        android:marqueeRepeatLimit="marquee_forever"
-                        android:fadeScrollbars="false"
-                        android:scrollHorizontally="true"
-                        android:layout_centerVertical="true"
-                        android:singleLine="true" />-->
+                    <!-- <TextView
+                         android:text=""
+                         android:id="@+id/textdisplayOverlay"
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         android:ellipsize="marquee"
+                         android:marqueeRepeatLimit="marquee_forever"
+                         android:fadeScrollbars="false"
+                         android:scrollHorizontally="true"
+                         android:layout_centerVertical="true"
+                         android:singleLine="true" />-->
                 </RelativeLayout>
 
             </LinearLayout>
@@ -531,7 +531,9 @@
                 android:id="@+id/lay1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+
+                >
 
                 <!-- ImageView with 40% width and auto height -->
                 <ImageView
@@ -763,7 +765,7 @@
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                   />
+                    />
 
             </HorizontalScrollView>
             <!--<TextView

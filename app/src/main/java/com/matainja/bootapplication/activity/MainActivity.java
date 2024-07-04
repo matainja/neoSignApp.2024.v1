@@ -26,8 +26,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
@@ -51,10 +53,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -306,6 +310,8 @@ public class MainActivity extends AppCompatActivity {
     Boolean scheduledExist=false;
     Uri videoUri = null;
 
+    private static final String PERMISSION_GRANTED_KEY = "permission_granted";
+
     @SuppressLint({"CutPasteId", "MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -339,9 +345,27 @@ public class MainActivity extends AppCompatActivity {
             }
         }*/
 
-        //checkPermissions();
 
-        //accessAllPermission();
+        int sdkVersion = Build.VERSION.SDK_INT;
+        if (sdkVersion >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            } else {
+                // Permission already granted, proceed with your app functionality
+                Toast.makeText(this, "Storage permission already granted.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // For Lollipop and older versions, permissions are granted at install time
+            Toast.makeText(this, "Storage permission granted at install time.", Toast.LENGTH_SHORT).show();
+        }
+
+        // checkPermissions();
+
+        // startOrientationListener();
+
+
+
+        accessAllPermission();
 
         handler = new Handler();
         handler1 = new Handler();
@@ -463,11 +487,17 @@ public class MainActivity extends AppCompatActivity {
             pairCode=pairCode.toUpperCase();
             // Update the TextView with the random number and text
             pairingCode.setText(pairCode);
-            sessionManagement.createPairingSession(pairingStatus);
+
+            // sessionManagement.createPairingSession(pairingStatus);
+            sessionManagement.createPairingSession(pairCode);
+
+            Log.e("TAG","pairingCode111>>>"+pairCode);
+
         }
         else{
             // Update the TextView with the random number and text
             pairingCode.setText(pairCode);
+            Log.e("TAG","pairingCode>>>"+pairingCode);
 
         }
         initPusher();
@@ -490,8 +520,12 @@ public class MainActivity extends AppCompatActivity {
                                 // on below line we are finishing activity.
                                 MainActivity.this.finish();
 
+                                Log.d("clear>>", "Clearing myRunnable"+handler);
+
                                 // on below line we are exiting our activity
                                 System.exit(0);
+
+
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -577,7 +611,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        checkPermissions();
         //Logger function initialisation
         new Logger().startLogging(this);
 
@@ -971,6 +1004,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     public boolean isBatterySaverSettingsAvailable(Context context) {
         Intent intent = new Intent(Intent.ACTION_POWER_USAGE_SUMMARY);
         PackageManager pm = context.getPackageManager();
@@ -1035,6 +1069,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(MyReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
     private void initPairing(String pairCode){
+
         HashMap<String, String> getscheduleSlideItemDetails = new HashMap<String, String>();
         getscheduleSlideItemDetails = sessionManagement.getScheduleContentItemDetails();
         List<ContentModel> ScheduleContentItemList = new ArrayList<>();
@@ -1107,7 +1142,37 @@ public class MainActivity extends AppCompatActivity {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
-                            Log.e("TAG","response>>>"+response);
+                            TextView textpairId= findViewById(R.id.pairingCode);
+
+                            try {
+                                // Parse JSON response
+                                JSONObject jsonResponse = new JSONObject(response);
+                                Log.e("TAG", "jsonResponse>>>"+response);
+
+                                JSONObject data = jsonResponse.getJSONObject("data");
+
+                                // Extract pairId and status from data object
+                                String pairId = data.getString("pairid");
+                                boolean pairingStatus = data.getBoolean("status");
+                                Log.e("TAG", "pairingStatus>>>"+pairingStatus);
+                                if(pairingStatus) {
+                                    textpairId.setText("Paired");
+                                    Log.e("TAG", "pairingStatusTrue>>>"+pairingStatus);
+                                }
+                                else{
+                                    textpairId.setText(pairId);
+                                    Log.e("TAG", "pairingStatusFalse>>>"+pairingStatus);
+
+                                }
+
+
+                                Log.e("TAG", "response>>>"+response);
+
+                            } catch (JSONException e) {
+                                // Handle JSON parsing error
+                                Log.e("API_CALL", "Error parsing JSON response: " + e.getMessage());
+                            }
+                            //Log.e("TAG","response>>>"+response);
                         }
                     },
                     new Response.ErrorListener() {
@@ -1588,6 +1653,10 @@ public class MainActivity extends AppCompatActivity {
                                 display_list.setAdapter(displayAdapter);
                                 displayAdapter.notifyDataSetChanged();
                                 playSound();
+
+                                clearTimeout();
+
+
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
@@ -1634,6 +1703,7 @@ public class MainActivity extends AppCompatActivity {
         getStrechsDetails = sessionManagement.getStrechDetails();
         strech=getStrechsDetails.get(STRECH);
         slideShowCallCount++;
+        Log.e("slideCount","slideCount>>>"+slideShowCallCount);
         long duration = Long.parseLong(list.get(contentCurrentIndex).getDuration()); // Set the duration in milliseconds
 
         Calendar currentTime = Calendar.getInstance();
@@ -1653,8 +1723,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
-
 
 
         ContentModel item = list.get(contentCurrentIndex);
@@ -1740,6 +1808,7 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
+
         else if(item.getType().equals("video") && currentDate.after(startDate) && currentDate.before(endDate)){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
@@ -1856,7 +1925,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPreferredTextLanguage("en")
                     .setPreferredTextRoleFlags(C.ROLE_FLAG_SUBTITLE)
                     .setRendererDisabled(C.TRACK_TYPE_VIDEO, false)
-                    );
+            );
 
             // Initialize ExoPlayer instance with software decoder
             player = new SimpleExoPlayer.Builder(this)
@@ -1899,7 +1968,7 @@ public class MainActivity extends AppCompatActivity {
                                 .setUri(Uri.parse("file://"+localFilePath))
                                 .setMimeType(MimeTypes.APPLICATION_MP4)
                                 .build();
-                        Log.e("Tag","test>>>1"+localFilePath);
+                        Log.e("Tag","test1>>>1"+localFilePath);
 
                     }
 
@@ -2006,6 +2075,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
         /*else if(item.getType().equals("video")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
@@ -2376,6 +2446,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
+
     @SuppressLint("NotifyDataSetChanged")
     private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
@@ -2740,6 +2811,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             overLays(item);
+            clearTimeout();
             myRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -2753,7 +2825,7 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
-        /*else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
+        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -2863,7 +2935,6 @@ public class MainActivity extends AppCompatActivity {
 
                 //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
 
-                *//*
                 // Initialize ExoPlayer instance
                 DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
                 trackSelector.setParameters(trackSelector.buildUponParameters()
@@ -2877,7 +2948,7 @@ public class MainActivity extends AppCompatActivity {
                 player = new SimpleExoPlayer.Builder(this)
                         .setTrackSelector(trackSelector)
                         .build();
-                *//*
+
 
                 DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
                 renderersFactory.setEnableDecoderFallback(true);
@@ -2934,7 +3005,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setUri(Uri.parse("file://"+localFilePath))
                                     .setMimeType(MimeTypes.APPLICATION_MP4)
                                     .build();
-                            Log.e("Tag","test>>>1"+localFilePath);
+                            Log.e("Tag","test2>>>1"+localFilePath);
                         }
                     }
 
@@ -3036,8 +3107,9 @@ public class MainActivity extends AppCompatActivity {
                 // Handle exception
             }
 
-        }*/
-        else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
+        }
+       /* else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
+
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
             terminal_lay.setVisibility(GONE);
@@ -3210,7 +3282,11 @@ public class MainActivity extends AppCompatActivity {
             videoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+
+                    clearSurface(surface); // Clear the surface before initializing the MediaPlayer
+
                     initializeAndPrepareMediaPlayer(surface,item.getUrl(), duration, list,item, videoUri);
+
                 }
 
                 @Override
@@ -3234,7 +3310,8 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-        }
+        }  */
+
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             terminalLogo.setVisibility(GONE);
             txtTerminal.setVisibility(GONE);
@@ -3244,7 +3321,6 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
-
             webView_lay.setVisibility(VISIBLE);
             overLays(item);
             iFrameLay(item.getUrl(),list,duration,item);
@@ -3565,6 +3641,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
     private void skipContentLayItem(ContentModel item, List<ContentModel> list, long duration) {
         if (item.getType().equals("image")){
             myRunnable = new Runnable() {
@@ -3576,13 +3653,15 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
-                myRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        contentLay(list);
-                    }
-                };
-                handler.postDelayed(myRunnable, duration);
+
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    contentLay(list);
+                }
+            };
+            handler.postDelayed(myRunnable, duration);
+
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Youtube")){
             myRunnable = new Runnable() {
@@ -3633,6 +3712,7 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("RSS FEED")){
+            clearTimeout();
             myRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -4070,398 +4150,399 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(overLaysIds.size()>1){
 
-             String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
-             if(secondToLastValue.equals(item.getLaysId())){
-                 if (item.getLaysContentType().equals("RSS feed")){
-                     if(item.getLaysType().equals("Right")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Left")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Top")){
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentTopOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Bottom")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(VISIBLE);
-                     }
+            String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
+            if(secondToLastValue.equals(item.getLaysId())){
+                if (item.getLaysContentType().equals("RSS feed")){
+                    if(item.getLaysType().equals("Right")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Left")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Top")){
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Bottom")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(VISIBLE);
+                    }
 
-                 }
-                 else if (item.getLaysContentType().equals("Written text")){
-                     Log.e("Tag","testing>>>6");
-                     if(item.getLaysType().equals("Right")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Left")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Top")){
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentTopOverlay.setVisibility(VISIBLE);
-                     }
-                     else if(item.getLaysType().equals("Bottom")){
-                         Log.e("Tag","testing>>>66");
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(VISIBLE);
+                }
+                else if (item.getLaysContentType().equals("Written text")){
+                    Log.e("Tag","testing>>>6");
+                    if(item.getLaysType().equals("Right")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Left")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Top")){
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(VISIBLE);
+                    }
+                    else if(item.getLaysType().equals("Bottom")){
+                        Log.e("Tag","testing>>>66");
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(VISIBLE);
 
-                     }
-                 }
-             }
-             else{
-                 overlayRssSlideShowCallCount=0;
-                 clearTimeout2();
-                 if (item.getLaysContentType().equals("RSS feed")){
-                     if(item.getLaysType().equals("Right")){
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
-                         parentRightOverlay.setBackground(gradientDrawable);
+                    }
+                }
+            }
+            else{
+                overlayRssSlideShowCallCount=0;
+                clearTimeout2();
+                if (item.getLaysContentType().equals("RSS feed")){
+                    if(item.getLaysType().equals("Right")){
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                        parentRightOverlay.setBackground(gradientDrawable);
 
-                         textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
 
-                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
-                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                        setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                        setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
                          /*parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(VISIBLE);*/
-                     }
-                     else if(item.getLaysType().equals("Left")){
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
-                         parentLeftOverlay.setBackground(gradientDrawable);
-                         textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                         setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                         setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                    }
+                    else if(item.getLaysType().equals("Left")){
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                        parentLeftOverlay.setBackground(gradientDrawable);
+                        textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                        setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
                         /* parentTopOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(VISIBLE);*/
-                     }
-                     else if(item.getLaysType().equals("Top")){
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         parentTopOverlay.setBackground(gradientDrawable);
-                         textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                         setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                    }
+                    else if(item.getLaysType().equals("Top")){
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        parentTopOverlay.setBackground(gradientDrawable);
+                        textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
                          /*parentLeftOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
                          parentTopOverlay.setVisibility(VISIBLE);*/
-                     }
-                     else if(item.getLaysType().equals("Bottom")){
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         parentBottomOverlay.setBackground(gradientDrawable);
-                         textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                         setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                    }
+                    else if(item.getLaysType().equals("Bottom")){
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        parentBottomOverlay.setBackground(gradientDrawable);
+                        textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
                          /*parentTopOverlay.setVisibility(GONE);
                          parentLeftOverlay.setVisibility(GONE);
                          parentRightOverlay.setVisibility(GONE);
                          parentBottomOverlay.setVisibility(VISIBLE);*/
-                     }
+                    }
 
 
-                     Log.e("Tag","testing>>>7");
-                     List<RSSModel> overlaysRssList = new ArrayList<>();
-                     String overlayContent=item.getLaysContent();
-                     String newString = overlayContent.replace("https://app.neosign.tv/", "");
+                    Log.e("Tag","testing>>>7");
+                    List<RSSModel> overlaysRssList = new ArrayList<>();
+                    String overlayContent=item.getLaysContent();
+                    String newString = overlayContent.replace("https://app.neosign.tv/", "");
 
-                     String apiUrl = "https://app.neosign.tv/api/rss-feed";
-                     String apiUrlWithParams="";
-                     try {
-                         apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
-                     } catch (UnsupportedEncodingException e) {
-                         e.printStackTrace();
-                     }
-                     Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
+                    String apiUrl = "https://app.neosign.tv/api/rss-feed";
+                    String apiUrlWithParams="";
+                    try {
+                        apiUrlWithParams = apiUrl + "?url=" + URLEncoder.encode(newString, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    Log.e("TAG","apiUrlWithParams>>>"+apiUrlWithParams);
 
-                     if(isNetworkAvailable()){
-                         // Create a custom SSL socket factory that trusts all certificates
-                         SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
+                    if(isNetworkAvailable()){
+                        // Create a custom SSL socket factory that trusts all certificates
+                        SSLSocketFactory sslSocketFactory = getTrustAllCertificatesSSLSocketFactory();
 
-                         // Set the custom SSL socket factory on Volley's HurlStack
-                         HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
+                        // Set the custom SSL socket factory on Volley's HurlStack
+                        HurlStack hurlStack = new HurlStack(null, sslSocketFactory);
 
-                         StringRequest getRequest = new StringRequest(Request.Method.GET,
-                                 apiUrlWithParams,
-                                 new Response.Listener<String>() {
-                                     @Override
-                                     public void onResponse(String response) {
-                                         Log.e("TAG","response>>>"+response);
-                                         rssProgrss.setVisibility(GONE);
-                                         try {
-                                             JSONArray jsonArray = new JSONArray(response);
-                                             if (jsonArray.length()>0){
-                                                 overlaysRssList.clear();
-                                                 for(int i=0;i<jsonArray.length();i++){
-                                                     JSONObject dataObject = jsonArray.getJSONObject(i);
-                                                     String title = dataObject.getString("title");
-                                                     String description = dataObject.getString("description");
+                        StringRequest getRequest = new StringRequest(Request.Method.GET,
+                                apiUrlWithParams,
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String response) {
+                                        Log.e("TAG","response>>>"+response);
+                                        rssProgrss.setVisibility(GONE);
+                                        try {
+                                            JSONArray jsonArray = new JSONArray(response);
+                                            if (jsonArray.length()>0){
+                                                overlaysRssList.clear();
+                                                for(int i=0;i<jsonArray.length();i++){
+                                                    JSONObject dataObject = jsonArray.getJSONObject(i);
+                                                    String title = dataObject.getString("title");
+                                                    String description = dataObject.getString("description");
 
-                                                     String date = dataObject.getString("date");
-                                                     String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
-                                                     Log.e("TAG","qr_code>>>"+qr_code);
-                                                     String photo= dataObject.getString("photo");
-                                                     RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
-                                                     overlaysRssList.add(rssModel);
-                                                 }
-                                                 sessionManagement.createContentRssFeedDataSession(overlaysRssList,item.getLaysId());
-                                             }
+                                                    String date = dataObject.getString("date");
+                                                    String qr_code = dataObject.getString("qr_code").replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>","");
+                                                    Log.e("TAG","qr_code>>>"+qr_code);
+                                                    String photo= dataObject.getString("photo");
+                                                    RSSModel rssModel=new RSSModel(title,description,date,qr_code,photo);
+                                                    overlaysRssList.add(rssModel);
+                                                }
+                                                sessionManagement.createContentRssFeedDataSession(overlaysRssList,item.getLaysId());
+                                            }
 
-                                             if(overlaysRssList==null){}
-                                             else{
-                                                 if (overlayRssSlideShowCallCount==0){
-                                                     clearTimeout2();
-                                                     overlaysRssContentCurrentIndex=0;
-                                                     overlayRssContentLay(overlaysRssList,item);
-                                                     firstRssFeedLaysdataCount= overlaysRssList.size();
-                                                 }
+                                            if(overlaysRssList==null){}
+                                            else{
+                                                if (overlayRssSlideShowCallCount==0){
+                                                    clearTimeout2();
+                                                    overlaysRssContentCurrentIndex=0;
+                                                    overlayRssContentLay(overlaysRssList,item);
+                                                    firstRssFeedLaysdataCount= overlaysRssList.size();
+                                                }
 
-                                                 int newDataCount=overlaysRssList.size();
-                                                 if(firstRssFeedLaysdataCount != newDataCount){
-                                                     overlayRssSlideShowCallCount=0;
-                                                 }
-                                             }
-
-
-
-                                         } catch (JSONException e) {
-                                             e.printStackTrace();
-                                         }
-
-
-                                     }
-                                 },
-                                 new Response.ErrorListener() {
-                                     @Override
-                                     public void onErrorResponse(VolleyError error) {
-                                         error.printStackTrace();
-                                         Log.e("Error", "-----VollyError----: "+error.getMessage());
-                                     }
-                                 });
-                         RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
-                         requestQueue.add(getRequest);
-                         getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-                                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-                         );
-                     }
-                     else{
-                         String layId=item.getLaysId();
-                         HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
-                         getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(layId);
-                         List<RSSModel> list = new ArrayList<>();
-                         list=new Gson().fromJson(getrsscontentDetails.get("rssfeed"+item.getLaysId()), new TypeToken<List<RSSModel>>(){}.getType());
-
-                         if(list==null){}
-                         else{
-                             if (overlayRssSlideShowCallCount==0){
-                                 clearTimeout2();
-                                 overlaysRssContentCurrentIndex=0;
-                                 overlayRssContentLay(list,item);
-                                 firstRssFeedLaysdataCount= list.size();
-                             }
-
-                             int newDataCount=list.size();
-                             if(firstRssFeedLaysdataCount != newDataCount){
-                                 overlayRssSlideShowCallCount=0;
-                             }
-                         }
-
-                     }
+                                                int newDataCount=overlaysRssList.size();
+                                                if(firstRssFeedLaysdataCount != newDataCount){
+                                                    overlayRssSlideShowCallCount=0;
+                                                }
+                                            }
 
 
 
-
-                 }
-                 else if (item.getLaysContentType().equals("Written text")){
-                     Log.e("Tag","testing>>>77");
-                     if(item.getLaysType().equals("Right")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(VISIBLE);
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
-                         parentRightOverlay.setBackground(gradientDrawable);
-
-                         textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-
-                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
-                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                         textRightOverlay.setText(item.getLaysContent());
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
 
 
-                         textAnimation(textRightOverlay, item.getLaysContent());
+                                    }
+                                },
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        error.printStackTrace();
+                                        Log.e("Error", "-----VollyError----: "+error.getMessage());
+                                    }
+                                });
+                        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this,hurlStack);
+                        requestQueue.add(getRequest);
+                        getRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
+                                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                        );
+                    }
+                    else{
+                        String layId=item.getLaysId();
+                        HashMap<String, String> getrsscontentDetails = new HashMap<String, String>();
+                        getrsscontentDetails = sessionManagement.getContentRssFeedItemDetails(layId);
+                        List<RSSModel> list = new ArrayList<>();
+                        list=new Gson().fromJson(getrsscontentDetails.get("rssfeed"+item.getLaysId()), new TypeToken<List<RSSModel>>(){}.getType());
 
-                     }
-                     else if(item.getLaysType().equals("Left")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(VISIBLE);
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
-                         parentLeftOverlay.setBackground(gradientDrawable);
+                        if(list==null){}
+                        else{
+                            if (overlayRssSlideShowCallCount==0){
+                                clearTimeout2();
+                                overlaysRssContentCurrentIndex=0;
+                                overlayRssContentLay(list,item);
+                                firstRssFeedLaysdataCount= list.size();
+                            }
 
-                         textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                            int newDataCount=list.size();
+                            if(firstRssFeedLaysdataCount != newDataCount){
+                                overlayRssSlideShowCallCount=0;
+                            }
+                        }
 
-                         setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
-                         setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                         Log.e("Tag","testing>>>8");
-                         textLeftOverlay.setText(item.getLaysContent());
+                    }
 
-                         textAnimation(textLeftOverlay, item.getLaysContent());
-                     }
-                     else if(item.getLaysType().equals("Top")){
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentTopOverlay.setVisibility(VISIBLE);
 
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         parentTopOverlay.setBackground(gradientDrawable);
 
-                         textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                         setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                         Log.e("Tag","testing>>>9");
-                         textTopOverlay.setText(item.getLaysContent());
 
-                         textAnimation(textTopOverlay, item.getLaysContent());
-                     }
-                     else if(item.getLaysType().equals("Bottom")){
-                         parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(VISIBLE);
-                         Log.e("Tag","Color>>>"+item.getLaysBgColor());
-                         Log.e("Tag","Color>>>"+item.getLaysFontColor());
+                }
+                else if (item.getLaysContentType().equals("Written text")){
+                    Log.e("Tag","testing>>>77");
+                    if(item.getLaysType().equals("Right")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(VISIBLE);
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        gradientDrawable.setCornerRadii(new float[]{20, 20, 0, 0, 0, 0, 20, 20});
+                        parentRightOverlay.setBackground(gradientDrawable);
 
-                         String colorCode = item.getLaysBgColor();
-                         String solid = colorCode.substring(0, 7);
-                         String alphaStr = colorCode.substring(colorCode.length() - 2);
-                         // Convert the alpha component to an integer
-                         int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
-                         // Convert the solid color to an integer
-                         int solidColor = Color.parseColor(solid);
-                         // Apply alpha to the solid color
-                         int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
-                         GradientDrawable gradientDrawable = new GradientDrawable();
-                         gradientDrawable.setColor(finalColor);
-                         parentBottomOverlay.setBackground(gradientDrawable);
+                        textRightOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textRightOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
 
-                         textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
-                         textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
-                         setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                         Log.e("Tag","testing>>>10");
+                        setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
+                        setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
+                        textRightOverlay.setText(item.getLaysContent());
 
-                         textBottomOverlay.setText(item.getLaysContent());
 
-                         textAnimation(textBottomOverlay, item.getLaysContent());
+                        textAnimation(textRightOverlay, item.getLaysContent());
 
-                     }
-                 }
-             }
+                    }
+                    else if(item.getLaysType().equals("Left")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(VISIBLE);
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        gradientDrawable.setCornerRadii(new float[]{0, 0, 20, 20, 20, 20, 0, 0});
+                        parentLeftOverlay.setBackground(gradientDrawable);
+
+                        textLeftOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+
+                        setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
+                        setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
+                        Log.e("Tag","testing>>>8");
+                        textLeftOverlay.setText(item.getLaysContent());
+
+                        textAnimation(textLeftOverlay, item.getLaysContent());
+                    }
+                    else if(item.getLaysType().equals("Top")){
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(GONE);
+                        parentTopOverlay.setVisibility(VISIBLE);
+
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        parentTopOverlay.setBackground(gradientDrawable);
+
+                        textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
+                        Log.e("Tag","testing>>>9");
+                        textTopOverlay.setText(item.getLaysContent());
+
+                        textAnimation(textTopOverlay, item.getLaysContent());
+                    }
+                    else if(item.getLaysType().equals("Bottom")){
+                        parentTopOverlay.setVisibility(GONE);
+                        parentLeftOverlay.setVisibility(GONE);
+                        parentRightOverlay.setVisibility(GONE);
+                        parentBottomOverlay.setVisibility(VISIBLE);
+                        Log.e("Tag","Color>>>"+item.getLaysBgColor());
+                        Log.e("Tag","Color>>>"+item.getLaysFontColor());
+
+                        String colorCode = item.getLaysBgColor();
+                        String solid = colorCode.substring(0, 7);
+                        String alphaStr = colorCode.substring(colorCode.length() - 2);
+                        // Convert the alpha component to an integer
+                        int alpha = Integer.parseInt(alphaStr, 16); // Parse hexadecimal to integer
+                        // Convert the solid color to an integer
+                        int solidColor = Color.parseColor(solid);
+                        // Apply alpha to the solid color
+                        int finalColor = Color.argb(alpha, Color.red(solidColor), Color.green(solidColor), Color.blue(solidColor));
+                        GradientDrawable gradientDrawable = new GradientDrawable();
+                        gradientDrawable.setColor(finalColor);
+                        parentBottomOverlay.setBackground(gradientDrawable);
+
+                        textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
+                        textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
+                        setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
+                        Log.e("Tag","testing>>>10");
+
+                        textBottomOverlay.setText(item.getLaysContent());
+
+                        textAnimation(textBottomOverlay, item.getLaysContent());
+
+                    }
+                }
+            }
         }
 
     }
+
     private void displayOverLays(ContentModel item) {
         overLaysContentModel=item;
         if (item.getFeed_url().isEmpty() || item.getFeed_url()==null){
@@ -4924,7 +5005,7 @@ public class MainActivity extends AppCompatActivity {
 
         contentLay2.setRotation(rotationDegrees);
 
-// Calculate the scale factors to fill the entire screen without stretching
+        // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
 
@@ -4944,7 +5025,7 @@ public class MainActivity extends AppCompatActivity {
             scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
         }*/
 
-// Apply the scaling to fill the entire screen without stretching
+        // Apply the scaling to fill the entire screen without stretching
         contentLay2.setScaleX(scaleX);
         contentLay2.setScaleY(scaleY);
 
@@ -4991,7 +5072,7 @@ public class MainActivity extends AppCompatActivity {
 
         playerView.getVideoSurfaceView().setRotation(rotationDegrees);
 
-// Calculate the scale factors to fill the entire screen without stretching
+        // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
 
@@ -5015,7 +5096,7 @@ public class MainActivity extends AppCompatActivity {
         playerView.getVideoSurfaceView().setScaleX(scaleX);
         playerView.getVideoSurfaceView().setScaleY(scaleY);
     }
-    private void configureRSSFeedTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+    private void configureRSSFeedTransform1(int viewWidth, int viewHeight, int rotationDegrees) {
 
 
         parentContentRssFeed.setRotation(rotationDegrees);
@@ -5047,6 +5128,97 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void configureRSSFeedTransform2(int rotationDegrees) {
+        // Get the actual dimensions of the view
+        int viewWidth = parentContentRssFeed.getWidth();
+        int viewHeight = parentContentRssFeed.getHeight();
+
+        // Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (viewWidth > 0 && viewHeight > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                scaleX = (float) viewHeight / viewWidth;
+                scaleY = (float) viewWidth / viewHeight;
+            } else {
+                scaleX = (float) viewWidth / viewHeight;
+                scaleY = (float) viewHeight / viewWidth;
+            }
+        }
+
+        // Apply the rotation and scaling
+        parentContentRssFeed.setRotation(rotationDegrees);
+        parentContentRssFeed.setScaleX(scaleX);
+        parentContentRssFeed.setScaleY(scaleY);
+
+        // Logging for debugging
+        Log.d("RSSFeedTransform", "Width: " + viewWidth + ", Height: " + viewHeight +
+                ", ScaleX: " + scaleX + ", ScaleY: " + scaleY +
+                ", Rotation: " + rotationDegrees);
+    }
+    private void configureRSSFeedTransform(int rotationDegrees) {
+        // Get the actual dimensions of the view
+        int viewWidth = parentContentRssFeed.getWidth();
+        int viewHeight = parentContentRssFeed.getHeight();
+
+        // Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (viewWidth > 0 && viewHeight > 0) {
+            if (rotationDegrees == 90 || rotationDegrees == 270) {
+                // Swap width and height scaling factors
+                scaleX = (float) viewHeight / viewWidth;
+                scaleY = (float) viewWidth / viewHeight;
+            } else {
+                // No scaling for 0 and 180 degrees
+                scaleX = 1.0f;
+                scaleY = 1.0f;
+            }
+        }
+
+        // Apply the rotation and scaling to the parent layout
+        parentContentRssFeed.setRotation(rotationDegrees);
+        parentContentRssFeed.setScaleX(scaleX);
+        parentContentRssFeed.setScaleY(scaleY);
+
+        // Ensure child elements (image and QR code) retain their aspect ratios only for 90 and 270 degrees
+        if (rotationDegrees == 90 || rotationDegrees == 270) {
+            adjustChildElementScales(scaleX, scaleY);
+        } else {
+            resetChildElementScales();
+        }
+
+        // Logging for debugging
+        Log.d("RSSFeedTransform", "Width: " + viewWidth + ", Height: " + viewHeight +
+                ", ScaleX: " + scaleX + ", ScaleY: " + scaleY +
+                ", Rotation: " + rotationDegrees);
+    }
+
+    private void adjustChildElementScales(float parentScaleX, float parentScaleY) {
+        float inverseScaleX = 1 / parentScaleX;
+        float inverseScaleY = 1 / parentScaleY;
+
+        // Adjust image scale to avoid stretching
+        rssImageView.setScaleX(1.0f);
+        rssImageView.setScaleY(0.65f);
+
+        // Adjust QR code scale to avoid stretching
+        rssQR.setScaleX(inverseScaleX);
+        rssQR.setScaleY(inverseScaleY);
+    }
+    private void resetChildElementScales() {
+        // Reset scaling to default (1.0) to avoid distortion in 0 and 180 degrees
+        rssImageView.setScaleX(1.0f);
+        rssImageView.setScaleY(1.0f);
+
+        rssQR.setScaleX(1.0f);
+        rssQR.setScaleY(1.0f);
+
+
+    }
+
 
     private void configureOverlayStretchTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
@@ -5064,7 +5236,7 @@ public class MainActivity extends AppCompatActivity {
         contentLay2.setScaleY(scaleY);
 
     }
-    private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+    private void configureWebViewTransform1(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
         myWebView.setRotation(rotationDegrees);
         if (myWebView.getWidth() == 0 || myWebView.getHeight() == 0) {
@@ -5079,21 +5251,82 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setScaleX(scaleX);
         myWebView.setScaleY(scaleY);
     }
-    private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
-        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
-        if (playerView.getVideoSurfaceView().getWidth() == 0 || playerView.getVideoSurfaceView().getHeight() == 0) {
-            // Handle the case where width or height is zero
+
+    private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+        // Handle the case where width or height is zero
+        if (viewWidth == 0 || viewHeight == 0) {
             return;
         }
-        // Calculate the scale factors to fill the entire screen
-        float scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
-        float scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
 
-        // Apply the scaling to fill the entire screen
+        // Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (rotationDegrees == 90 || rotationDegrees == 270) {
+            scaleX = (float) viewHeight / viewWidth;
+            scaleY = (float) viewWidth / viewHeight;
+        } else {
+            scaleX = (float) viewWidth / viewHeight;
+            scaleY = (float) viewHeight / viewWidth;
+        }
+
+        // Apply the rotation and scaling
+        myWebView.setRotation(rotationDegrees);
+        myWebView.setScaleX(scaleX);
+        myWebView.setScaleY(scaleY);
+
+        // Logging for debugging
+        Log.d("WebViewTransform", "Width: " + viewWidth + ", Height: " + viewHeight +
+                ", ScaleX: " + scaleX + ", ScaleY: " + scaleY +
+                ", Rotation: " + rotationDegrees);
+    }
+
+
+    private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
+//        // Rotate the VideoView by 90 degrees
+//        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
+//        if (playerView.getVideoSurfaceView().getWidth() == 0 || playerView.getVideoSurfaceView().getHeight() == 0) {
+//            // Handle the case where width or height is zero
+//            return;
+//        }
+//        // Calculate the scale factors to fill the entire screen
+//        float scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
+//        float scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
+//
+//        // Apply the scaling to fill the entire screen
+//        playerView.getVideoSurfaceView().setScaleX(scaleX);
+//        playerView.getVideoSurfaceView().setScaleY(scaleY);
+
+        // Get the actual dimensions of the view
+        viewWidth = playerView.getVideoSurfaceView().getWidth();
+        viewHeight = playerView.getVideoSurfaceView().getHeight();
+
+        // Handle the case where width or height is zero
+        if (viewWidth == 0 || viewHeight == 0) {
+            return;
+        }
+
+        // Calculate the scale factors to fill the entire screen without stretching
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
+
+        if (rotationDegrees == 90 || rotationDegrees == 270) {
+            scaleX = (float) viewHeight / viewWidth;
+            scaleY = (float) viewWidth / viewHeight;
+        } else {
+            scaleX = (float) viewWidth / viewHeight;
+            scaleY = (float) viewHeight / viewWidth;
+        }
+
+        // Apply the rotation and scaling
+        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
         playerView.getVideoSurfaceView().setScaleX(scaleX);
         playerView.getVideoSurfaceView().setScaleY(scaleY);
 
+        // Logging for debugging
+        Log.d("ExoPlayerTransform", "Width: " + viewWidth + ", Height: " + viewHeight +
+                ", ScaleX: " + scaleX + ", ScaleY: " + scaleY +
+                ", Rotation: " + rotationDegrees);
     }
 
     private void releasePlayer() {
@@ -5128,6 +5361,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initializeAndPrepareMediaPlayer(SurfaceTexture surface, String videoUrl, long duration, List<ContentModel> list, ContentModel item, Uri videoUri) {
         // Initialize MediaPlayer
+
+        Log.e("MediaPlayer","Entering media player");
         mediaPlayer = new MediaPlayer();
         try {
             // Set the data source to a sample video URL, replace with your own video source
@@ -5209,6 +5444,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     };
                     handler.postDelayed(myRunnable, duration);
+
                 }
             });
 
@@ -5218,6 +5454,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initializeAndPrepareMediaPlayer2(String videoUrl, long duration, List<ContentModel> list, ContentModel item, Uri videoUri) {
         // Initialize MediaPlayer
+        releaseMediaPlayer(); // Ensure the previous media player is released
+
         mediaPlayer = new MediaPlayer();
         try {
             // Set the data source to a sample video URL, replace with your own video source
@@ -5308,6 +5546,44 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer = null;
         }
     }
+
+    private void startOrientationListener() {
+        OrientationEventListener orientationListener = new OrientationEventListener(this) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                adjustLayoutForOrientation();
+            }
+        };
+        if (orientationListener.canDetectOrientation()) {
+            orientationListener.enable();
+        } else {
+            Toast.makeText(this, "Orientation sensor not supported", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void adjustLayoutForOrientation() {
+        int orientation = getResources().getConfiguration().orientation;
+        RelativeLayout.LayoutParams imageViewParams = (RelativeLayout.LayoutParams) rssImageView.getLayoutParams();
+        RelativeLayout.LayoutParams qrViewParams = (RelativeLayout.LayoutParams) rssQR.getLayoutParams();
+
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            imageViewParams.width = getResources().getDisplayMetrics().widthPixels * 4 / 10; // 40% of screen width
+            imageViewParams.height = RelativeLayout.LayoutParams.WRAP_CONTENT;
+
+            qrViewParams.width = getResources().getDisplayMetrics().widthPixels * 2 / 10; // 20% of screen width
+            qrViewParams.height = qrViewParams.width;
+        } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            imageViewParams.width = getResources().getDisplayMetrics().widthPixels * 4 / 10; // 40% of screen width
+            imageViewParams.height = RelativeLayout.LayoutParams.WRAP_CONTENT;
+
+            qrViewParams.width = getResources().getDisplayMetrics().widthPixels * 2 / 10; // 20% of screen width
+            qrViewParams.height = qrViewParams.width;
+        }
+
+        rssImageView.setLayoutParams(imageViewParams);
+        rssQR.setLayoutParams(qrViewParams);
+    }
+
     private void rssContentLay(List<RSSModel> rsslist, ContentModel item1) {
         rssImageView.setVisibility(VISIBLE);
         rssTitle.setVisibility(VISIBLE);
@@ -5317,8 +5593,13 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setVisibility(VISIBLE);
         rssSlideShowCallCount++;
         long duration = 10000;
+
         if (rsslist.size()>0){
             RSSModel item = rsslist.get(rssContentCurrentIndex);
+
+            // Log the current index and item details
+            Log.d("ContentSwitcher", "Displaying RSS content at index: " + rssContentCurrentIndex + ", Title: " + item.getTitle());
+
             if (item.getPhoto() != null) {
                 RequestOptions requestOptions = RequestOptions.bitmapTransform(new RoundedCorners(30)); // Set the corner radius as desired
                 Glide.with(getApplicationContext())
@@ -5350,6 +5631,8 @@ public class MainActivity extends AppCompatActivity {
         if (rssContentCurrentIndex >= rsslist.size()) {
             rssContentCurrentIndex = 0;
         }
+
+
         myRunnable1 = new Runnable() {
             @Override
             public void run() {
@@ -5449,21 +5732,41 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 else{
-                    // Handle size changes if needed
-                    if (orientation.equals("90 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                    }
-                    else if (orientation.equals("180 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                    }
-                    else if (orientation.equals("270 degrees")) {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                    }
-                    else {
-                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                    }
+//                    // Handle size changes if needed
+//                    if (orientation.equals("90 degrees")) {
+//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
+//                    }
+//                    else if (orientation.equals("180 degrees")) {
+//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
+//                    }
+//                    else if (orientation.equals("270 degrees")) {
+//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
+//                    }
+//                    else {
+//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
+//                    }
 
 
+// Use ViewTreeObserver to ensure dimensions are available
+                    myWebView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            myWebView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                            int viewWidth = myWebView.getWidth();
+                            int viewHeight = myWebView.getHeight();
+
+                            if (orientation.equals("90 degrees")) {
+                                configureWebViewTransform(viewWidth, viewHeight, 90);
+                            } else if (orientation.equals("180 degrees")) {
+                                configureWebViewTransform(viewWidth, viewHeight, 180);
+                            } else if (orientation.equals("270 degrees")) {
+                                configureWebViewTransform(viewWidth, viewHeight, 270);
+                            } else {
+                                configureWebViewTransform(viewWidth, viewHeight, 0);
+                            }
+                        }
+                    });
                 }
 
 
@@ -6615,49 +6918,64 @@ public class MainActivity extends AppCompatActivity {
         }*/
     }
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
-        if (strech.equals("off")){
+
+
+
+        // Apply the transformations based on the orientation and strech parameter
+//                if (strech.equals("off")) {
+//                    if (orientation.equals("90 degrees")) {
+//                        configureRSSFeedTransform(90);
+//                    } else if (orientation.equals("180 degrees")) {
+//                        parentContentRssFeed.setScaleX(1);
+//                        parentContentRssFeed.setScaleY(1);
+//                        parentContentRssFeed.setRotation(180);
+//                    } else if (orientation.equals("270 degrees")) {
+//                        configureRSSFeedTransform(270);
+//                    } else {
+//                        parentContentRssFeed.setScaleX(1);
+//                        parentContentRssFeed.setScaleY(1);
+//                        parentContentRssFeed.setRotation(0);
+//                    }
+//                } else {
+//                    // Handle size changes if needed
+//                    if (orientation.equals("90 degrees")) {
+//                        configureRSSFeedTransform(90);
+//                    } else if (orientation.equals("180 degrees")) {
+//                        parentContentRssFeed.setScaleX(1);
+//                        parentContentRssFeed.setScaleY(1);
+//                        parentContentRssFeed.setRotation(180);
+//                    } else if (orientation.equals("270 degrees")) {
+//                        configureRSSFeedTransform(270);
+//                    } else {
+//                        parentContentRssFeed.setScaleX(1);
+//                        parentContentRssFeed.setScaleY(1);
+//                        parentContentRssFeed.setRotation(0);
+//                    }
+//                }
+        if (strech.equals("off")) {
             if (orientation.equals("90 degrees")) {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
+                configureRSSFeedTransform(90);
+            } else if (orientation.equals("180 degrees")) {
+                configureRSSFeedTransform(180);
+            } else if (orientation.equals("270 degrees")) {
+                configureRSSFeedTransform(270);
+            } else {
+                configureRSSFeedTransform(0);
             }
-            else if (orientation.equals("180 degrees")) {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                parentContentRssFeed.setRotation(180);
-
-            }
-            else if (orientation.equals("270 degrees")) {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
-
-            }
-            else {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                parentContentRssFeed.setRotation(0);
-
-            }
-        }
-        else{
+        } else {
             // Handle size changes if needed
             if (orientation.equals("90 degrees")) {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 90);
+                configureRSSFeedTransform(90);
+            } else if (orientation.equals("180 degrees")) {
+                configureRSSFeedTransform(180);
+            } else if (orientation.equals("270 degrees")) {
+                configureRSSFeedTransform(270);
+            } else {
+                configureRSSFeedTransform(0);
             }
-            else if (orientation.equals("180 degrees")) {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                parentContentRssFeed.setRotation(180);
-            }
-            else if (orientation.equals("270 degrees")) {
-                configureRSSFeedTransform(parentContentRssFeed.getWidth(), parentContentRssFeed.getHeight(), 270);
-            }
-            else {
-                parentContentRssFeed.setScaleX(1);
-                parentContentRssFeed.setScaleY(1);
-                parentContentRssFeed.setRotation(0);
-
-            }
-
-
         }
+
+
 
         List<RSSModel> rsslist = new ArrayList<>();
         String originalString = item1.getUrl();
@@ -7534,15 +7852,31 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == PERMISSION_CALLBACK_CONSTANT) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, proceed with your operation
-                // Example: accessStorage();
-
+                Toast.makeText(this, "Storage permission granted.", Toast.LENGTH_SHORT).show();
             } else {
                 // Permission denied, handle accordingly (e.g., show a message or disable functionality)
+                Toast.makeText(this, "Storage permission denied.", Toast.LENGTH_SHORT).show();
                 showPermissionExplanationDialog();
+
+            }
+        }
+        else if (requestCode == 1) {
+            Log.e("TAG","RequestCode>>>");
+            // This block handles the storage permission request result
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted, proceed with your app functionality
+                Toast.makeText(this, "Storage permission granted.", Toast.LENGTH_SHORT).show();
+            } else {
+                // Permission was denied, show a message to the user
+                Toast.makeText(this, "Storage permission denied.", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
 
     }
+
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -7668,7 +8002,7 @@ public class MainActivity extends AppCompatActivity {
 
             }else{
                 slideShowCallCount=0;
-               initPairing(pairCode);
+                initPairing(pairCode);
                 //checkStoragePermissions(pairCode);
             }
 
@@ -7881,6 +8215,7 @@ public class MainActivity extends AppCompatActivity {
     }*/
 
 
+
     private void checkPermissions() {
         String[] permissionsRequired;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -7895,7 +8230,7 @@ public class MainActivity extends AppCompatActivity {
 
         boolean allPermissionsGranted = true;
         for (String permission : permissionsRequired) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, permission)!= PackageManager.PERMISSION_GRANTED) {
                 Log.e("Tag","Battery>>>0");
                 allPermissionsGranted = false;
                 break;
@@ -7903,7 +8238,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (!allPermissionsGranted) {
             Log.e("Tag","Battery>>>1");
-            if (ContextCompat.checkSelfPermission(this, permissionsRequired[0]) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, permissionsRequired[0])!= PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionsRequired[0])) {
                     // Show rationale if needed
                     showPermissionRationaleDialog(permissionsRequired);
@@ -7913,12 +8248,15 @@ public class MainActivity extends AppCompatActivity {
                     //ActivityCompat.requestPermissions(this, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
                 }
             }
-        }else{
+        } else {
+            Log.e("Tag","PermissionStatus>>>");
+            // Permission already granted, save the status
+            savePermissionStatus(true);
             Log.e("Tag","Battery>>>2");
             boolean isPowerSavingEnabled = isPowerSavingModeEnabled(getApplicationContext());
             if(isPowerSavingEnabled){
                 Log.e("Tag","Battery>>>3");
-            }else{
+            } else {
                 Log.e("Tag","Battery>>>4");
                 if(isBatterySaverSettingsAvailable(this)){
                     Log.e("Tag","Battery>>>5");
@@ -7926,16 +8264,19 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("Tag","Battery>>>6");
                         enableBatterySaverMode();
                     }
-
                 }
-
             }
         }
-
-
     }
 
 
+
+    private void savePermissionStatus(boolean status) {
+        SharedPreferences sharedPreferences = getSharedPreferences("permissions", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(PERMISSION_GRANTED_KEY, status);
+        editor.apply();
+    }
     private void showPermissionRationaleDialog(final String[] permissionsRequired) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Need Permission");
@@ -7944,9 +8285,11 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
             openAppSettings();
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
+        builder.setNegativeButton("Exit", (dialog, which) -> {
             dialog.dismiss();
-            openAppSettings();
+            // openAppSettings();
+            finish();
+
         });
 
         builder.show();
@@ -7958,11 +8301,14 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Grant", (dialog, which) -> {
             dialog.dismiss(); // Dismiss the dialog
             // Request permission again
+
             openAppSettings();
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
+        builder.setNegativeButton("Exit", (dialog, which) -> {
             dialog.dismiss(); // Dismiss the dialog
-            openAppSettings(); // Open app settings
+            // openAppSettings(); // Open app settings
+            finish();
+
         });
         builder.show();
     }
@@ -7985,5 +8331,8 @@ public class MainActivity extends AppCompatActivity {
         indicesList.clear();
         unregisterReceiver(MyReceiver);
     }
+
+
+
 
 }
