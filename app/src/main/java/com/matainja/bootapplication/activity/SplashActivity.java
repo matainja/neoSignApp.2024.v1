@@ -57,9 +57,7 @@ public class SplashActivity extends AppCompatActivity {
                 SplashActivity.this.startActivity(i);
                 Log.e("SessionManagement"," Inside checkLogin IFFFF");
 
-
                 SplashActivity.this.finish();
-
             }
         };
         handler.postDelayed(r, 1000);
@@ -84,7 +82,6 @@ public class SplashActivity extends AppCompatActivity {
         if (isKeepOnTop){
             Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler(this));
         }
-
 
     }
 }

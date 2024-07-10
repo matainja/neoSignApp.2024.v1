@@ -110,13 +110,9 @@ public class PairingFragment extends Fragment {
                                             String url = dataObject.getString("url");
                                             String duration = dataObject.getString("duration");
 
-
                                         }
-
                                     }
-
                                 }
-
 
 
                             }else {

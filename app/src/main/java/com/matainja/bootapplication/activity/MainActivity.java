@@ -359,11 +359,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Storage permission granted at install time.", Toast.LENGTH_SHORT).show();
         }
 
-        // checkPermissions();
-
         // startOrientationListener();
-
-
 
         accessAllPermission();
 
@@ -448,12 +444,6 @@ public class MainActivity extends AppCompatActivity {
         parent_keep_on_top=(RelativeLayout)header.findViewById(R.id.parent_keep_on_top);
         parent_reload=(RelativeLayout)header.findViewById(R.id.parent_reload);
         parent_exit=(RelativeLayout)header.findViewById(R.id.parent_exit);
-
-
-
-
-
-
         terminalView = findViewById(R.id.terminalView);
         terminalList = generateGridItems();
         terminalAdapter = new TerminalAdapter(this, terminalList);
@@ -519,13 +509,9 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int id) {
                                 // on below line we are finishing activity.
                                 MainActivity.this.finish();
-
                                 Log.d("clear>>", "Clearing myRunnable"+handler);
-
                                 // on below line we are exiting our activity
                                 System.exit(0);
-
-
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -602,7 +588,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
         MyReceiver = new MyReceiver();
         broadcastIntent();
     }
@@ -610,13 +595,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         //Logger function initialisation
         new Logger().startLogging(this);
-
-
-
-
 
         View decorView = getWindow().getDecorView();
         int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -733,12 +713,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-
-
-
         PowerManager powerManager =(PowerManager)getSystemService(POWER_SERVICE);
         powerLatch = powerManager.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
@@ -788,7 +762,6 @@ public class MainActivity extends AppCompatActivity {
                 getUserDetails = sessionManagement.getWakeupDetails();
                 isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
 
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.app_name);
                 builder.setIcon(R.mipmap.neo_app_icon);
@@ -814,9 +787,6 @@ public class MainActivity extends AppCompatActivity {
                                     powerLatch.acquire();
                                     sessionManagement.createWakeupSession(true);
                                 }
-
-
-
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -828,124 +798,6 @@ public class MainActivity extends AppCompatActivity {
                 alert.show();
             }
         });
-
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isPowerSavingEnabled){
-                keepAwakeSwitch.setChecked(true);
-                //This code holds the CPU
-                //powerLatch.acquire(24*60*60*1000L);
-                powerLatch.acquire();
-                sessionManagement.createWakeupSession(true);
-            }
-            else{
-                keepAwakeSwitch.setChecked(false);
-                //This code holds the CPU
-                if (powerLatch.isHeld()){
-                    powerLatch.release();
-                    sessionManagement.createWakeupSession(false);
-                }
-            }
-        }
-        else {
-            if (isWakeUP){
-                keepAwakeSwitch.setChecked(true);
-                //This code holds the CPU
-                //powerLatch.acquire(24*60*60*1000L);
-                powerLatch.acquire();
-                sessionManagement.createWakeupSession(true);
-            }
-            else{
-                keepAwakeSwitch.setChecked(false);
-                //This code holds the CPU
-                if (powerLatch.isHeld()){
-                    powerLatch.release();
-                    sessionManagement.createWakeupSession(false);
-                }
-            }
-        }
-
-
-
-        keepAwakeSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Intent intent = new Intent();
-                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
-                    startActivity(intent);
-                } else {
-                    if (keepAwakeSwitch.isChecked()){
-                        //This code holds the CPU
-                        powerLatch.acquire();
-                        sessionManagement.createWakeupSession(true);
-                    }else{
-                        //This code holds the CPU
-                        if (powerLatch.isHeld()){
-                            powerLatch.release();
-                            sessionManagement.createWakeupSession(false);
-                        }
-
-                    }
-                }
-            }
-        });
-
-        parent_keep_awake.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-                sessionManagement = new SessionManagement(MainActivity.this);
-
-                HashMap<String, String> getUserDetails = new HashMap<String, String>();
-                getUserDetails = sessionManagement.getWakeupDetails();
-                isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
-
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle(R.string.app_name);
-                builder.setIcon(R.mipmap.neo_app_icon);
-                builder.setMessage("Do you want to change Keep Awake status?")
-                        .setCancelable(false)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
-                                    startActivity(intent);
-                                } else {
-                                    if (isWakeUP){
-                                        keepAwakeSwitch.setChecked(false);
-                                        //This code holds the CPU
-                                        if (powerLatch.isHeld()){
-                                            powerLatch.release();
-                                            sessionManagement.createWakeupSession(false);
-                                        }
-
-                                    }
-                                    else{
-                                        keepAwakeSwitch.setChecked(true);
-                                        //This code holds the CPU
-                                        //powerLatch.acquire(24*60*60*1000L);
-                                        powerLatch.acquire();
-                                        sessionManagement.createWakeupSession(true);
-                                    }
-
-                                }
-
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });*/
-
-
 
         if (isKeepOnTop){
             keepOnTopSwitch.setChecked(true);
@@ -1004,14 +856,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     public boolean isBatterySaverSettingsAvailable(Context context) {
         Intent intent = new Intent(Intent.ACTION_POWER_USAGE_SUMMARY);
         PackageManager pm = context.getPackageManager();
         List<ResolveInfo> resolveInfos = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         return resolveInfos.size() > 0;
     }
-
     private void enableBatterySaverMode() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(R.string.app_name);
@@ -1055,7 +905,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Battery saver mode is not supported on this device", Toast.LENGTH_SHORT).show();
         }
     }
-
     public static boolean isPowerSavingModeEnabled(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -1164,15 +1013,11 @@ public class MainActivity extends AppCompatActivity {
                                     Log.e("TAG", "pairingStatusFalse>>>"+pairingStatus);
 
                                 }
-
-
                                 Log.e("TAG", "response>>>"+response);
-
                             } catch (JSONException e) {
                                 // Handle JSON parsing error
                                 Log.e("API_CALL", "Error parsing JSON response: " + e.getMessage());
                             }
-                            //Log.e("TAG","response>>>"+response);
                         }
                     },
                     new Response.ErrorListener() {
@@ -1197,7 +1042,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     private SSLSocketFactory getTrustAllCertificatesSSLSocketFactory() {
         try {
             TrustManager[] trustAllCerts = new TrustManager[]{
@@ -1206,12 +1050,10 @@ public class MainActivity extends AppCompatActivity {
                         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
                             // No implementation needed
                         }
-
                         @Override
                         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
                             // No implementation needed
                         }
-
                         @Override
                         public X509Certificate[] getAcceptedIssuers() {
                             return new X509Certificate[]{};
@@ -1227,8 +1069,6 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
-
-
     private void initPusher() {
         PusherOptions options = new PusherOptions();
         options.setCluster("ap2");
@@ -1239,9 +1079,7 @@ public class MainActivity extends AppCompatActivity {
             public void onConnectionStateChange(ConnectionStateChange change) {
                 Log.i("Pusher", "State changed from " + change.getPreviousState() +
                         " to " + change.getCurrentState());
-
             }
-
             @Override
             public void onError(String message, String code, Exception e) {
                 Log.i("Pusher", "There was a problem connecting! " +
@@ -1257,9 +1095,7 @@ public class MainActivity extends AppCompatActivity {
         channel.bind("screen-content", new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
-
                 runOnUiThread(new Runnable() {
-
                     @Override
                     public void run() {
                         terminal_lay.setVisibility(GONE);
@@ -1317,11 +1153,6 @@ public class MainActivity extends AppCompatActivity {
                                 parentPairing.setVisibility(VISIBLE);
                             }
                         }
-
-
-
-
-
                         try{
                             JSONObject jsonObject = new JSONObject(event.getData().toString());
                             Log.e("Tag","jsonObject>>>"+jsonObject);
@@ -1373,7 +1204,6 @@ public class MainActivity extends AppCompatActivity {
                                         DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
                                         dbHelper.deleteAllVideos();
                                     }
-
                                     parentPairing.setVisibility(GONE);
                                     pairProgress.setVisibility(GONE);
                                     pairProgress.setVisibility(VISIBLE);
@@ -1401,9 +1231,6 @@ public class MainActivity extends AppCompatActivity {
                                         String rssinfo= dataObject.getString("rssinfo");
                                         String app_queue_departments= dataObject.getString("app_queue_departments");
                                         Log.e("overlays","app_queue_departments>>>"+app_queue_departments);
-
-
-
 
                                         String laysId="",laysCID="",laysType="",laysName="",laysheight="",
                                                 laysBgColor="",laysFontSize="",laysFontColor="",
@@ -1493,10 +1320,6 @@ public class MainActivity extends AppCompatActivity {
                                                 Log.e("time","time>>>"+time);
                                             }
                                         }
-
-
-
-
                                         newSlideItems.add(new ContentModel(type, url, duration, extention,app_clock_hands_color,
                                                 app_clock_text,app_clock_timezone,app_clock_size,app_clock_minor_indicator_color,
                                                 app_clock_major_indicator_color,app_clock_innerdot_size,app_clock_innerdot_color,
@@ -1559,10 +1382,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
-
-
     }
     @SuppressLint("NotifyDataSetChanged")
     private void initDisplayContentPusher(String display_id, String counter_translation){
@@ -1633,14 +1452,8 @@ public class MainActivity extends AppCompatActivity {
                                             txtDisplaycounterTitle.setText(counter_translation);
                                         }
                                     }
-
-
-
                                     displayList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
                                     displayNewList.add(new DisplayDataModel(String.valueOf(id), app_id,queue_id,counter_id,created_at));
-
-
-
                                 }
                                 if (!displayNewList.isEmpty()) {
                                     // Remove the element at the first index (index 0)
@@ -1653,10 +1466,7 @@ public class MainActivity extends AppCompatActivity {
                                 display_list.setAdapter(displayAdapter);
                                 displayAdapter.notifyDataSetChanged();
                                 playSound();
-
                                 clearTimeout();
-
-
                                 new Handler().postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
@@ -1677,15 +1487,12 @@ public class MainActivity extends AppCompatActivity {
                             ex.printStackTrace();
                             Log.e("Error", "-----Json Array----: "+ex.getMessage());
                         }
-
-
                     }
                 });
 
 
             }
         });
-
 
     }
     private void playSound() {
@@ -1724,7 +1531,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         ContentModel item = list.get(contentCurrentIndex);
         parentTopOverlay.setVisibility(GONE);
         parentLeftOverlay.setVisibility(GONE);
@@ -1743,8 +1549,6 @@ public class MainActivity extends AppCompatActivity {
             content_image.destroyDrawingCache();
             parentContentImage.setVisibility(VISIBLE);
 
-
-
             if (orientation.equals("90 degrees")) {
                 if (item.getUrl() != null) {
                     Glide.with(getApplicationContext())
@@ -1761,7 +1565,6 @@ public class MainActivity extends AppCompatActivity {
                         .error(R.drawable.neo_logo)
                         .transform(new RotateTransformation(180))  // Rotate by 270 degrees
                         .into(content_image);
-
 
             }
             else if (orientation.equals("270 degrees")) {
@@ -2446,7 +2249,6 @@ public class MainActivity extends AppCompatActivity {
         Log.e("newDuration","newDuration>>>"+newDuration);
 
     }
-
     @SuppressLint("NotifyDataSetChanged")
     private void contentLay(List<ContentModel> list) {
         HashMap<String, String> getOrientationDetails = new HashMap<String, String>();
@@ -2488,18 +2290,10 @@ public class MainActivity extends AppCompatActivity {
                     contentLayItem(item,list,duration);
                 }
                 else{
-                   /* ContentModel item = list.get(contentCurrentIndex);
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    Log.e("currentDate","scheduledExist>>>00"+scheduledExist);
-                    Log.e("currentDate","contentLayItem>>>9");*/
                     ContentModel item = list.get(contentCurrentIndex);
                     if(indicesList.size()>0){
                         indicesList.remove(contentCurrentIndex);
                     }
-
 
                     skipContentLayItem(item,list,0);
                 }
@@ -2512,14 +2306,6 @@ public class MainActivity extends AppCompatActivity {
             if(indicesList.size()>0){
                 ContentModel item = list.get(contentCurrentIndex);
                 skipContentLayItem(item,list,duration);
-                /*ContentModel item = list.get(contentCurrentIndex);
-                parentTopOverlay.setVisibility(GONE);
-                parentLeftOverlay.setVisibility(GONE);
-                parentRightOverlay.setVisibility(GONE);
-                parentBottomOverlay.setVisibility(GONE);
-
-                Log.e("currentDate","scheduledExist>>>000"+scheduledExist);
-                contentLayItem(item,list,0);*/
             }else{
                 Log.e("currentDate","scheduledExist>>>2"+scheduledExist);
                 Log.e("getTime","getTime>>>"+list.get(contentCurrentIndex).getTime());
@@ -2563,26 +2349,11 @@ public class MainActivity extends AppCompatActivity {
                                 contentLayItem(item,list,duration);
                             }
                             else {
-                                // Do not show content
-                                /*ContentModel item = list.get(contentCurrentIndex);
-                                parentTopOverlay.setVisibility(GONE);
-                                parentLeftOverlay.setVisibility(GONE);
-                                parentRightOverlay.setVisibility(GONE);
-                                parentBottomOverlay.setVisibility(GONE);
-                                Log.e("currentDate","contentLayItem>>>8");
-                                contentLayItem(item,list,0);*/
                                 ContentModel item = list.get(contentCurrentIndex);
                                 skipContentLayItem(item,list,0);
                             }
                         }
                         else{
-                           /* ContentModel item = list.get(contentCurrentIndex);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            Log.e("currentDate","contentLayItem>>>5");
-                            contentLayItem(item,list,0);*/
                             ContentModel item = list.get(contentCurrentIndex);
                             skipContentLayItem(item,list,0);
                         }
@@ -2613,13 +2384,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
                             // Do not show content
-                            /*ContentModel item = list.get(contentCurrentIndex);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            Log.e("currentDate","contentLayItem>>>6");
-                            contentLayItem(item,list,0);*/
                             ContentModel item = list.get(contentCurrentIndex);
                             skipContentLayItem(item,list,0);
 
@@ -2638,13 +2402,6 @@ public class MainActivity extends AppCompatActivity {
                             contentLayItem(item,list,duration);
                         }
                         else{
-                            /*ContentModel item = list.get(contentCurrentIndex);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            Log.e("currentDate","contentLayItem>>>7");
-                            contentLayItem(item,list,0);*/
                             ContentModel item = list.get(contentCurrentIndex);
                             skipContentLayItem(item,list,0);
                         }
@@ -2658,50 +2415,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("currentDate","contentLayItem>>>4");
                         contentLayItem(item,list,duration);
                     }
-
-
-                /*if (list.get(contentCurrentIndex).getDays().contains(today)) {
-                    if(jsonDaysArray.length()>0 && jsonTimeArray.length()>0){
-                        String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-                        boolean contentShown = false;
-
-                        for (int i = 0; i < jsonTimeArray.length(); i++) {
-                            JSONObject jsonObject = jsonTimeArray.getJSONObject(i);
-                            String startTime = jsonObject.getString("start_time");
-                            String endTime = jsonObject.getString("end_time");
-
-                            if (isTimeWithinRange(startTime, endTime, currentTime)) {
-                                contentShown = true;
-                                break;
-                            }
-                        }
-
-                        if (contentShown) {
-                            // Show content
-                            ContentModel item = list.get(contentCurrentIndex);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            Log.e("currentDate","contentLayItem>>>1");
-                            contentLayItem(item,list,duration);
-                        } else {
-                            // Do not show content
-                        }
-
-                    }
-
-                }
-                else{
-                    ContentModel item = list.get(contentCurrentIndex);
-                    parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    Log.e("currentDate","contentLayItem>>>2");
-                    contentLayItem(item,list,duration);
-                }*/
-
                 }
                 catch (JSONException e) {
                     e.printStackTrace();
@@ -2710,7 +2423,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private boolean isTimeWithinRange(String startTime, String endTime, String currentTime) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
@@ -2744,7 +2456,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     }
-
     private void contentLayItem(ContentModel item, List<ContentModel> list, long duration) {
         if (item.getType().equals("image")){
             terminalLogo.setVisibility(GONE);
@@ -2758,8 +2469,6 @@ public class MainActivity extends AppCompatActivity {
             content_image.setImageBitmap(null);
             content_image.destroyDrawingCache();
             parentContentImage.setVisibility(VISIBLE);
-
-
 
             if (orientation.equals("90 degrees")) {
                 if (item.getUrl() != null) {
@@ -2801,13 +2510,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-
             if (strech.equals("off")){
                 content_image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             }
             else{
                 content_image.setScaleType(ImageView.ScaleType.FIT_XY);
-
             }
 
             overLays(item);
@@ -2876,20 +2583,17 @@ public class MainActivity extends AppCompatActivity {
                                             // Handle download completion
                                             Log.d("TAG", "File downloaded: " + filePath);
                                         }
-
                                         @Override
                                         public void onError(String errorMessage) {
                                             // Handle download error
                                             Log.e("TAG", "Error downloading file: " + errorMessage);
                                         }
-
                                         @Override
                                         public void onDownloadStatus(boolean isDownloading) {
                                             Log.e("TAG", "downloading status: " + isDownloading);
                                             downloadStatus=isDownloading;
                                         }
                                     });
-
                                     fileDownloader.execute(item.getUrl());
                                 }
                             }
@@ -2913,20 +2617,17 @@ public class MainActivity extends AppCompatActivity {
                                     long id = dbHelper.addVideo(videoItem);
                                     Log.e("Tag","firstfilenameid>>>"+id);
                                 }
-
                                 @Override
                                 public void onError(String errorMessage) {
                                     // Handle download error
                                     Log.e("TAG", "Error downloading file: " + errorMessage);
                                 }
-
                                 @Override
                                 public void onDownloadStatus(boolean isDownloading) {
                                     Log.e("TAG", "downloading status: " + isDownloading);
                                     downloadStatus=isDownloading;
                                 }
                             });
-
                             fileDownloader.execute(item.getUrl());
                         }
 
@@ -2934,7 +2635,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.video;
-
                 // Initialize ExoPlayer instance
                 DefaultTrackSelector trackSelector = new DefaultTrackSelector(this);
                 trackSelector.setParameters(trackSelector.buildUponParameters()
@@ -2948,8 +2648,6 @@ public class MainActivity extends AppCompatActivity {
                 player = new SimpleExoPlayer.Builder(this)
                         .setTrackSelector(trackSelector)
                         .build();
-
-
                 DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
                 renderersFactory.setEnableDecoderFallback(true);
                 player = new SimpleExoPlayer.Builder(this, renderersFactory).build();
@@ -3019,7 +2717,6 @@ public class MainActivity extends AppCompatActivity {
                             .build();
                     Log.e("Tag","test>>>3");
                 }
-
                 // Create a MediaSource using ProgressiveMediaSource.Factory
                 DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this);
                 MediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
@@ -3075,8 +2772,6 @@ public class MainActivity extends AppCompatActivity {
                             //overLays(item);
                             video_progress1.setVisibility(GONE);
                             playerView.setVisibility(VISIBLE);
-
-
                         }
                     }
                 });
@@ -3336,13 +3031,9 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
-
             webView_lay.setVisibility(VISIBLE);
-
             overLays(item);
-
             clockiFrameLay(item.getUrl(),list,item,duration);
-
         }
         else if(item.getType().equals("app")&&item.getExtention().equals("Countdown")){
             terminalLogo.setVisibility(GONE);
@@ -3353,11 +3044,8 @@ public class MainActivity extends AppCompatActivity {
             parentVideoView.setVisibility(GONE);
             parentVlcVideoView.setVisibility(GONE);
             display_lay.setVisibility(GONE);
-
             webView_lay.setVisibility(VISIBLE);
-
             overLays(item);
-
             countDowniFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -3384,7 +3072,6 @@ public class MainActivity extends AppCompatActivity {
             parentVlcVideoView.setVisibility(GONE);
             parentContentRssFeed.setVisibility(GONE);
             display_lay.setVisibility(GONE);
-
             webView_lay.setVisibility(VISIBLE);
             overLays(item);
             vimeoiFrameLay(item.getUrl(),list,item,duration);
@@ -3404,14 +3091,6 @@ public class MainActivity extends AppCompatActivity {
 
             String rssFeedUrl = item.getUrl();
 
-            /*ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)parentContentRssFeed.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
             rssFeediFrameLay(item.getUrl(),list,item,duration);
 
         }
@@ -3426,14 +3105,6 @@ public class MainActivity extends AppCompatActivity {
             terminal_lay.setVisibility(VISIBLE);
             terminalLogo.setVisibility(VISIBLE);
             txtTerminal.setVisibility(VISIBLE);
-            /*ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)terminal_lay.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
 
             if (strech.equals("off")){
                 if (orientation.equals("90 degrees")) {
@@ -3453,7 +3124,6 @@ public class MainActivity extends AppCompatActivity {
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
                     terminal_lay.setRotation(0);
-
                 }
             }
             else{
@@ -3465,7 +3135,6 @@ public class MainActivity extends AppCompatActivity {
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
                     terminal_lay.setRotation(180);
-
                 }
                 else if (orientation.equals("270 degrees")) {
                     configureTerminalTransform(terminal_lay.getWidth(), terminal_lay.getHeight(), 270);
@@ -3474,22 +3143,16 @@ public class MainActivity extends AppCompatActivity {
                     terminal_lay.setScaleX(1);
                     terminal_lay.setScaleY(1);
                     terminal_lay.setRotation(0);
-
                 }
 
-
             }
-
             Glide.with(getApplicationContext())
                     .load(item.getLogo())
                     .transform(new RotateTransformation(0))
                     .error(R.drawable.neo_logo)
                     .into(terminalLogo);
 
-
             txtTerminal.setText(item.getMain_text_translation());
-
-
 
             String cleanedJsonString = item.getApp_queue_departments().replaceAll("^\"|\"$", "").replace("\\", "");
 
@@ -3547,14 +3210,6 @@ public class MainActivity extends AppCompatActivity {
             updateTime();
             handler4.postDelayed(timeUpdater, 1000);
 
-           /* ViewGroup.MarginLayoutParams params1 =
-                    (ViewGroup.MarginLayoutParams)display_lay.getLayoutParams();
-            params1.setMargins(0, 0, 0, 0);
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            displayLayWidth = displayMetrics.widthPixels;
-            displayLayHeight = displayMetrics.heightPixels;*/
-
             if (strech.equals("off")){
                 if (orientation.equals("90 degrees")) {
                     configureDisplayTransform(display_lay.getWidth(), display_lay.getHeight(), 90);
@@ -3596,17 +3251,13 @@ public class MainActivity extends AppCompatActivity {
                     display_lay.setRotation(0);
                 }
 
-
             }
-
             initDisplayContentPusher(item.getDisplay_app_id(),item.getCounter_translation());
-
             if(item.getShow_news_channel().equals("2")){
                 displayOverlay.setVisibility(VISIBLE);
             }else{
                 displayOverlay.setVisibility(GONE);
             }
-
             displayOverLays(item);
             myRunnable = new Runnable() {
                 @Override
@@ -3633,7 +3284,6 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, 0);
         }
-
         contentCurrentIndex++;
         if (contentCurrentIndex >= list.size()) {
             contentCurrentIndex = 0;
@@ -3641,7 +3291,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
     private void skipContentLayItem(ContentModel item, List<ContentModel> list, long duration) {
         if (item.getType().equals("image")){
             myRunnable = new Runnable() {
@@ -3653,7 +3302,6 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(myRunnable, duration);
         }
         else if(item.getType().equals("video") && item.getExtention().equals("mp4")){
-
             myRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -3756,7 +3404,6 @@ public class MainActivity extends AppCompatActivity {
             contentCurrentIndex = 0;
         }
     }
-
     private void overLays(ContentModel item) {
         ViewGroup.MarginLayoutParams params1 =
                 (ViewGroup.MarginLayoutParams)contentLay2.getLayoutParams();
@@ -3840,10 +3487,6 @@ public class MainActivity extends AppCompatActivity {
 
                     setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                     setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                   /* parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(VISIBLE);*/
                 }
                 else if(item.getLaysType().equals("Left")){
                     String colorCode = item.getLaysBgColor();
@@ -3863,10 +3506,7 @@ public class MainActivity extends AppCompatActivity {
                     textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                     setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                    /*parentTopOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(VISIBLE);*/
+
                 }
                 else if(item.getLaysType().equals("Top")){
                     String colorCode = item.getLaysBgColor();
@@ -3884,10 +3524,7 @@ public class MainActivity extends AppCompatActivity {
                     textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                     textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                    /*parentLeftOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentTopOverlay.setVisibility(VISIBLE);*/
+
                 }
                 else if(item.getLaysType().equals("Bottom")){
                     String colorCode = item.getLaysBgColor();
@@ -3905,12 +3542,7 @@ public class MainActivity extends AppCompatActivity {
                     textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                     textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                     setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                    /*parentTopOverlay.setVisibility(GONE);
-                    parentLeftOverlay.setVisibility(GONE);
-                    parentRightOverlay.setVisibility(GONE);
-                    parentBottomOverlay.setVisibility(VISIBLE);*/
                 }
-
 
                 Log.e("Tag","testing>>>6");
                 List<RSSModel> overlaysRssList = new ArrayList<>();
@@ -3974,13 +3606,9 @@ public class MainActivity extends AppCompatActivity {
                                                 overlayRssSlideShowCallCount=0;
                                             }
                                         }
-
-
-
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-
 
                                 }
                             },
@@ -4023,10 +3651,6 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
-
-
-
-
             }
             else if (item.getLaysContentType().equals("Written text")){
                 Log.e("Tag","testing>>>6");
@@ -4055,7 +3679,6 @@ public class MainActivity extends AppCompatActivity {
                     setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                     setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
                     textRightOverlay.setText(item.getLaysContent());
-
 
                     textAnimation(textRightOverlay, item.getLaysContent());
 
@@ -4142,14 +3765,12 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("Tag","testing>>>10");
 
                     textBottomOverlay.setText(item.getLaysContent());
-
                     textAnimation(textBottomOverlay, item.getLaysContent());
 
                 }
             }
         }
         else if(overLaysIds.size()>1){
-
             String secondToLastValue = overLaysIds.get(overLaysIds.size() - 2);
             if(secondToLastValue.equals(item.getLaysId())){
                 if (item.getLaysContentType().equals("RSS feed")){
@@ -4233,10 +3854,7 @@ public class MainActivity extends AppCompatActivity {
 
                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
-                         /*parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(VISIBLE);*/
+
                     }
                     else if(item.getLaysType().equals("Left")){
                         String colorCode = item.getLaysBgColor();
@@ -4256,10 +3874,7 @@ public class MainActivity extends AppCompatActivity {
                         textLeftOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                         setWidthPercentage(parentLeftOverlay, Integer.parseInt("20"));
                         setHeightPercentage(parentLeftOverlay, Integer.parseInt(item.getLaysheight()));
-                        /* parentTopOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(VISIBLE);*/
+
                     }
                     else if(item.getLaysType().equals("Top")){
                         String colorCode = item.getLaysBgColor();
@@ -4277,10 +3892,7 @@ public class MainActivity extends AppCompatActivity {
                         textTopOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                         textTopOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                         setHeightPercentage(parentTopOverlay, Integer.parseInt(item.getLaysheight()));
-                         /*parentLeftOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentTopOverlay.setVisibility(VISIBLE);*/
+
                     }
                     else if(item.getLaysType().equals("Bottom")){
                         String colorCode = item.getLaysBgColor();
@@ -4298,13 +3910,8 @@ public class MainActivity extends AppCompatActivity {
                         textBottomOverlay.setTextSize(Float.parseFloat(item.getLaysFontSize()));
                         textBottomOverlay.setTextColor(Color.parseColor(item.getLaysFontColor()));
                         setHeightPercentage(parentBottomOverlay, Integer.parseInt(item.getLaysheight()));
-                         /*parentTopOverlay.setVisibility(GONE);
-                         parentLeftOverlay.setVisibility(GONE);
-                         parentRightOverlay.setVisibility(GONE);
-                         parentBottomOverlay.setVisibility(VISIBLE);*/
+
                     }
-
-
                     Log.e("Tag","testing>>>7");
                     List<RSSModel> overlaysRssList = new ArrayList<>();
                     String overlayContent=item.getLaysContent();
@@ -4351,7 +3958,6 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 sessionManagement.createContentRssFeedDataSession(overlaysRssList,item.getLaysId());
                                             }
-
                                             if(overlaysRssList==null){}
                                             else{
                                                 if (overlayRssSlideShowCallCount==0){
@@ -4366,14 +3972,9 @@ public class MainActivity extends AppCompatActivity {
                                                     overlayRssSlideShowCallCount=0;
                                                 }
                                             }
-
-
-
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
-
-
                                     }
                                 },
                                 new Response.ErrorListener() {
@@ -4413,10 +4014,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-
-
-
-
                 }
                 else if (item.getLaysContentType().equals("Written text")){
                     Log.e("Tag","testing>>>77");
@@ -4445,7 +4042,6 @@ public class MainActivity extends AppCompatActivity {
                         setWidthPercentage(parentRightOverlay, Integer.parseInt("20"));
                         setHeightPercentage(parentRightOverlay, Integer.parseInt(item.getLaysheight()));
                         textRightOverlay.setText(item.getLaysContent());
-
 
                         textAnimation(textRightOverlay, item.getLaysContent());
 
@@ -4533,7 +4129,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("Tag","testing>>>10");
 
                         textBottomOverlay.setText(item.getLaysContent());
-
                         textAnimation(textBottomOverlay, item.getLaysContent());
 
                     }
@@ -4542,7 +4137,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     private void displayOverLays(ContentModel item) {
         overLaysContentModel=item;
         if (item.getFeed_url().isEmpty() || item.getFeed_url()==null){
@@ -4611,13 +4205,9 @@ public class MainActivity extends AppCompatActivity {
                                         }
 
                                     }
-
-
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
-
-
                             }
                         },
                         new Response.ErrorListener() {
@@ -4641,7 +4231,6 @@ public class MainActivity extends AppCompatActivity {
                 List<RSSModel> list = new ArrayList<>();
                 list=new Gson().fromJson(getdisplayrsscontentDetails.get("displayrssfeed"), new TypeToken<List<RSSModel>>(){}.getType());
                 rssProgrss.setVisibility(GONE);
-
                 if(list==null){}
                 else{
                     if (displayOverlayRssSlideShowCallCount==0){
@@ -4650,7 +4239,6 @@ public class MainActivity extends AppCompatActivity {
                         displayOverlayRssContentLay(list,item);
                         displayFirstRssFeedLaysdataCount= list.size();
                     }
-
                     int newDataCount=list.size();
                     if(displayFirstRssFeedLaysdataCount != newDataCount){
                         displayOverlayRssSlideShowCallCount=0;
@@ -4658,9 +4246,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-
-
-
         }
     }
     private void textAnimation(TextView textOverlay, String laysContent) {
@@ -4677,56 +4262,6 @@ public class MainActivity extends AppCompatActivity {
         animation.setRepeatMode(Animation.RESTART);
         animation.setDuration(animationDuration);
         textOverlay.startAnimation(animation);
-
-
-
-
-        /*marqueeAnimation = new TranslateAnimation(
-                Animation.RELATIVE_TO_PARENT, 1f,
-                Animation.RELATIVE_TO_PARENT, -1f,
-                Animation.RELATIVE_TO_PARENT, 0f,
-                Animation.RELATIVE_TO_PARENT, 0f);
-        marqueeAnimation.setInterpolator(new LinearInterpolator());
-        marqueeAnimation.setRepeatCount(Animation.INFINITE);
-        marqueeAnimation.setRepeatMode(Animation.RESTART);
-        marqueeAnimation.setDuration(20000); // Adjust the duration as needed
-        textOverlay.setHorizontallyScrolling(true);
-        textOverlay.setSelected(true);
-        // Start the animation
-        textOverlay.startAnimation(marqueeAnimation);*/
-
-
-
-        /*int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        Paint textPaint = textOverlay.getPaint();
-        // Get the text content of the TextView
-        CharSequence text = textOverlay.getText();
-        // Calculate the width of the text based on the text size and content
-        int width = (int) Math.ceil(textPaint.measureText(text.toString()));
-
-
-
-        if (width <= screenWidth) {
-            // Create a translation animation to make it scroll horizontally
-            // Set the animation properties
-            marqueeAnimation.setInterpolator(new LinearInterpolator());
-            marqueeAnimation.setRepeatCount(Animation.INFINITE);
-            marqueeAnimation.setRepeatMode(Animation.RESTART);
-            marqueeAnimation.setDuration(10000); // Adjust the duration as needed
-            // Start the animation
-            textOverlay.startAnimation(marqueeAnimation);
-        }
-        else{
-            // Set the animation properties
-            marqueeAnimation.setInterpolator(new LinearInterpolator());
-            marqueeAnimation.setRepeatMode(Animation.RESTART);
-            textOverlay.setHorizontallyScrolling(true);
-            textOverlay.setSelected(true);
-            textOverlay.startAnimation(marqueeAnimation);
-
-        }*/
-
-
     }
     public long calculateDuration(String text) {
         // Set a fixed scrolling speed (characters per second)
@@ -4742,7 +4277,6 @@ public class MainActivity extends AppCompatActivity {
     private void overlayRssContentLay(List<RSSModel> overlaysRssList, ContentModel contentModel) {
         overlayRssSlideShowCallCount++;
         long duration = 60000;
-
         if(overlaysRssList==null){}
         else{
             if (overlaysRssList.size()>0){
@@ -4753,30 +4287,17 @@ public class MainActivity extends AppCompatActivity {
                     String[] rssinfoArray = rssinfo.split(",");
                     List<String> rssinfoList = Arrays.asList(rssinfoArray);
                     Log.e("Tag","rssinfoList>>>>"+rssinfoList);
-
                     //ovelaytext=item.getDate();
                     ovelaytext="";
-
                     if (rssinfoList.contains("3")) {
                         String text = item.getDate();
-
                         ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
                     }
-
                     if (rssinfoList.contains("1")) {
                         String text = item.getTitle();
-                    /*SpannableString spannableString = new SpannableString(text);
-                    // Set text size for a specific part of the string
-                    float relativeSize = 22f; // Change this value to adjust the size
-                    spannableString.setSpan(new RelativeSizeSpan(relativeSize), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                    // Set text style for a specific part of the string (e.g., bold)
-                    spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);*/
-                        //ovelaytext=String.format(ovelaytext, 18f)+ "  " +"<b>"+String.format(text, 18f)+"<b>";
                         ovelaytext = String.format("%s  <b>%s</b>", ovelaytext, text);
                     }
                     if (rssinfoList.contains("2")) {
-                        //ovelaytext=ovelaytext+ "  " + String.format(item.getDescription(), 18f);
                         ovelaytext = String.format("%s  %s", ovelaytext, item.getDescription());
                     }
                     Log.e("Tag","ovelaytext>>>>"+ovelaytext.length());
@@ -4788,7 +4309,6 @@ public class MainActivity extends AppCompatActivity {
                             item.getDate(),
                             item.getTitle(),
                             item.getDescription());
-
                 }
                 if(contentModel.getLaysType().equals("Right")){
                     Log.e("Tag","testingRight>>>9");
@@ -4807,25 +4327,18 @@ public class MainActivity extends AppCompatActivity {
                     parentLeftOverlay.setVisibility(VISIBLE);
                     textLeftOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textLeftOverlay, ovelaytext);
-
                 }
                 else if(contentModel.getLaysType().equals("Top")){
-
                     Log.e("Tag","testingTop>>>9"+ovelaytext);
-
                     parentBottomOverlay.setVisibility(GONE);
                     parentRightOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentTopOverlay.setVisibility(VISIBLE);
                     textTopOverlay.setText(Html.fromHtml(ovelaytext));
                     textAnimation(textTopOverlay, ovelaytext);
-
                 }
                 else if(contentModel.getLaysType().equals("Bottom")){
-
-
                     Log.e("Tag","testingBottom>>>9");
-
                     parentRightOverlay.setVisibility(GONE);
                     parentLeftOverlay.setVisibility(GONE);
                     parentTopOverlay.setVisibility(GONE);
@@ -4834,13 +4347,10 @@ public class MainActivity extends AppCompatActivity {
                     textAnimation(textBottomOverlay, ovelaytext);
                 }
 
-
-
                 overlaysRssContentCurrentIndex++;
                 if (overlaysRssContentCurrentIndex >= overlaysRssList.size()) {
                     overlaysRssContentCurrentIndex = 0;
                 }
-
 
             }
             else{
@@ -4865,9 +4375,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-
-
-
         myRunnable2 = new Runnable() {
             @Override
             public void run() {
@@ -4889,7 +4396,6 @@ public class MainActivity extends AppCompatActivity {
                 //ovelaytext=String.format(item.getDate(), 23f) + "  " + String.format(item.getTitle(), 25f,true) +  "  " + String.format(item.getDescription(), 23f);
                 ovelaytext = String.format("%s  %.2f  <b>%s</b>  %.2f  %s", item.getDate(), 23f, item.getTitle(), 25f, item.getDescription(), 23f);
 
-
                 textdisplayOverlay.setText(Html.fromHtml(ovelaytext));
                 textAnimation(textdisplayOverlay, ovelaytext);
             }
@@ -4898,7 +4404,6 @@ public class MainActivity extends AppCompatActivity {
                 textAnimation(textdisplayOverlay, "No Data Available");
             }
         }
-
 
         displayOverlaysRssContentCurrentIndex++;
         if (displayOverlaysRssContentCurrentIndex >= overlaysRssList.size()) {
@@ -4964,9 +4469,7 @@ public class MainActivity extends AppCompatActivity {
         txtDate.setText(formattedDateTime);
     }
     private void configureDisplayTransform(int width, int height, int rotationDegrees) {
-
         display_lay.setRotation(rotationDegrees);
-
         // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
@@ -5002,9 +4505,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void configureOverlayTransform(int viewWidth, int viewHeight, int rotationDegrees, ContentModel item) {
-
         contentLay2.setRotation(rotationDegrees);
-
         // Calculate the scale factors to fill the entire screen without stretching
         float scaleX = 1.0f;
         float scaleY = 1.0f;
@@ -5017,19 +4518,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /*if (contentLay2.getWidth() > contentLay2.getHeight()) {
-            // Landscape orientation
-            scaleX = (float) contentLay2.getHeight() / contentLay2.getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) contentLay2.getWidth() / contentLay2.getHeight();
-        }*/
-
         // Apply the scaling to fill the entire screen without stretching
         contentLay2.setScaleX(scaleX);
         contentLay2.setScaleY(scaleY);
-
-
     }
     private void configureVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
@@ -5044,9 +4535,6 @@ public class MainActivity extends AppCompatActivity {
                 scaleX = (float) videoView.getHeight() / videoView.getWidth();
             }
         }
-        // Calculate the scale factors to fill the entire screen
-        //float scaleX = (float) videoView.getHeight() / videoView.getWidth();
-        //float scaleY = (float) videoView.getWidth() / videoView.getHeight();
 
         // Apply the scaling to fill the entire screen
         videoView.setScaleX(scaleX);
@@ -5069,7 +4557,6 @@ public class MainActivity extends AppCompatActivity {
     }
     private void configureExoPlayerVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
 
-
         playerView.getVideoSurfaceView().setRotation(rotationDegrees);
 
         // Calculate the scale factors to fill the entire screen without stretching
@@ -5084,78 +4571,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-       /* if (playerView.getVideoSurfaceView().getWidth() > playerView.getVideoSurfaceView().getHeight()) {
-            // Landscape orientation
-            scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
-        }*/
-
-// Apply the scaling to fill the entire screen without stretching
+       // Apply the scaling to fill the entire screen without stretching
         playerView.getVideoSurfaceView().setScaleX(scaleX);
         playerView.getVideoSurfaceView().setScaleY(scaleY);
-    }
-    private void configureRSSFeedTransform1(int viewWidth, int viewHeight, int rotationDegrees) {
-
-
-        parentContentRssFeed.setRotation(rotationDegrees);
-
-        // Calculate the scale factors to fill the entire screen without stretching
-        float scaleX = 1.0f;
-        float scaleY = 1.0f;
-
-        if (parentContentRssFeed.getWidth() > 0 && parentContentRssFeed.getHeight() > 0) {
-            if (rotationDegrees == 90 || rotationDegrees == 270) {
-                scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
-            } else {
-                scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
-            }
-        }
-
-       /* if (parentContentRssFeed.getWidth() > parentContentRssFeed.getHeight()) {
-            // Landscape orientation
-            scaleX = (float) parentContentRssFeed.getHeight() / parentContentRssFeed.getWidth();
-        } else {
-            // Portrait orientation
-            scaleY = (float) parentContentRssFeed.getWidth() / parentContentRssFeed.getHeight();
-        }*/
-
-        // Apply the scaling to fill the entire screen without stretching
-        parentContentRssFeed.setScaleX(scaleX);
-        parentContentRssFeed.setScaleY(scaleY);
-
-
-    }
-
-    private void configureRSSFeedTransform2(int rotationDegrees) {
-        // Get the actual dimensions of the view
-        int viewWidth = parentContentRssFeed.getWidth();
-        int viewHeight = parentContentRssFeed.getHeight();
-
-        // Calculate the scale factors to fill the entire screen without stretching
-        float scaleX = 1.0f;
-        float scaleY = 1.0f;
-
-        if (viewWidth > 0 && viewHeight > 0) {
-            if (rotationDegrees == 90 || rotationDegrees == 270) {
-                scaleX = (float) viewHeight / viewWidth;
-                scaleY = (float) viewWidth / viewHeight;
-            } else {
-                scaleX = (float) viewWidth / viewHeight;
-                scaleY = (float) viewHeight / viewWidth;
-            }
-        }
-
-        // Apply the rotation and scaling
-        parentContentRssFeed.setRotation(rotationDegrees);
-        parentContentRssFeed.setScaleX(scaleX);
-        parentContentRssFeed.setScaleY(scaleY);
-
-        // Logging for debugging
-        Log.d("RSSFeedTransform", "Width: " + viewWidth + ", Height: " + viewHeight +
-                ", ScaleX: " + scaleX + ", ScaleY: " + scaleY +
-                ", Rotation: " + rotationDegrees);
     }
     private void configureRSSFeedTransform(int rotationDegrees) {
         // Get the actual dimensions of the view
@@ -5216,9 +4634,7 @@ public class MainActivity extends AppCompatActivity {
         rssQR.setScaleX(1.0f);
         rssQR.setScaleY(1.0f);
 
-
     }
-
 
     private void configureOverlayStretchTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Rotate the VideoView by 90 degrees
@@ -5236,22 +4652,6 @@ public class MainActivity extends AppCompatActivity {
         contentLay2.setScaleY(scaleY);
 
     }
-    private void configureWebViewTransform1(int viewWidth, int viewHeight, int rotationDegrees) {
-        // Rotate the VideoView by 90 degrees
-        myWebView.setRotation(rotationDegrees);
-        if (myWebView.getWidth() == 0 || myWebView.getHeight() == 0) {
-            // Handle the case where width or height is zero
-            return;
-        }
-        // Calculate the scale factors to fill the entire screen
-        float scaleX = (float) myWebView.getHeight() / myWebView.getWidth();
-        float scaleY = (float) myWebView.getWidth() / myWebView.getHeight();
-
-        // Apply the scaling to fill the entire screen
-        myWebView.setScaleX(scaleX);
-        myWebView.setScaleY(scaleY);
-    }
-
     private void configureWebViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
         // Handle the case where width or height is zero
         if (viewWidth == 0 || viewHeight == 0) {
@@ -5281,22 +4681,7 @@ public class MainActivity extends AppCompatActivity {
                 ", Rotation: " + rotationDegrees);
     }
 
-
     private void  configureExoPlayerStretchVideoViewTransform(int viewWidth, int viewHeight, int rotationDegrees) {
-//        // Rotate the VideoView by 90 degrees
-//        playerView.getVideoSurfaceView().setRotation(rotationDegrees);
-//        if (playerView.getVideoSurfaceView().getWidth() == 0 || playerView.getVideoSurfaceView().getHeight() == 0) {
-//            // Handle the case where width or height is zero
-//            return;
-//        }
-//        // Calculate the scale factors to fill the entire screen
-//        float scaleX = (float) playerView.getVideoSurfaceView().getHeight() / playerView.getVideoSurfaceView().getWidth();
-//        float scaleY = (float) playerView.getVideoSurfaceView().getWidth() / playerView.getVideoSurfaceView().getHeight();
-//
-//        // Apply the scaling to fill the entire screen
-//        playerView.getVideoSurfaceView().setScaleX(scaleX);
-//        playerView.getVideoSurfaceView().setScaleY(scaleY);
-
         // Get the actual dimensions of the view
         viewWidth = playerView.getVideoSurfaceView().getWidth();
         viewHeight = playerView.getVideoSurfaceView().getHeight();
@@ -5339,18 +4724,14 @@ public class MainActivity extends AppCompatActivity {
     public class RotateTransformation extends BitmapTransformation {
         private static final String ID = "com.example.RotateTransformation";
         private final byte[] ID_BYTES = ID.getBytes();
-
         private float rotationAngle;
-
         public RotateTransformation(float rotationAngle) {
             this.rotationAngle = rotationAngle;
         }
-
         @Override
         public void updateDiskCacheKey(MessageDigest messageDigest) {
             messageDigest.update(ID_BYTES);
         }
-
         @Override
         protected Bitmap transform(@NonNull BitmapPool pool, @NonNull Bitmap toTransform, int outWidth, int outHeight) {
             Matrix matrix = new Matrix();
@@ -5420,9 +4801,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-
-
-
 
                     mp.setVolume(0f, 0f);
                     overLays(item);
@@ -5508,8 +4886,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-
-
 
                     mp.setVolume(0f, 0f);
                     overLays(item);
@@ -5625,14 +5001,11 @@ public class MainActivity extends AppCompatActivity {
             } catch (SVGParseException e) {
                 e.printStackTrace();
             }
-
         }
         rssContentCurrentIndex++;
         if (rssContentCurrentIndex >= rsslist.size()) {
             rssContentCurrentIndex = 0;
         }
-
-
         myRunnable1 = new Runnable() {
             @Override
             public void run() {
@@ -5732,22 +5105,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 else{
-//                    // Handle size changes if needed
-//                    if (orientation.equals("90 degrees")) {
-//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-//                    }
-//                    else if (orientation.equals("180 degrees")) {
-//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-//                    }
-//                    else if (orientation.equals("270 degrees")) {
-//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-//                    }
-//                    else {
-//                        configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-//                    }
-
-
-// Use ViewTreeObserver to ensure dimensions are available
+                    // Use ViewTreeObserver to ensure dimensions are available
                     myWebView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                         @Override
                         public void onGlobalLayout() {
@@ -5769,65 +5127,9 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
 
-
-
                 progressBar.setVisibility(View.VISIBLE);
                 parentInternetLay.setVisibility(GONE);
                 super.onPageStarted(view, url, favicon);
-
-
-               /* if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
 
             }
             @Override
@@ -5838,36 +5140,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
                 myWebView.setVisibility(VISIBLE);
-
-
-
-
-
-                /*if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
                 // Both url and title is available in this stage
                 mUrl = view.getUrl();
             }
@@ -5893,47 +5165,11 @@ public class MainActivity extends AppCompatActivity {
                 videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
             }
         }
-
         // Create the embedded YouTube link
         String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
         Log.e("Tag","youtubeUrl>>>"+embeddedLink);
         myWebView.loadUrl(embeddedLink);
 
-
-
-
-       /* if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            String myYouTubeVideoUrl = newurl;
-            // YouTube video ID
-            String videoId = null;
-            if (myYouTubeVideoUrl != null && myYouTubeVideoUrl.contains("youtube.com")) {
-                int startIndex = myYouTubeVideoUrl.indexOf("v=");
-                if (startIndex != -1) {
-                    startIndex += 2; // Move past the "v="
-                    int endIndex = myYouTubeVideoUrl.indexOf('&', startIndex);
-                    if (endIndex == -1) {
-                         endIndex = myYouTubeVideoUrl.length();
-                    }
-                    videoId = myYouTubeVideoUrl.substring(startIndex, endIndex);
-                }
-            }
-
-            // Create the embedded YouTube link
-            String embeddedLink = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
-            Log.e("Tag","youtubeUrl>>>"+embeddedLink);
-            myWebView.loadUrl(embeddedLink);
-            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + embeddedLink + " ></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }*/
     }
     private void clockiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         myRunnable = new Runnable() {
@@ -5983,56 +5219,6 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                /*if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
 
                 if (strech.equals("off")){
                     if (orientation.equals("90 degrees")) {
@@ -6070,14 +5256,10 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
                     }
-
-
                 }
-
                 progressBar.setVisibility(View.VISIBLE);
                 parentInternetLay.setVisibility(GONE);
                 super.onPageStarted(view, url, favicon);
-
             }
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -6087,36 +5269,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
                 myWebView.setVisibility(VISIBLE);
-
-
-
-
-
-                /*if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
                 // Both url and title is available in this stage
                 mUrl = view.getUrl();
             }
@@ -6242,56 +5394,6 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                /*if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
 
                 if (strech.equals("off")){
                     if (orientation.equals("90 degrees")) {
@@ -6346,34 +5448,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
                 myWebView.setVisibility(VISIBLE);
-
-
-
-                /*if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
                 // Both url and title is available in this stage
                 mUrl = view.getUrl();
             }
@@ -6436,74 +5510,9 @@ public class MainActivity extends AppCompatActivity {
         builder.appendQueryParameter("date", timeString);
         builder.appendQueryParameter("countdownText",countdownText);
 
-
         String clockurl = builder.build().toString();
         myWebView.loadUrl(clockurl);
 
-       /* if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            String timeString = convertTimeFormat(item.getCdtime());
-            if (item.getApp_cd_text().equals("null")){
-                countdownText = "";
-            }else{
-                countdownText = item.getApp_cd_text();
-            }
-            if (item.getCdtranslation().equals("null")){
-                translationString = ",,,";
-            }else{
-                translationString = item.getCdtranslation();
-            }
-            String[] translation = translationString.split(",");
-
-            String day="",hour="",minute="",second="";
-            if(translation.length>0){
-                if(translation[0].equals("null")){
-                    day = "Days";
-                }else{
-                    day = translation[0];
-                }
-                if(translation[1].equals("null")){
-                    hour = "Hours";
-                }else{
-                    hour = translation[1];
-                }
-                if(translation[2].equals("null")){
-                    minute ="Minutes";
-                }else{
-                    minute = translation[2];
-                }
-                if(translation[3].equals("null")){
-                    second = "Seconds";
-                }else{
-                    second = translation[3];
-                }
-
-            }
-
-            // Construct the URL using the parameters
-            String baseUrl = "https://webplayer.neosign.tv/countdown.php?";
-            Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
-            builder.appendQueryParameter("dayText", day);
-            builder.appendQueryParameter("hourText", hour);
-            builder.appendQueryParameter("minText", minute);
-            builder.appendQueryParameter("secText", second);
-            builder.appendQueryParameter("date", timeString);
-            builder.appendQueryParameter("countdownText",countdownText);
-
-
-            String clockurl = builder.build().toString();
-            myWebView.loadUrl(clockurl);
-            String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + clockurl + "></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-            //myWebView.loadUrl(newurl);
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }*/
     }
     private void webUriiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
         myRunnable = new Runnable() {
@@ -6594,56 +5603,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 progressBar.setVisibility(View.VISIBLE);
                 parentInternetLay.setVisibility(GONE);
-               /* if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
 
             }
             @Override
@@ -6656,54 +5615,12 @@ public class MainActivity extends AppCompatActivity {
                 view.loadUrl(javascript);
                 myWebView.setVisibility(VISIBLE);
 
-
-
-                /*if(isNetworkAvailable()){
-                    overLays(item);
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
                 // Both url and title is available in this stage
                 mUrl = view.getUrl();
             }
 
         });
         myWebView.loadUrl(webUrl);
-
-        /*if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            //String dataUrl ="<iframe width=\"100%\" height=\"100%\" src=" + webUrl + " ></iframe>";
-            myWebView.loadUrl(webUrl);
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }*/
 
     }
     private void vimeoiFrameLay(String url, List<ContentModel> list, ContentModel item, long duration) {
@@ -6757,56 +5674,6 @@ public class MainActivity extends AppCompatActivity {
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                /*if(isNetworkAvailable()){
-                    if (strech.equals("off")){
-                        if (orientation.equals("90 degrees")) {
-                            myWebView.setRotation(90);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            myWebView.setRotation(180);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            myWebView.setRotation(270);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                        else {
-                            myWebView.setRotation(0);
-                            myWebView.setScaleX(1);
-                            myWebView.setScaleY(1);
-                        }
-                    }
-                    else{
-                        // Handle size changes if needed
-                        if (orientation.equals("90 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 90);
-                        }
-                        else if (orientation.equals("180 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 180);
-                        }
-                        else if (orientation.equals("270 degrees")) {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 270);
-                        }
-                        else {
-                            configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
-                        }
-
-
-                    }
-
-                    progressBar.setVisibility(View.VISIBLE);
-                    parentInternetLay.setVisibility(GONE);
-                    super.onPageStarted(view, url, favicon);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
 
                 if (strech.equals("off")){
                     if (orientation.equals("90 degrees")) {
@@ -6844,8 +5711,6 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         configureWebViewTransform(myWebView.getWidth(), myWebView.getHeight(), 0);
                     }
-
-
                 }
 
                 progressBar.setVisibility(View.VISIBLE);
@@ -6860,33 +5725,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("test>>>","list"+list);
                 view.loadUrl(javascript);
                 myWebView.setVisibility(VISIBLE);
-
-
-
-                /*if(isNetworkAvailable()){
-                    progressBar.setVisibility(View.GONE);
-                    Log.e("test>>>","list"+list);
-                    view.loadUrl(javascript);
-                    myWebView.setVisibility(VISIBLE);
-                    myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            myWebView.setVisibility(GONE);
-                            parentTopOverlay.setVisibility(GONE);
-                            parentLeftOverlay.setVisibility(GONE);
-                            parentRightOverlay.setVisibility(GONE);
-                            parentBottomOverlay.setVisibility(GONE);
-                            contentLay(list);
-                        }
-                    };
-                    clearTimeout();
-                    handler.postDelayed(myRunnable, duration);
-                }
-                else{
-                    parentInternetLay.setVisibility(VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-
-                }*/
                 // Both url and title is available in this stage
                 mUrl = view.getUrl();
             }
@@ -6902,56 +5740,8 @@ public class MainActivity extends AppCompatActivity {
         parentInternetLay.setVisibility(GONE);
         myWebView.loadUrl(newString+"?autoplay=1");
 
-        /*if(isNetworkAvailable()){
-            progressBar.setVisibility(View.VISIBLE);
-            parentInternetLay.setVisibility(GONE);
-            myWebView.loadUrl(newString+"?autoplay=1");
-            //String dataUrl = "<iframe src='" + newString+"?autoplay=1"+"' frameborder='0' allowfullscreen='true' autoplay='true' muted='true' style='width:100%; height:100%;'></iframe>";
-            //String dataUrl = "<iframe width=\"100%\" height=\"100%\"  src=\" + docUrl + \" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay=true; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-            //myWebView.loadData(dataUrl, "text/html", "utf-8");
-
-        }
-        else{
-            parentInternetLay.setVisibility(VISIBLE);
-            progressBar.setVisibility(View.GONE);
-
-        }*/
     }
     private void rssFeediFrameLay(String url, List<ContentModel> list, ContentModel item1, long duration) {
-
-
-
-        // Apply the transformations based on the orientation and strech parameter
-//                if (strech.equals("off")) {
-//                    if (orientation.equals("90 degrees")) {
-//                        configureRSSFeedTransform(90);
-//                    } else if (orientation.equals("180 degrees")) {
-//                        parentContentRssFeed.setScaleX(1);
-//                        parentContentRssFeed.setScaleY(1);
-//                        parentContentRssFeed.setRotation(180);
-//                    } else if (orientation.equals("270 degrees")) {
-//                        configureRSSFeedTransform(270);
-//                    } else {
-//                        parentContentRssFeed.setScaleX(1);
-//                        parentContentRssFeed.setScaleY(1);
-//                        parentContentRssFeed.setRotation(0);
-//                    }
-//                } else {
-//                    // Handle size changes if needed
-//                    if (orientation.equals("90 degrees")) {
-//                        configureRSSFeedTransform(90);
-//                    } else if (orientation.equals("180 degrees")) {
-//                        parentContentRssFeed.setScaleX(1);
-//                        parentContentRssFeed.setScaleY(1);
-//                        parentContentRssFeed.setRotation(180);
-//                    } else if (orientation.equals("270 degrees")) {
-//                        configureRSSFeedTransform(270);
-//                    } else {
-//                        parentContentRssFeed.setScaleX(1);
-//                        parentContentRssFeed.setScaleY(1);
-//                        parentContentRssFeed.setRotation(0);
-//                    }
-//                }
         if (strech.equals("off")) {
             if (orientation.equals("90 degrees")) {
                 configureRSSFeedTransform(90);
@@ -6975,13 +5765,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-
         List<RSSModel> rsslist = new ArrayList<>();
         String originalString = item1.getUrl();
         String newString = originalString.replace("https://app.neosign.tv/", "");
         String rssFeedUrl = newString;
-
 
         if (item1.getRssinfo() != null) {
             String rssinfo = item1.getRssinfo();
@@ -7075,8 +5862,6 @@ public class MainActivity extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-
-
                         }
                     },
                     new Response.ErrorListener() {
@@ -7115,35 +5900,41 @@ public class MainActivity extends AppCompatActivity {
             };
             handler.postDelayed(myRunnable, duration);
         }
-
-
-
-
-
-
-
     }
     private void initSession() {
+        // Initialize SharedPreferences to access app's shared preferences storage
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+        // Initialize SessionManagement object with the current MainActivity context
         sessionManagement = new SessionManagement(MainActivity.this);
 
+        // Create a HashMap to store user details related to the wake-up setting
         HashMap<String, String> getUserDetails = new HashMap<String, String>();
         getUserDetails = sessionManagement.getWakeupDetails();
+
+        // Parse the wake-up setting from the retrieved user details and assign it to isWakeUP
         isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
 
+        // Create a HashMap to store user details related to the auto-start setting
         HashMap<String, String> getAutoStartDetails = new HashMap<String, String>();
         getAutoStartDetails = sessionManagement.getAutoStartDetails();
+
+        // Parse the auto-start setting from the retrieved details and assign it to isAutoStart
         isAutoStart = Boolean.parseBoolean(getAutoStartDetails.get(IS_AUTOSTART));
 
-
+        // Create a HashMap to store user details related to the keep-on-top setting
         HashMap<String, String> getKeepOnTopDetails = new HashMap<String, String>();
         getKeepOnTopDetails = sessionManagement.getKeepOnTopDetails();
+
+        // Parse the keep-on-top setting from the retrieved details and assign it to isKeepOnTop
         isKeepOnTop = Boolean.parseBoolean(getKeepOnTopDetails.get(IS_KEEPONTOP));
 
+        // Create a HashMap to store user details related to the pairing status
         HashMap<String, String> getPairingStatusDetail = new HashMap<String, String>();
         getPairingStatusDetail = sessionManagement.getPairingStatusDetails();
-        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
 
+        // Parse the pairing status from the retrieved details and assign it to pairingStatus
+        pairingStatus = Boolean.parseBoolean(getPairingStatusDetail.get(PAIRING_STATUS));
     }
     private void accessAllPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isAutoStart && isAutoPopUP) {
@@ -7157,12 +5948,9 @@ public class MainActivity extends AppCompatActivity {
             requestBatteryOptimization();
         }
 
-
     }
-    public void requestAutoStart()
-    {
+    public void requestAutoStart(){
         if (!Settings.canDrawOverlays(MainActivity.this)) {
-
             ViewGroup viewGroup=findViewById(android.R.id.content);
             TextView btn;
             TextView tittle,statement;
@@ -7196,8 +5984,7 @@ public class MainActivity extends AppCompatActivity {
             alertDialog.show();
         }
     }
-    public void requestBatteryOptimization()
-    {
+    public void requestBatteryOptimization() {
         String packageName = MainActivity.this.getPackageName();
         PowerManager pm = (PowerManager) MainActivity.this.getSystemService(POWER_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -7229,9 +6016,7 @@ public class MainActivity extends AppCompatActivity {
                         alertDialog.hide();
                         isOptimizationPopUP=false;
                         Log.e("TAG","battryOptimisationCalled");
-                       /* intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                        intent.setData(Uri.parse("package:" + packageName));
-                        startActivity(intent);*/
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             requestPermissions(new String[] {
                                     Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
@@ -7245,18 +6030,10 @@ public class MainActivity extends AppCompatActivity {
     }
     private List<TerminalModel> generateGridItems() {
         List<TerminalModel> items = new ArrayList<>();
-        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
-        // Add more items as needed
         return items;
     }
     private List<DisplayDataModel> generateDisplayItems() {
         List<DisplayDataModel> items = new ArrayList<>();
-        /*items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 1"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 2"));
-        items.add(new TerminalModel(R.drawable.ic_launcher_foreground, "Item 3"));*/
-
         // Add more items as needed
         return items;
     }
@@ -7639,77 +6416,7 @@ public class MainActivity extends AppCompatActivity {
                                 alert.show();
 
                             }
-                            /*else if (keepAwakeSwitch.isFocusable()){
-                                sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-                                sessionManagement = new SessionManagement(MainActivity.this);
 
-                                HashMap<String, String> getUserDetails = new HashMap<String, String>();
-                                getUserDetails = sessionManagement.getWakeupDetails();
-                                isWakeUP = Boolean.parseBoolean(getUserDetails.get(IS_WAKEUP));
-
-
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                builder.setTitle(R.string.app_name);
-                                builder.setIcon(R.mipmap.neo_app_icon);
-                                builder.setMessage("Do you want to change Keep Awake status?")
-                                        .setCancelable(false)
-                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                                    Intent intent = new Intent();
-                                                    intent.setAction(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS);
-                                                    startActivity(intent);
-                                                } else {
-                                                    if (isWakeUP){
-                                                        keepAwakeSwitch.setChecked(false);
-                                                        //This code holds the CPU
-                                                        if (powerLatch.isHeld()){
-                                                            powerLatch.release();
-                                                            sessionManagement.createWakeupSession(false);
-                                                        }
-
-                                                    }
-                                                    else{
-                                                        keepAwakeSwitch.setChecked(true);
-                                                        //This code holds the CPU
-                                                        //powerLatch.acquire(24*60*60*1000L);
-                                                        powerLatch.acquire();
-                                                        sessionManagement.createWakeupSession(true);
-                                                    }
-                                                }
-
-                                                *//*if (isWakeUP){
-                                                    keepAwakeSwitch.setChecked(false);
-                                                    //This code holds the CPU
-                                                    if (powerLatch.isHeld()){
-                                                        powerLatch.release();
-                                                        sessionManagement.createWakeupSession(false);
-                                                    }
-
-                                                }
-                                                else{
-                                                    keepAwakeSwitch.setChecked(true);
-                                                    //This code holds the CPU
-                                                    //powerLatch.acquire(24*60*60*1000L);
-                                                    powerLatch.acquire();
-                                                    sessionManagement.createWakeupSession(true);
-                                                }*//*
-
-
-
-                                            }
-                                        })
-                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                            }
-                                        });
-                                AlertDialog alert = builder.create();
-                                alert.show();
-
-                            }*/
                             else if (keepOnTopSwitch.isFocusable()){
                                 sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
                                 sessionManagement = new SessionManagement(MainActivity.this);
@@ -7854,7 +6561,7 @@ public class MainActivity extends AppCompatActivity {
                 // Permission granted, proceed with your operation
                 Toast.makeText(this, "Storage permission granted.", Toast.LENGTH_SHORT).show();
             } else {
-                // Permission denied, handle accordingly (e.g., show a message or disable functionality)
+                // Permission denied
                 Toast.makeText(this, "Storage permission denied.", Toast.LENGTH_SHORT).show();
                 showPermissionExplanationDialog();
 
@@ -7874,9 +6581,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -7926,7 +6630,7 @@ public class MainActivity extends AppCompatActivity {
                 mUploadMessage = null;
             }
         }
-        return;
+
     }
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
@@ -7998,8 +6702,6 @@ public class MainActivity extends AppCompatActivity {
                         parentPairing.setVisibility(VISIBLE);
                     }
                 }
-
-
             }else{
                 slideShowCallCount=0;
                 initPairing(pairCode);
@@ -8214,8 +6916,6 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-
-
     private void checkPermissions() {
         String[] permissionsRequired;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -8268,9 +6968,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
-
     private void savePermissionStatus(boolean status) {
         SharedPreferences sharedPreferences = getSharedPreferences("permissions", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -8318,8 +7015,6 @@ public class MainActivity extends AppCompatActivity {
         intent.setData(uri);
         startActivity(intent);
     }
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -8331,8 +7026,6 @@ public class MainActivity extends AppCompatActivity {
         indicesList.clear();
         unregisterReceiver(MyReceiver);
     }
-
-
 
 
 }

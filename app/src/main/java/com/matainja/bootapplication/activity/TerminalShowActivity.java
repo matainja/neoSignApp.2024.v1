@@ -139,20 +139,10 @@ public class TerminalShowActivity extends AppCompatActivity {
                             }else{
 
                             }
-
-
-
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                         Log.e("Tag","jsonObject>>>"+jsonObject);
-
-
-
-
-
-
 
                     }
                 },

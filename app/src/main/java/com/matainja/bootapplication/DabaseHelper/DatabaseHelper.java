@@ -55,26 +55,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return id;
     }
-    /*@SuppressLint({"Range", "SuspiciousIndentation"})
-    public VideoItem getVideo(String filenameFromUri) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_VIDEOS,
-                new String[]{COLUMN_ID, COLUMN_TITLE, COLUMN_VIDEO_URL, COLUMN_LOCAL_FILE_PATH},
-                COLUMN_TITLE + "=?",
-                new String[]{title}, // Replace `title` with the actual title you want to search for
-                null,
-                null,
-                null,
-                null);
-        if (cursor != null)
-        cursor.moveToFirst();
-        VideoItem videoItem = new VideoItem();
-        videoItem.setTitle(cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)));
-        videoItem.setVideo_url(cursor.getString(cursor.getColumnIndex(COLUMN_VIDEO_URL)));
-        videoItem.setVideo_path(cursor.getString(cursor.getColumnIndex(COLUMN_LOCAL_FILE_PATH)));
-        cursor.close();
-        return videoItem;
-    }*/
 
     public Cursor getVideoByTitle(String title) {
         SQLiteDatabase db = this.getReadableDatabase();

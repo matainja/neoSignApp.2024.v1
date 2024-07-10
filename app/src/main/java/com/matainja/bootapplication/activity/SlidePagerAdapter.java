@@ -41,14 +41,10 @@ public class SlidePagerAdapter extends PagerAdapter {
         this.slideItems = slideItems;
         layoutInflater = LayoutInflater.from(context);
     }
-
     @Override
     public int getCount() {
         return slideItems.size();
     }
-
-
-
     @Override
     public boolean isViewFromObject(View view, Object object) {
         return view == object;
@@ -108,9 +104,6 @@ public class SlidePagerAdapter extends PagerAdapter {
                 }
             });
         }
-
-
-
         container.addView(view);
         return view;
     }
